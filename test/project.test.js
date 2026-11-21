@@ -340,3 +340,12 @@ test('a build input directory that also holds the .wasm settles after one build'
   assert.deepEqual([second.build, second.card], ['cached', 'cached'], 'the .wasm written into src/ is not an input');
   assert.deepEqual(await p.check(), []);
 });
+
+test('directory inputs skip OS litter (.DS_Store) but keep hidden build configs', async (t) => {
+  const p = open(tempDir(t));
+  p.write('src/a.c', '1\n');
+  p.write('src/.DS_Store', 'finder');
+  p.write('src/.config/flags.txt', '-O2');
+  const files = expandInputs(p.dir, ['src']);
+  assert.deepEqual(files, ['src/.config/flags.txt', 'src/a.c']);
+});

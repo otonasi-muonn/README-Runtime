@@ -88,6 +88,9 @@ export function loadConfig(configPath) {
 // it. Globs: '*' and '?' match within one path segment, '**' matches zero or more directories
 // ('src/**' is every file below src). Walks skip node_modules and .git and do not follow
 // symlinked directories. An entry that matches no file is an error, never silently ignored.
+const SKIP_DIRS = new Set(['node_modules', '.git', '.hg', '.svn']);
+const SKIP_FILES = new Set(['.DS_Store', 'Thumbs.db', 'desktop.ini']);
+
 export function expandInputs(dir, patterns) {
   const files = new Set();
   for (const pat of patterns) {
@@ -106,9 +109,10 @@ export function expandInputs(dir, patterns) {
       const deep = rest.includes('**');
       const walk = (rel, depth) => {
         for (const e of fs.readdirSync(path.join(base, rel), { withFileTypes: true })) {
-          // node_modules, VCS folders and dotfiles (.DS_Store, editor state) are never inputs:
-          // they differ between a developer machine and a fresh CI checkout
-          if (e.name === 'node_modules' || e.name.startsWith('.')) continue;
+          // dependencies, VCS folders and OS litter are never inputs: they differ between a
+          // developer machine and a fresh CI checkout. Other hidden files (.cargo/config.toml,
+          // .clang-format, ...) can change a build, so they stay in.
+          if (e.isDirectory() ? SKIP_DIRS.has(e.name) : SKIP_FILES.has(e.name)) continue;
           const r = rel ? `${rel}/${e.name}` : e.name;
           const abs = path.join(base, r);
           if (e.isDirectory()) { if (deep || depth + 1 < rest.length) walk(r, depth + 1); }
