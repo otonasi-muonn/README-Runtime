@@ -118,6 +118,11 @@ export class IR {
       case 'mul': if (isC(b, 1)) return a; if (isC(b, 0)) return b; break;
       case 'and':
         if (isC(b, 0)) return b; if (isC(b, -1)) return a; if (a === b) return a;
+        // (x << s) & m  ==  (x & (m >>> s)) << s  for all i32 x: masking before shifting keeps
+        // the value small, so the CSS stays exact (LFSRs, cellular automata, bit fields)
+        if (b.op === 'const' && a.op === 'shl' && a.args[1].op === 'const' && (a.args[1].value & 31) !== 0) {
+          return this.op('shl', this.op('and', a.args[0], this.const(b.value >>> (a.args[1].value & 31))), a.args[1]);
+        }
         if (isC(b, 1) && a.bool) return a;
         if (a.bool && b.bool) return this.op('land', a, b);
         break;

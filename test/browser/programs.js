@@ -29,4 +29,17 @@ export const PROGRAMS = {
   sext20: { wasm: asm([get(0), c(12), op.shl, c(12), op.shr_s, c(5), op.add]), export: 'f', init: 1, edits: [600000, 2000] },
   // x*x % 1000 needs x*x < 2^23 inside CSS
   square: { wasm: asm([get(0), get(0), op.mul, c(1000), op.rem_s, c(1), op.add]), export: 'f', init: 7, edits: [2900, 3000] },
+  // --- from the final critic review ---
+  // WebKit divides through the reciprocal: exact multiples of 49 / 65521 used to come out one low
+  'div49-c': { wasm: file('test/fixtures/div49.wasm'), export: 'step', init: 117649, edits: [2401, 98, 4802] },
+  'qr-c': { wasm: file('test/fixtures/qr.wasm'), export: 'step', init: 65521, edits: [131042, 999999] },
+  // bit-twiddling demos that the guards used to over-reject
+  'lfsr-fib-c': { wasm: file('test/fixtures/lfsr_fib.wasm'), export: 'step', init: 44257, bits: 16, edits: [1, 65535] },
+  'rule30-c': { wasm: file('test/fixtures/rule30ring.wasm'), export: 'step', init: 32768, bits: 16, edits: [1, 12345] },
+  // bit templates are exact below 2^23 only: x*16 for |x| >= 2^19 must stop with OUT OF RANGE
+  popcnt16: { wasm: asm([get(0), c(16), op.mul, op.popcnt, get(0), op.add]), export: 'f', init: 1, edits: [600000, 531676] },
+  // float32 overflow to infinity/NaN downstream of a guard must not silence the guard
+  nanhash: { wasm: asm([get(0), ...[0, 1, 2, 3, 4].flatMap(() => [c(0x5bd1e995), op.mul]), set(1), get(1), get(1), c(7), op.shr_s, op.xor, c(0xffff), op.and], [I32]), export: 'f', init: 0, edits: [5, 12345] },
+  // a trap (division by zero at the third step) stops the card with TRAP
+  trap: { wasm: asm([c(100), get(0), c(3), op.sub, op.div_s]), export: 'f', init: 6, edits: [10] },
 };

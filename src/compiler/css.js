@@ -19,6 +19,11 @@ export const STORED_LIMIT = 999999;
 // quotient never rounds across an integer.
 export const INLINE_LIMIT = 2 ** 24 - 1;
 export const DIVISION_OPERAND_LIMIT = 2 ** 23 - 1;
+// The bit-decomposition templates (and/or/xor with general operands, clz, popcnt) read 23
+// value bits plus the sign, and or/xor add their operands: operands must stay below 2^23.
+export const BITWISE_OPERAND_LIMIT = 2 ** 23 - 1;
+const constOf = (x) => (x.op === 'const' ? x.value : undefined);
+const isMask = (k) => k !== undefined && ((k >= 0 && (k & (k + 1)) === 0) || (k < 0 && ((-k) & (-k - 1)) === 0));
 const isPow2 = (v) => v > 0 && (v & (v - 1)) === 0;
 // The tightest limit any consumer imposes on a node.
 function consumerLimits(order) {
@@ -29,6 +34,17 @@ function consumerLimits(order) {
       const d = n.args[1];
       if (!(d.op === 'const' && isPow2(Math.abs(d.value)))) n.args.forEach((a) => tighten(a, DIVISION_OPERAND_LIMIT));
     }
+    if (n.op === 'and') {
+      const [x, y] = n.args;
+      // width-independent forms: booleans, 2^k-1 / -2^k masks (computed with mod by 2^k)
+      const independent = (x.bool && y.bool) || x.bool || (constOf(y) === undefined && y.bool) || isMask(constOf(y));
+      if (!independent) n.args.forEach((a) => tighten(a, BITWISE_OPERAND_LIMIT));
+    }
+    if (n.op === 'or' || n.op === 'xor') {
+      const [x, y] = n.args;
+      if (!((x.bool && y.bool) || (n.op === 'xor' && constOf(y) === -1))) n.args.forEach((a) => tighten(a, BITWISE_OPERAND_LIMIT));
+    }
+    if (n.op === 'clz' || n.op === 'popcnt') tighten(n.args[0], BITWISE_OPERAND_LIMIT);
     if (n.op === 'extend8_s') tighten(n.args[0], INLINE_LIMIT - 128);
     if (n.op === 'extend16_s') tighten(n.args[0], INLINE_LIMIT - 32768);
   }
@@ -158,6 +174,14 @@ function template(node, inputAst) {
     if (k !== undefined && k >= 0) return sub(clamp(N(0), sub(N(k), X), N(1)), signBit(X));
     return clamp(N(0), add(clamp(N(0), sub(Y, X), N(1)), sub(signBit(Y), signBit(X))), N(1));
   };
+  // Quotient of integers. WebKit evaluates a / b as a * (1/b), which can land just below an
+  // exact integer quotient (2401/49 -> 48.999...). Dividing an exact multiple and rounding to
+  // nearest is correct in every engine; rem() and mod() are exact everywhere (measured).
+  // Powers of two divide exactly, so they keep the cheaper form.
+  const quot = (X, D, kind) => {
+    if (D.k === 'n' && isPow2(Math.abs(D.v))) return round(kind === 'trunc' ? 'to-zero' : 'down', div(X, D));
+    return round('nearest', div(sub(X, kind === 'trunc' ? rem(X, D) : mod(X, D)), D));
+  };
   const shrU = (X, k, x) => {
     if (k === 0) return X;
     const q = round('down', div(X, N(2 ** k)));
@@ -169,33 +193,33 @@ function template(node, inputAst) {
     case 'add': return add(A, B);
     case 'sub': return sub(A, B);
     case 'mul': return mul(A, B);
-    case 'div_s': return round('to-zero', div(A, safe(b, B)));
+    case 'div_s': return quot(A, safe(b, B), 'trunc');
     case 'div_u': {
       // Unsigned: a negative i32 means a + 2^32. With a constant divisor this is exact:
       // floor(u(a)/d) = floor(a/d) + s*(floor(2^32/d) + floor((mod(a,d) + 2^32 mod d)/d)).
       const d = cv(b);
-      if (d !== undefined && d > 0) {
-        const q = round('down', div(A, N(d)));
+      if (d !== undefined && d > 0 && d <= DIVISION_OPERAND_LIMIT) {
+        const q = quot(A, N(d), 'floor');
         if (a.bool) return q;
         // (the large constant is multiplied by the sign first, so a >= 0 never produces a
         // large intermediate value)
         const sA = signBit(A);
-        const carry = round('down', div(add(mod(A, N(d)), N(2 ** 32 % d)), N(d)));
+        const carry = quot(add(mod(A, N(d)), N(2 ** 32 % d)), N(d), 'floor');
         return add(add(q, mul(sA, N(Math.floor(2 ** 32 / d)))), mul(sA, carry));
       }
       if (d !== undefined && d < 0) return mul(signBit(A), clamp(N(0), add(sub(A, N(d)), N(1)), N(1))); // u(d) >= 2^31
-      return round('down', div(A, safe(b, B))); // variable divisor: valid for a >= 0, b > 0 (guarded)
+      return quot(A, safe(b, B), 'floor'); // variable or huge divisor: valid for a >= 0, b > 0 (guarded)
     }
     case 'rem_s': return rem(A, safe(b, B));
     case 'rem_u': {
       const d = cv(b);
-      if (d !== undefined && d > 0) {
+      if (d !== undefined && d > 0 && d <= DIVISION_OPERAND_LIMIT) {
         if (a.bool) return d === 1 ? N(0) : A;
         return mod(add(mod(A, N(d)), mul(signBit(A), N(2 ** 32 % d))), N(d));
       }
       // u(d) >= 2^31: a >= 0 -> a; d <= a < 0 -> a - d; a < d -> a + 2^32 (guarded)
       if (d !== undefined && d < 0) return add(A, mul(signBit(A), N(-d)));
-      return mod(A, safe(b, B)); // variable divisor: valid for a >= 0, b > 0 (guarded)
+      return mod(A, safe(b, B)); // variable or huge divisor: valid for a >= 0, b > 0 (guarded)
     }
     case 'and': return and2(a, A, b, B);
     case 'or':
@@ -361,6 +385,22 @@ export function translate(roots, inputAst, { tempPrefix = 'rr-t', inputRange = n
     if (mult === 0) continue;
     forEachRef(tmpl.get(n.id), (c) => uses.set(c.id, (uses.get(c.id) ?? 0) + mult));
   }
+  // 1b) the size estimate above counts children inline even when they became temporaries;
+  //     with the temporaries known, a value that may exceed STORED_LIMIT is inlined again
+  //     whenever duplicating its actual text stays small (storing it would only add a guard
+  //     that rejects values every engine computes exactly inline)
+  if (unclamped) {
+    const isize = new Map();
+    for (const n of order) {
+      let sz = ownSize(tmpl.get(n.id));
+      forEachRef(tmpl.get(n.id), (c) => { sz += temp.has(c.id) ? 12 : isize.get(c.id); });
+      isize.set(n.id, sz);
+    }
+    for (const n of order) {
+      if (!temp.has(n.id) || rootName.has(n.id) || storable(n)) continue;
+      if (isize.get(n.id) * Math.max(1, uses.get(n.id) ?? 1) <= MAX_DUPLICATION) temp.delete(n.id);
+    }
+  }
   // 2) keep every inlined expression shallow: split the deepest inline child into a
   //    temporary until the node fits (bottom-up, so children are already final)
   const depth = new Map();
@@ -436,7 +476,7 @@ export function translate(roots, inputAst, { tempPrefix = 'rr-t', inputRange = n
         // unsigned division by a variable is translated for non-negative operands only
         if (n.op === 'div_u' || n.op === 'rem_u') {
           const [x, y] = n.args;
-          if (y.op !== 'const') {
+          if (y.op !== 'const' || y.value > DIVISION_OPERAND_LIMIT) {
             for (const [arg, ar] of [[x, args[0]], [y, args[1]]]) {
               if (arg.op === 'const' && arg.value < 0) guards.push(N(1));
               else if (arg.op !== 'const' && ar.lo < 0) guards.push(signBit(valueOf(arg)));
@@ -463,6 +503,8 @@ export const MODELS = {
   firefox: { op: Math.fround, store: (x) => Math.fround(x), modrem: 'divide' },
   // Chromium: doubles inside calc(), but a registered value is re-serialized with
   // 6 significant digits when substituted via var(); integers are clamped to int32.
+  // WebKit: doubles, but a / b is evaluated as a * (1 / b) (measured: 2401/49 -> 48.999...).
+  webkit: { op: (x) => x, store: (x) => x, modrem: 'exact', div: (a, b) => a * (1 / b) },
   chromium: {
     op: (x) => x,
     modrem: 'exact',
@@ -494,7 +536,7 @@ export function evalAst(ast, env, model, stats) {
       case '+': return track(F(ev(n.a) + ev(n.b)));
       case '-': return track(F(ev(n.a) - ev(n.b)));
       case '*': return track(F(ev(n.a) * ev(n.b)));
-      case '/': return track(F(ev(n.a) / ev(n.b)));
+      case '/': { const a = ev(n.a), b = ev(n.b); return track(F(model.div ? model.div(a, b) : a / b)); }
       case 'f': {
         const cmp = n.fn === 'clamp' || n.fn === 'min' || n.fn === 'max';
         if (cmp) exempt++;
@@ -531,7 +573,8 @@ export function evalAst(ast, env, model, stats) {
 
 // Store a computed value into a registered <integer> custom property under `model`.
 export function storeInteger(v, model) {
-  if (!Number.isFinite(v)) return NaN;
+  if (Number.isNaN(v)) return 0; // a top-level NaN becomes 0 in every engine (measured)
+  if (!Number.isFinite(v)) return model.store(v > 0 ? 2147483647 : -2147483648);
   const r = Math.floor(v + 0.5); // CSS rounds to the nearest integer, ties toward +infinity
   return model.store(r);
 }

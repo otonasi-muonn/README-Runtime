@@ -69,7 +69,11 @@ export function buildMachine(program, { init, steps, hold = 0, haltValue = null 
     } else hz = N(0);
     if (haltKind !== 'none') props.set('rhz', false);
     // range flag: the new state, and every value inside step()/halt() that could be inexact
-    const flags = [stateGuard(xNew), ...st.guards, ...haltGuards];
+    // Each guard is its own registered property: an inf/NaN in one guard (float32 overflow
+    // downstream of a value that already left the range) then becomes 0 only there, instead
+    // of turning the whole max() into NaN -> 0 and silencing the guard that did fire.
+    out.push(...guardProps([...st.guards, ...haltGuards], props));
+    const flags = [stateGuard(xNew), ...[...st.guards, ...haltGuards].map((_, i) => V(guardName(i)))];
     out.push({ name: 'rrg', ast: flags.length === 1 ? flags[0] : fn('max', ...flags) });
     const err = usesTrap ? max(V('rtr'), V('rrg')) : V('rrg');
     const live = V('rlv');
@@ -105,7 +109,8 @@ export function buildMachine(program, { init, steps, hold = 0, haltValue = null 
     root.push({ name: 'rhz', ast: haltValueFlag(X0) });
     hz0 = V('rhz');
   }
-  const flags0 = [stateGuard(X0), ...haltGuards0];
+  root.push(...guardProps(haltGuards0, props));
+  const flags0 = [stateGuard(X0), ...haltGuards0.map((_, i) => V(guardName(i)))];
   root.push({ name: 'rrg', ast: flags0.length === 1 ? flags0[0] : fn('max', ...flags0) });
   root.push({ name: n('h', 'B'), ast: hz0 });
   root.push({ name: n('e', 'B'), ast: V('rrg') });
@@ -123,6 +128,15 @@ export function buildMachine(program, { init, steps, hold = 0, haltValue = null 
     out: { c: n('c', innermost), s: n('s', innermost), f: n('f', innermost), q: n('q', innermost), h: n('h', innermost), e: n('e', innermost) },
     initProp: n('x', 'B'),
   };
+}
+
+const guardName = (i) => `rg${i}`;
+
+function guardProps(guards, props) {
+  return guards.map((g, i) => {
+    props.set(guardName(i), false);
+    return { name: guardName(i), ast: g };
+  });
 }
 
 // CSS declarations for one list of definitions.

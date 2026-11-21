@@ -202,3 +202,27 @@ test('serialized CSS is plain calc() text', () => {
   const { defs } = translate([{ node: p.step, name: 'out' }], () => V('in'));
   assert.equal(toCss(defs[0].ast), 'calc(var(--in) * 3 + 1)');
 });
+
+// Final critic review, FB1: the bit templates are exact below 2^23 only; operands between 2^23
+// and 2^24 must be flagged, never computed wrongly.
+test('bit-level operations on operands in [2^23, 2^24) are exact or flagged', async () => {
+  const W = [0, 1, -1, 300000, 531676, 600000, 935545, -705894, 999999, -999999];
+  await check('popcnt(x*16)+x', [get(0), c(16), op.mul, op.popcnt, get(0), op.add], W);
+  await check('clz(x*16)+x', [get(0), c(16), op.mul, op.clz, get(0), op.add], W);
+  await check('((x*9)&0xF00000)>>16 + x', [get(0), c(9), op.mul, c(0xF00000), op.and, c(16), op.shr_s, get(0), op.add], W);
+  await check('((x*12)|x)>>4', [get(0), c(12), op.mul, get(0), op.or, c(4), op.shr_s], W);
+  await check('popcnt((x*9)<<20)', [get(0), c(9), op.mul, c(20), op.shl, op.popcnt], W);
+  await check('((x*16)&~2)>>16 + 7', [get(0), c(16), op.mul, c(-3), op.and, c(16), op.shr_s, c(7), op.add], W);
+  await check('(x<<15)&0x8000 (rewritten to (x&1)<<15)', [get(0), c(15), op.shl, c(0x8000), op.and], W);
+});
+
+// Final critic review, FB2: WebKit evaluates a/b as a*(1/b); exact multiples must still divide exactly.
+test('division by awkward divisors is exact in every model, WebKit included', async () => {
+  for (const d of [49, 98, 237, 729, 32749, 65521]) {
+    const xs = [d, 2 * d, 3 * d, 13 * d, d - 1, d + 1, -d, -7 * d, Math.floor(999999 / d) * d, 0, 1];
+    await check(`x/${d}`, [get(0), c(d), op.div_s], xs);
+    await check(`x%${d}`, [get(0), c(d), op.rem_s], xs);
+    await check(`x/u${d}`, [get(0), c(d), op.div_u], xs);
+    await check(`x%u${d}`, [get(0), c(d), op.rem_u], xs);
+  }
+});

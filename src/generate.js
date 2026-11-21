@@ -31,6 +31,7 @@ export async function generate(wasmBytes, opts) {
   if (o.haltValue !== undefined && o.haltValue !== null && !isInt(o.haltValue, -STORED_LIMIT, STORED_LIMIT)) {
     throw new OptionError(`"halt" must be an integer with |halt| <= ${STORED_LIMIT.toLocaleString('en-US')}`);
   }
+  if (o.haltExport && o.haltValue !== undefined && o.haltValue !== null) throw new OptionError('use either "halt" (a value) or "haltExport" (a predicate), not both');
   const program = compileStep(wasmBytes, { exportName: o.export, haltExport: o.haltExport ?? null });
   const machine = buildMachine(program, { init: o.init, steps: o.steps, hold: o.hold, haltValue: o.haltValue ?? null });
   // Browsers silently drop calc() trees nested too deeply; the translation splits

@@ -94,7 +94,7 @@ const pin = (svg, t) => {
   if (out === svg || out.includes('rrclk ')) throw new Error('could not pin the clock');
   return out;
 };
-const programNames = quick ? ['collatz', 'lfsr-rust', 'chain90-c', 'sext20'] : Object.keys(PROGRAMS);
+const programNames = opt('--programs', null)?.split(',') ?? (quick ? ['collatz', 'lfsr-rust', 'chain90-c', 'sext20'] : Object.keys(PROGRAMS));
 for (const name of programNames) {
   const p = PROGRAMS[name];
   const gen = await generate(p.wasm, { export: p.export, init: p.init, steps: STEPS, haltValue: p.haltValue ?? null, bits: p.bits ?? 20, title: name, wasmName: `${name}.wasm` });

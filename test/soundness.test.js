@@ -86,3 +86,24 @@ test('init outside the exact range is rejected up front, not wrapped', async () 
   const wasm = fs.readFileSync(path.join(root, 'examples/collatz/collatz.wasm'));
   await assert.rejects(generate(wasm, { init: 4294967297 }), /outside the range/);
 });
+
+test('final FM1: a NaN in one guard does not silence the guard that fired', async () => {
+  // y = x * M^5 overflows float32 to infinity; (y ^ (y >> 7)) & 0xffff then becomes NaN
+  const { I32, set } = await import('./helpers/wasm-builder.js');
+  const body = [get(0), ...[0, 1, 2, 3, 4].flatMap(() => [c(0x5bd1e995), op.mul]), set(1), get(1), get(1), c(7), op.shr_s, op.xor, c(0xffff), op.and];
+  const r = await generate(unary(body, { locals: [I32] }), { export: 'f', init: 0, steps: 10 });
+  for (const init of [5, 12345]) {
+    for (const [name, model] of Object.entries(MODELS)) {
+      const { levels } = simulateMachine(r.machine, { model, init });
+      assert.equal(levels[1].get('rea'), 1, `${name}: init ${init} must stop with OUT OF RANGE at step 1`);
+    }
+  }
+});
+
+test('final FB2: a card dividing by 49 is exact under the WebKit model', async () => {
+  const wasm = fs.readFileSync(path.join(root, 'test/fixtures/div49.wasm'));
+  const r = await generate(wasm, { init: 117649, steps: 10 });
+  assert.deepEqual(r.verification.trace.values.slice(0, 5), [117649, 2401, 49, 1, 0]);
+  const { levels } = simulateMachine(r.machine, { model: MODELS.webkit });
+  assert.deepEqual([1, 2, 3, 4].map((k) => levels[k].get(k % 2 ? 'rxa' : 'rxb')), [2401, 49, 1, 0]);
+});
