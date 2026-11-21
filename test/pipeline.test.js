@@ -1,0 +1,81 @@
+// End-to-end (without a browser): .wasm -> verified SVG, determinism, and the "edit the
+// initial value inside the SVG" property checked with the browser arithmetic models.
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import url from 'node:url';
+import { generate } from '../src/generate.js';
+import { VerifyError } from '../src/verify.js';
+import { simulateMachine } from '../src/runtime/machine.js';
+import { referenceTrace } from '../src/runtime/reference.js';
+import { MODELS, STORED_LIMIT } from '../src/compiler/css.js';
+import { unary, op, c, get } from './helpers/wasm-builder.js';
+
+const root = path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), '..');
+const collatz = fs.readFileSync(path.join(root, 'examples/collatz/collatz.wasm'));
+const opts = { export: 'step', init: 27, steps: 120, haltValue: 1, title: 'Collatz', wasmName: 'collatz.wasm' };
+
+test('collatz.wasm compiles, verifies and halts at step 111', async () => {
+  const r = await generate(collatz, opts);
+  assert.equal(r.verification.trace.end.kind, 'halt');
+  assert.equal(r.verification.trace.end.at, 111);
+  assert.equal(r.verification.trace.values[3], 124);
+  assert.ok(r.svg.length < 60000, `svg is ${r.svg.length} bytes`);
+});
+
+test('output is byte-for-byte deterministic', async () => {
+  const a = await generate(collatz, opts);
+  const b = await generate(collatz, opts);
+  assert.equal(a.svg, b.svg);
+});
+
+test('the SVG holds the initial value exactly once and no precomputed states', async () => {
+  const r = await generate(collatz, opts);
+  const attr = `style="--${r.machine.initProp}:27"`;
+  assert.equal(r.svg.split(attr).length, 2);
+  // Distinctive values of the trajectory (e.g. the peak 9232) must not appear anywhere.
+  for (const v of [9232, 4616, 7288, 3077]) assert.ok(!r.svg.includes(String(v)), `found ${v} in the SVG`);
+});
+
+test('changing only the initial value reproduces the Wasm trajectory in every browser model', async () => {
+  const r = await generate(collatz, opts);
+  for (const init of [1, 2, 3, 6, 7, 9, 97, 871, 6171, 77031, -1, -17]) {
+    const tr = await referenceTrace(collatz, { exportName: 'step', haltValue: 1, init, steps: 120, rangeLimit: STORED_LIMIT });
+    for (const [name, model] of Object.entries(MODELS)) {
+      const { levels } = simulateMachine(r.machine, { model, init });
+      const last = tr.end.kind === 'trap' || tr.end.kind === 'range' ? tr.end.at - 1 : tr.values.length - 1;
+      for (let k = 0; k <= last; k++) {
+        const v = levels[k].get(k === 0 ? 'rxb' : k % 2 ? 'rxa' : 'rxb');
+        assert.equal(v, tr.values[k], `init=${init} step=${k} model=${name}`);
+      }
+    }
+  }
+});
+
+test('values beyond the CSS-exact range are refused with an explanation', async () => {
+  await assert.rejects(generate(collatz, { ...opts, init: 77671 }), (e) => e instanceof VerifyError && /outside the CSS-exact range/.test(e.message) && /step 14/.test(e.message));
+});
+
+test('a trapping step is reported and shown as stopped', async () => {
+  // f(x) = 100 / (x - 3): traps when x reaches 3. Sequence from 5: 5 -> 50 -> 2 -> -100 -> 0 -> -33 ...
+  const wasm = unary([c(100), get(0), c(3), op.sub, op.div_s]);
+  const r = await generate(wasm, { export: 'f', init: 6, steps: 10 });
+  const tr = r.verification.trace;
+  assert.equal(tr.end.kind, 'trap');
+  const { levels } = simulateMachine(r.machine, { model: MODELS.chromium });
+  const at = tr.end.at;
+  assert.equal(levels[at].get(at % 2 ? 'rea' : 'reb'), 1, 'error flag set at the trapping step');
+});
+
+test('halt predicate from an export', async () => {
+  // step(x) = x + 7, halt(x) = x > 50
+  const { buildModule, I32 } = await import('./helpers/wasm-builder.js');
+  const wasm = buildModule({ funcs: [
+    { name: 'step', params: [I32], results: [I32], body: [get(0), c(7), op.add] },
+    { name: 'done', params: [I32], results: [I32], body: [get(0), c(50), op.gt_s] },
+  ] });
+  const r = await generate(wasm, { init: 1, steps: 20, haltExport: 'done' });
+  assert.equal(r.verification.trace.end.kind, 'halt');
+  assert.equal(r.verification.trace.end.at, 8);
+});
