@@ -3,7 +3,7 @@
   "tool": "0.1.0",
   "cards": {
     "collatz": {
-      "inputs": "54fff732b6ce546b5ff884b69ccc8946eb08b1429ee3467960e65e900f27dab9",
+      "inputs": "5a1e2f80a8418a91d76ca55f53442bf4af1948e61477b5ed9ac9ce0a83c3bff2",
       "wasm": "dd40a4b6513c1fe94042a3e636d706a1cf4400f255b9634abea9ccba907e787a",
       "out": "d07187904d86afd1266c50e56ec6c189adc1dea7bf1a34cbd4314941a407d648",
       "render": "f0ede4c6a5268f42103f0f222279a4cefc98a189f59638af19ebad81333fdb97"

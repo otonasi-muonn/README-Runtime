@@ -24,5 +24,6 @@ try {
   console.error(`cc-wasm: clang failed${e.code !== undefined ? ` (exit ${e.code})` : ''}`);
   process.exit(1);
 }
+fs.mkdirSync(path.dirname(path.resolve(out)), { recursive: true });
 fs.writeFileSync(out, result['out.wasm']);
 console.log(`cc-wasm: ${src} -> ${out} (${result['out.wasm'].length} bytes)`);
