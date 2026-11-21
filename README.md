@@ -45,21 +45,22 @@ your code (C / Rust / ...)  ──build command──▶  .wasm  ──readme-ru
 
 ```sh
 # 1. 設定と、チェック専用のGitHub Actionsワークフローを作る（既存ファイルは上書きしません）
-npx github:otonasi-muonn/README-Runtime init --wasm build/step.wasm --init 27
+npx github:otonasi-muonn/README-Runtime#v0.1.0 init --wasm build/step.wasm --init 27
 
 # 2. カードを生成（本物のWasmとの照合つき）
-npx github:otonasi-muonn/README-Runtime build
+npx github:otonasi-muonn/README-Runtime#v0.1.0 build
 
 # 3. README.md に貼る（以後のビルドでもファイル名は変わらないので、README自体の更新は不要）
 #    ![demo](readme-runtime/step.svg)
 ```
 
-> まだnpmには公開していないため、GitHubリポジトリから `npx` で実行します。`init` が作るワークフローは、生成に使ったバージョンのタグ（`github:otonasi-muonn/README-Runtime#v0.1.0`）に固定されます。新しい版のジェネレータは異なる（同じく正しい）SVGを出しうるため、更新するときはワークフローの版と `build` をそろえてください。
+> まだnpmには公開していないため、GitHubリポジトリから `npx` で実行します。ローカルの `build` と、`init` が作るCIワークフローは同じバージョンのタグ（`#v0.1.0`）に固定してください。版が違うと、ジェネレータの出力が変わって `check` が失敗します（そのときは版の違いをメッセージで示します）。
+> **注意:** このリポジトリはまだpushしておらず、タグ `v0.1.0` も未作成です。公開時にタグを作成するまで、上のコマンドは動きません。
 
 使えるかどうかだけ確かめるには:
 
 ```sh
-npx github:otonasi-muonn/README-Runtime inspect build/step.wasm
+npx github:otonasi-muonn/README-Runtime#v0.1.0 inspect build/step.wasm
 # step(i32) -> i32                 OK: can run in CSS as a step function
 ```
 
@@ -141,20 +142,23 @@ CSSには桁あふれする整数型がなく、`calc()` は浮動小数点で�
 
 | | Chromium (Chrome/Edge) | Firefox | WebKit (Safari) |
 |---|---|---|---|
-| 式の途中の計算 | double | **float32**（`mod()`/`rem()` も `a − b·floor(a/b)` をfloat32で計算） | double |
-| `var()` で受け渡す計算済みの値 | **有効数字6桁に丸める** | float32 | double |
+| 式の途中の計算 | double | **float32**（`rem()` は `a − b·trunc(a/b)`、`mod()` は `a − b·floor(a/b)` をfloat32で計算） | double |
+| 除算 `a / b` | 正確 | float32で正確に丸め | **`a × (1/b)` で計算**（例: 2401/49 が 48.999…） |
+| `var()` で受け渡す計算済みの値 | **有効数字6桁に丸める** | int32に丸めたfloat32 | double |
 | `calc()` の入れ子の深さ | 約95段まで | **約75段まで**（超えると宣言ごと無効） | 約105段まで |
 
 この実測から、次の範囲を保証します。
 
 - **状態と、段の間で受け渡す値: |x| ≤ 999,999**。
-- 式の途中の値: |x| < 2²⁴（2の冪以外で割る・剰余を取る値は |x| < 2²³）。
+- 式の途中の値: |x| < 2²⁴。ただし、2の冪以外で割る・剰余を取る値と、ビット演算（`and` / `or` / `xor` / `clz` / `popcnt`）にかける値は |x| < 2²³。
+- 商は `round(nearest, (a − rem(a, b)) / b)` の形で求めます。`rem()` と `mod()` はどのエンジンでも正確なので、WebKitの除算の誤差も吸収できます。
 - 式は入れ子24段ごとに一時プロパティへ分割し、どの宣言も40段以内に収めます。
 
 保証のしかた:
 
-- **ビルド時**: 本物のWasmの実行結果と、生成したCSSを3つのブラウザの演算モデルで評価した結果を全ステップ比較します。範囲を超える値が出るとエラーで止まり、カードは生成しません（例: 初期値77671は14ステップ目で1,327,102になるため拒否。`(x * 65536) % 32749` のように途中で2²⁴を超える式も拒否）。
-- **閲覧時**: すべての状態（|x| ≤ 999,999）について区間解析を行い、範囲を超えうる値には「範囲ガード」をCSSに埋め込みます。SVGの初期値を書き換えた場合でも、表示は **本物のWasmと同じ値か、`OUT OF RANGE` で停止するかのどちらか** です。間違った数字は表示しません（i32の桁あふれに依存するコードも、桁あふれが起きる入力では停止します）。
+- **ビルド時**: 本物のWasmの実行結果と、生成したCSSを4つの演算モデル（理想・Chromium・Firefox・WebKit）で評価した結果を全ステップ比較します。範囲を超える値が出るとエラーで止まり、カードは生成しません（例: 初期値77671は14ステップ目で1,327,102になるため拒否。`(x * 65536) % 32749` のように途中で2²⁴を超える式も拒否）。
+- **閲覧時**: すべての状態（|x| ≤ 999,999）について区間解析を行い、範囲を超えうる値には「範囲ガード」をCSSに埋め込みます。SVGの初期値を書き換えた場合でも、表示は **本物のWasmと同じ値か、`OUT OF RANGE` で停止するかのどちらか** になるように設計しています（i32の桁あふれに依存するコードも、桁あふれが起きる入力では停止します）。この性質は、命令パターンごとに境界値を含む入力と、21プログラムの実ブラウザ検証で確認していますが、形式的な証明ではありません。
+- ガードは保守的です。CSSは条件分岐の**両方の腕**を計算するため、使われない側の腕で範囲を超える値が出るプログラム（例: `x < 4000 ? x*x % 10007 : x / 3`）は、ビルド時に拒否されます。
 
 対応する命令:
 
@@ -172,33 +176,33 @@ CSSには桁あふれする整数型がなく、`calc()` は浮動小数点で�
 - 実行は、ビルド時に `steps` 段の入れ子として展開されます。値はすべて表示時にCSSが計算し、SVGには保存されません。
 - ステップ数は最大400です（WebKitが約510段を超える入れ子を処理できないことを実測）。
 
-動作確認したブラウザ: Chrome 157 / Edge 157（Windows）、Playwright 1.65 の Chromium・Firefox・WebKit。
+動作確認したブラウザ: Chrome 157 / Edge 157（Windows）、Playwright 1.65 の Chromium・Firefox・WebKit。実機のSafari（macOS/iOS）では未確認です。
 必要な機能: `@property`、`mod()` / `round()`、CSSアニメーション。目安は Chrome/Edge 125以降、Firefox 128以降、Safari 16.4以降です。
 
 ## 検証
 
 ```sh
-npm test                    # 単体・結合テスト 50件（下記）
+npm test                    # 単体・結合テスト 54件（下記）
 npm run test:browser        # 実ブラウザで <img> 表示したピクセルを解読して、本物のWasmと照合
 node bin/readme-runtime.js check
 ```
 
 `npm test` の内容:
 
-- 約80の命令パターンについて、すべての入力・3つのブラウザ演算モデルで「本物のWasmと一致するか、範囲フラグが立つか」を確認します（[`test/compiler.test.js`](test/compiler.test.js)）。
+- 約100の命令パターンについて、境界値を含むサンプル入力（2²³〜2²⁴の窓、49や65521の倍数を含む）と4つの演算モデルで「本物のWasmと一致するか、範囲フラグが立つか」を確認します（[`test/compiler.test.js`](test/compiler.test.js)）。
 - 出力の決定性、範囲エラー、トラップ、停止判定を確認します（[`test/pipeline.test.js`](test/pipeline.test.js)）。
-- 敵対的レビューで見つかった不具合の再現ケースを回帰テストにしています（[`test/soundness.test.js`](test/soundness.test.js)）。
+- 2回の敵対的レビューで見つかった不具合の再現ケースを回帰テストにしています（[`test/soundness.test.js`](test/soundness.test.js)）。
 - キャッシュ・差分ビルド・`check` の挙動を確認します（[`test/project.test.js`](test/project.test.js)）。
 
 ブラウザ検証（[`test/browser/run.js`](test/browser/run.js)）の条件:
 
 - SVGを `image/svg+xml` と、GitHubと同じCSP（`default-src 'none'; style-src 'unsafe-inline'; sandbox`）で配信し、JavaScriptを無効にしたページの `<img>` で表示します。
 - 値はスクリーンショットのピクセル（32bitレジスタのLED、トレースの全列、状態ドットの色）だけから読み取ります。
-- 対象は14プログラムです。C（Collatz、90分岐のif連鎖、符号なし剰余）、Rust（LFSR）、命令を直接組んだWasm（LCG、xorshift、桁あふれ依存、2乗の剰余など）を含みます。
+- 対象は21プログラムです。C（Collatz、90分岐のif連鎖、符号なし剰余、49や65521での除算、Fibonacci LFSR、Rule 30）、Rust（ガロアLFSR）、命令を直接組んだWasm（LCG、xorshift、桁あふれ依存、2乗の剰余、popcount、float32が溢れるハッシュ、0除算トラップなど）を含みます。
 - 各プログラムについて、**生成済みSVGの初期値だけを書き換えた値**（生成器はその値を知りません）でも、表示が本物のWasmの軌道と一致するか、範囲外になるステップで `OUT OF RANGE` になることを確認します。
 - 時計を固定した決定的な検証、実際のアニメーション（時間とともにステップが進み、どの瞬間も正しい）、`prefers-reduced-motion` の3種類を行います。
 
-直近の結果（2026-11-22）: Chromium・Firefox・WebKit（Playwright 1.65.1）、Chrome 157、Edge 157 の5エンジンで **304/304 合格**。14プログラムと、生成済みSVGの初期値を書き換えた33通りを含みます。
+直近の結果（2026-11-22）: Chromium・Firefox・WebKit（Playwright 1.65.1）、Chrome 157、Edge 157 の5エンジンで **409/409 合格**。21プログラムと、生成済みSVGの初期値を書き換えた47通りを含みます。
 
 ### GitHub上での確認手順
 
@@ -218,5 +222,7 @@ node bin/readme-runtime.js check
 
 ```sh
 npm install
-node bin/readme-runtime.js build --force
+node bin/readme-runtime.js build --force collatz
 ```
+
+Rustの例（`lfsr-rust`）も作り直す場合は、`rustc` と `rustup target add wasm32-unknown-unknown` が必要です（`examples/lfsr-rust/README.md`）。
