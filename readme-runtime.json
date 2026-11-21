@@ -1,0 +1,17 @@
+{
+  "cards": [
+    {
+      "name": "collatz",
+      "title": "Collatz conjecture",
+      "wasm": "examples/collatz/collatz.wasm",
+      "build": {
+        "command": "node tools/cc-wasm.mjs examples/collatz/collatz.c examples/collatz/collatz.wasm",
+        "inputs": ["examples/collatz/collatz.c", "tools/cc-wasm.mjs"]
+      },
+      "export": "step",
+      "init": 27,
+      "steps": 120,
+      "halt": 1
+    }
+  ]
+}
