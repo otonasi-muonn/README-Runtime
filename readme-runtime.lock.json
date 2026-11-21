@@ -7,6 +7,12 @@
       "wasm": "dd40a4b6513c1fe94042a3e636d706a1cf4400f255b9634abea9ccba907e787a",
       "out": "d07187904d86afd1266c50e56ec6c189adc1dea7bf1a34cbd4314941a407d648",
       "render": "f0ede4c6a5268f42103f0f222279a4cefc98a189f59638af19ebad81333fdb97"
+    },
+    "lfsr-rust": {
+      "inputs": "b79cf255e75a24be61c4ef512c66b76e880d5e0091c93a85e33c43660017a835",
+      "wasm": "bac5ae0dce92bcae0ec8cf01117b79300f39bcb543f7c729f54fcb30bee41a73",
+      "out": "a8fb8d7889495e1b0809ad1163feef5fc30239a58f1fa74da8daf7cfbc80e93a",
+      "render": "52ffa8435723ee348214d0059934819cc60eee53682ede76ae4a148acf973754"
     }
   }
 }

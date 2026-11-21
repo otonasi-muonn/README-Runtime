@@ -19,6 +19,12 @@
 
 試しに [`readme-runtime/collatz.svg`](readme-runtime/collatz.svg) をテキストエディタで開き、`style="--rxb:27"` を `--rxb:97` に変えてブラウザで開いてください。生成し直さなくても、ブラウザが97からの118ステップを計算し直します。
 
+### 言語は問いません（Rustの例）
+
+![16-bit LFSR written in Rust, computed live by CSS](readme-runtime/lfsr-rust.svg)
+
+[`examples/lfsr-rust/lfsr.rs`](examples/lfsr-rust/lfsr.rs) は Rust で書いた16ビットLFSRです。`readme-runtime.json` の `build.command` を `rustc …` にしているだけで、Cの例と同じ流れでカードになります。こちらは `xor` を含むビット演算がCSSで計算されています。
+
 ## 仕組み
 
 ```

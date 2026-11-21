@@ -6,12 +6,30 @@
       "wasm": "examples/collatz/collatz.wasm",
       "build": {
         "command": "node tools/cc-wasm.mjs examples/collatz/collatz.c examples/collatz/collatz.wasm",
-        "inputs": ["examples/collatz/collatz.c", "tools/cc-wasm.mjs"]
+        "inputs": [
+          "examples/collatz/collatz.c",
+          "tools/cc-wasm.mjs"
+        ]
       },
       "export": "step",
       "init": 27,
       "steps": 120,
       "halt": 1
+    },
+    {
+      "name": "lfsr-rust",
+      "title": "16-bit LFSR (Rust)",
+      "wasm": "examples/lfsr-rust/lfsr.wasm",
+      "build": {
+        "command": "rustc --edition 2021 --crate-type cdylib --target wasm32-unknown-unknown -C opt-level=2 -C panic=abort -C strip=symbols -o examples/lfsr-rust/lfsr.wasm examples/lfsr-rust/lfsr.rs",
+        "inputs": [
+          "examples/lfsr-rust/lfsr.rs"
+        ]
+      },
+      "export": "step",
+      "init": 1,
+      "steps": 120,
+      "bits": 16
     }
   ]
 }
