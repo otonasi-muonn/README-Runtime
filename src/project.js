@@ -17,7 +17,9 @@ export class ConfigError extends Error {}
 const srcDir = path.dirname(url.fileURLToPath(import.meta.url));
 
 // Hash of the generator's own source: any change to the compiler or the template
-// invalidates every cached card, without relying on a manually bumped version.
+// invalidates every cached card, without relying on a manually bumped version. Files that
+// only drive the CLI (config, caching, scaffolding) cannot change a card and are left out.
+const NOT_GENERATOR = new Set(['project.js', 'init.js']);
 let generatorHashCache;
 export function generatorHash() {
   if (generatorHashCache) return generatorHashCache;
@@ -26,7 +28,7 @@ export function generatorHash() {
     for (const e of fs.readdirSync(d, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
       const p = path.join(d, e.name);
       if (e.isDirectory()) walk(p);
-      else if (e.name.endsWith('.js')) files.push(p);
+      else if (e.name.endsWith('.js') && !NOT_GENERATOR.has(path.relative(srcDir, p).replace(/\\/g, '/'))) files.push(p);
     }
   };
   walk(srcDir);
@@ -153,8 +155,12 @@ function eolNormalizedBytes(buf) {
   return out.subarray(0, n);
 }
 
-export function inputsHash(dir, build) {
-  const files = expandInputs(dir, build.inputs);
+// The card's own outputs and the lock are never inputs: a pattern such as "examples/collatz"
+// or "**" would otherwise include the .wasm the command writes (or the lock) and never settle.
+export function inputsHash(dir, build, outputs = []) {
+  const excluded = new Set([LOCK_FILE, ...outputs.map((o) => path.relative(dir, path.resolve(dir, o)).replace(/\\/g, '/'))]);
+  const files = expandInputs(dir, build.inputs).filter((f) => !excluded.has(f));
+  if (!files.length) throw new ConfigError(`build inputs ${JSON.stringify(build.inputs)} contain only the card's own outputs`);
   const parts = [`command:${build.command}`];
   for (const f of files) parts.push(`${f}:${sha256(eolNormalizedBytes(fs.readFileSync(path.join(dir, f))))}`);
   return { hash: sha256(parts.join('\n')), files };
@@ -198,7 +204,7 @@ export async function build(configPath, { only = [], force = false, log = consol
     const wasmPath = path.join(cfg.dir, card.wasm);
     let buildState = 'none';
     if (card.build) {
-      const inp = inputsHash(cfg.dir, card.build);
+      const inp = inputsHash(cfg.dir, card.build, [card.wasm, card.out]);
       const wasmOk = fs.existsSync(wasmPath) && prev.wasm === sha256(fs.readFileSync(wasmPath));
       if (!force && prev.inputs === inp.hash && wasmOk) {
         buildState = 'cached';
@@ -252,7 +258,7 @@ export async function check(configPath, { log = console.log } = {}) {
     const fail = (msg) => { problems.push(`${card.name}: ${msg}`); log(`${card.name}: FAIL ${msg}`); };
     if (!prev) { fail(`not in ${LOCK_FILE}; run "readme-runtime build" and commit the result`); continue; }
     if (card.build) {
-      const inp = inputsHash(cfg.dir, card.build);
+      const inp = inputsHash(cfg.dir, card.build, [card.wasm, card.out]);
       if (inp.hash !== prev.inputs) { fail(`sources changed since the last build (${inp.files.join(', ')}); run "readme-runtime build" and commit`); continue; }
     }
     const wasmPath = path.join(cfg.dir, card.wasm);

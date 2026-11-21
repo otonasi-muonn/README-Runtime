@@ -5,14 +5,14 @@
     "collatz": {
       "inputs": "5a1e2f80a8418a91d76ca55f53442bf4af1948e61477b5ed9ac9ce0a83c3bff2",
       "wasm": "dd40a4b6513c1fe94042a3e636d706a1cf4400f255b9634abea9ccba907e787a",
-      "out": "ed5dbe6a804ba19b0311515ffcddeefb340a56e08e6c451328b3bfb7424fce0c",
-      "render": "c89d6de4d7e3dca8569b17b86718a8aa5770cfbcd371908f0adda8749bc0000b"
+      "out": "5de82f7acc2110d3a0c3261f7e03dc58915e716ad43679663b8183d817b79f5d",
+      "render": "76c4f6afb6c640ba700eb7f43bcfee4c4a29ed8ef11e2f24dd540b1833c2624d"
     },
     "lfsr-rust": {
       "inputs": "b79cf255e75a24be61c4ef512c66b76e880d5e0091c93a85e33c43660017a835",
       "wasm": "bac5ae0dce92bcae0ec8cf01117b79300f39bcb543f7c729f54fcb30bee41a73",
-      "out": "203de2019dccef93434248fb28c66ed2cf129a894bbd68e70388f21f6ff08fb4",
-      "render": "19c07c857d5cea3d246038a2dd802b1c0a73d413d7680dbe224079539a29d9e3"
+      "out": "48dda19464d6ae203893b61c94cd9a3b8ceaf775d28a7762f101fdac9a99734f",
+      "render": "9edfc087174fff4beb9de10dddc1f16cd7ba8b123e9b97e553266f03de9c7b11"
     }
   }
 }

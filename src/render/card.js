@@ -72,6 +72,7 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
     css += `.j${b}{fill:hsl(${hue} 70% 55%);opacity:calc(${toCss(cellBit(b))} * var(--ra))}\n`;
   }
   css += `.js{fill:var(--red);opacity:calc(${toCss(signBit(V('rx')))} * var(--ra))}\n`;
+  css += `.jo{fill:#d29922;opacity:calc(clamp(0, max(var(--rx) - ${2 ** bits - 1}, -1 * var(--rx) - ${2 ** bits}), 1) * var(--ra))}\n`;
   css += `.jm{fill:var(--mut);opacity:var(--ra)}\n`;
   // display (innermost level)
   css += `.D{--rdv:${toCss(absV(V(out.c)))};--rsx:var(--${out.s})}\n`;
@@ -122,6 +123,8 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
     col += `<rect class="j${b}" x="${tr.x}" y="${r4(y)}" width="${r4(Math.max(0.8, cw - (cw > 3 ? 1 : 0)))}" height="${r4(rh - 1)}"/>`;
   }
   col += `<rect class="js" x="${tr.x}" y="${tr.y}" width="${r4(Math.max(0.8, cw - (cw > 3 ? 1 : 0)))}" height="${r4(rh - 1)}"/>`;
+  // a value the rows cannot show (only possible when bits < 20) is marked, never truncated silently
+  col += `<rect class="jo" x="${tr.x}" y="${tr.y}" width="${r4(Math.max(0.8, cw - (cw > 3 ? 1 : 0)))}" height="${r4(rh - 1)}"/>`;
   col += `<rect class="jm" x="${tr.x}" y="${tr.y + tr.h + 1}" width="${r4(Math.max(0.8, cw - (cw > 3 ? 1 : 0)))}" height="3"/>`;
   col += '</g>';
   defs += col;

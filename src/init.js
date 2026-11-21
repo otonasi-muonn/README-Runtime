@@ -2,12 +2,15 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { CONFIG_FILE } from './project.js';
+import { TOOL_VERSION } from './version.js';
 import { parseModule } from './wasm/reader.js';
 import { listExports, compileStep } from './compiler/program.js';
 
+export const PACKAGE = `github:otonasi-muonn/README-Runtime#v${TOOL_VERSION}`;
+
 export const WORKFLOW = `# README Runtime: verify that the committed cards match a fresh, Wasm-verified build.
 # Check only: this workflow never commits or pushes. If it fails, run
-# "npx readme-runtime build" locally and commit the updated files.
+# "npx ${PACKAGE} build" locally and commit the updated files.
 name: README Runtime
 on:
   push:
@@ -22,8 +25,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      # Pin a tag or commit (github:otonasi-muonn/README-Runtime#<ref>) for fully reproducible checks.
-      - run: npx --yes github:otonasi-muonn/README-Runtime check
+      # Pinned to the README Runtime version that generated the cards: a newer generator can
+      # produce different (equally valid) SVG, so update this together with a rebuild.
+      - run: npx --yes ${PACKAGE} check
 `;
 
 export function initProject(cwd, { wasm, exportName, init, configPath = CONFIG_FILE }) {
@@ -63,6 +67,6 @@ export function initProject(cwd, { wasm, exportName, init, configPath = CONFIG_F
     lines.push('created .github/workflows/readme-runtime.yml (check only, no commits)');
   }
   lines.push('', 'Next:', '  1. edit readme-runtime.json (wasm path, export, init; optional "build": {"command", "inputs"})',
-    '  2. npx readme-runtime build', '  3. add ![demo](readme-runtime/<name>.svg) to README.md and commit');
+    `  2. npx ${PACKAGE} build`, '  3. add ![demo](readme-runtime/<name>.svg) to README.md and commit');
   return lines;
 }

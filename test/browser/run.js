@@ -70,11 +70,15 @@ async function expectation(p, gen, init, t) {
   return { values: tr.values, endAt, kind, shown, lastGood: Math.min(lastGood, shown) };
 }
 
-function compare(dec, e) {
+// How the trace shows a value: rows hold the low `bits` bits; outside [-2^bits, 2^bits) the
+// top cell marks the column instead of showing a truncated number.
+const shownAs = (v, bits) => (v >= 2 ** bits || v < -(2 ** bits) ? `overflow:${((v % 2 ** bits) + 2 ** bits) % 2 ** bits}` : v);
+
+function compare(dec, e, bits = 20) {
   const problems = [];
   if (dec.broken) return [`image did not render (screenshot ${dec.size.join('x')})`];
   const errorShown = e.kind === 'error' && e.shown === e.endAt;
-  for (let k = 0; k <= e.lastGood; k++) if (dec.cols[k] !== e.values[k]) problems.push(`col ${k}: ${dec.cols[k]} != ${e.values[k]}`);
+  for (let k = 0; k <= e.lastGood; k++) if (dec.cols[k] !== shownAs(e.values[k], bits)) problems.push(`col ${k}: ${dec.cols[k]} != ${shownAs(e.values[k], bits)}`);
   for (let k = e.lastGood + 1; k < dec.cols.length; k++) if (dec.cols[k] !== null) problems.push(`col ${k}: ${dec.cols[k]} should be empty`);
   const want = errorShown ? 'error' : e.shown < e.endAt ? 'running' : e.kind === 'halt' ? 'halted' : 'end';
   if (dec.status !== want) problems.push(`status ${dec.status}, expected ${want}`);
@@ -174,7 +178,7 @@ for (const b of browsers) {
         const shot = await shoot(page, name);
         const e = await expectation(c.p, c.gen, c.init, c.t);
         const dec = decodeCard(shot, { steps: STEPS, bits: c.p.bits ?? 20 });
-        const problems = compare(dec, e);
+        const problems = compare(dec, e, c.p.bits ?? 20);
         if (problems.length) fs.writeFileSync(path.join(outDir, `${b}-${scheme}-${name}.png`), shot);
         const summary = `x0=${c.init} t=${c.t} -> ${e.kind}@${e.endAt} shows ${dec.status}${e.kind === 'error' ? '' : ` ${dec.led}`}`;
         record(b, `${name} [${scheme}]`, !problems.length, problems.length ? `${summary} :: ${problems.slice(0, 3).join('; ')}` : summary);

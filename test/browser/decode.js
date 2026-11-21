@@ -38,7 +38,12 @@ export function decodeCard(pngBuffer, machineInfo, { scale = 1 } = {}) {
       const y = Math.ceil(L.tr.y + (L.bits - b) * L.rh) + 2.5;
       if (dist(at(x, y), panelBg) > 80) v += 2 ** b;
     }
-    if (dist(at(x, Math.ceil(L.tr.y) + 2.5), panelBg) > 80) v -= 2 ** L.bits;
+    // top cell: red = negative (two's complement), amber = value outside what the rows show
+    const top = at(x, Math.ceil(L.tr.y) + 2.5);
+    if (dist(top, panelBg) > 80) {
+      if (top[1] > 120 && top[2] < 100 && top[0] > top[2] + 80) { cols.push(marked ? `overflow:${v}` : null); continue; }
+      v -= 2 ** L.bits;
+    }
     cols.push(marked ? v : null);
   }
 

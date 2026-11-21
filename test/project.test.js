@@ -328,3 +328,15 @@ test('build and check reject a build input that matches nothing, without running
   assert.equal(p.builds().length, 1);
   assert.deepEqual(snapshot(p.dir), before);
 });
+
+test('a build input directory that also holds the .wasm settles after one build', async (t) => {
+  const p = open(tempDir(t));
+  p.write('build.mjs', BUILD_MJS);
+  p.write('src/step.c', '1\n');
+  p.configure({ ...p.base, wasm: 'src/step.wasm', build: { command: `${NODE} build.mjs src/step.c src/step.wasm`, inputs: ['src'] } });
+  const [first] = await p.build();
+  assert.equal(first.build, 'built');
+  const [second] = await p.build();
+  assert.deepEqual([second.build, second.card], ['cached', 'cached'], 'the .wasm written into src/ is not an input');
+  assert.deepEqual(await p.check(), []);
+});
