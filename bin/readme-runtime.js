@@ -149,7 +149,7 @@ async function main() {
 }
 
 main().then((code) => { process.exitCode = code; }, (e) => {
-  const known = e instanceof ConfigError || ['UnsupportedError', 'VerifyError', 'WasmFormatError', 'UnsupportedOpcode'].includes(e?.constructor?.name);
+  const known = e instanceof ConfigError || ['UnsupportedError', 'VerifyError', 'WasmFormatError', 'UnsupportedOpcode', 'OptionError', 'RangeError'].includes(e?.constructor?.name);
   console.error(`readme-runtime: ${known ? '' : 'error: '}${e.message}`);
   if (!known && process.env.README_RUNTIME_DEBUG) console.error(e.stack);
   process.exitCode = 2;

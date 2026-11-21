@@ -9,6 +9,9 @@ import { referenceTrace } from './runtime/reference.js';
 
 export class VerifyError extends Error {}
 
+// Firefox computes calc() in float32: integers are exact only up to 2^24.
+const INLINE_EXACT = 2 ** 24;
+
 const stateAt = (machine, levels, k) => levels[k].get(k === 0 ? machine.initProp : `rx${k % 2 === 1 ? 'a' : 'b'}`);
 const flagAt = (levels, k, f) => levels[k].get(`r${f}${k === 0 ? 'b' : k % 2 === 1 ? 'a' : 'b'}`);
 
@@ -49,14 +52,30 @@ export async function verifyRun(wasmBytes, program, machine, cfg) {
   // 3. CSS under each browser model, full chain
   const models = {};
   const endAt = Math.min(end.at, machine.steps);
+  const call = (k) => (k === 0 ? `the initial value ${values[0]}` : `step(${values[k - 1]})`);
   for (const [name, model] of Object.entries(MODELS)) {
     const { levels, stats } = simulateMachine(machine, { model });
     for (let k = 0; k <= lastValid; k++) {
+      if (name === 'exact' && stats.levels[k].maxInline > INLINE_EXACT) {
+        throw new VerifyError(
+          `step ${k}: ${call(k)} needs an intermediate value of ${stats.levels[k].maxInline.toLocaleString('en-US')} inside CSS, ` +
+          `beyond 2^24 = 16,777,216: Firefox evaluates calc() in float32, so this cannot be computed exactly in every browser. ` +
+          `Keep intermediate values (for example products before a modulo) below 2^23.`);
+      }
+      if (levels[k].get('rrg') !== 0) {
+        throw new VerifyError(
+          `step ${k}: a value computed by ${call(k)} can leave the range that CSS represents exactly in every browser ` +
+          `(stored values |v| <= ${STORED_LIMIT.toLocaleString('en-US')}, intermediate values |v| < 2^23); the card would stop here with OUT OF RANGE. ` +
+          `Keep intermediate values smaller, or use fewer "steps" / a halt condition.`);
+      }
       const got = stateAt(machine, levels, k);
       if (got !== values[k]) {
+        if (name === 'exact') {
+          throw new VerifyError(`internal error: the CSS translation computes ${got} for ${call(k)} but WebAssembly computes ${values[k]}. Please report this with the .wasm file.`);
+        }
         throw new VerifyError(
-          `step ${k}: the generated CSS computes ${got} under the ${name} arithmetic model, but WebAssembly computes ${values[k]}` +
-          ` (largest intermediate ${stats.maxInline}). The values involved exceed what CSS can represent exactly in that browser.`);
+          `step ${k}: under the ${name} arithmetic model the CSS computes ${got} for ${call(k)}, but WebAssembly computes ${values[k]} ` +
+          `(largest intermediate ${stats.levels[k].maxInline}). The values involved exceed what CSS can represent exactly in that browser.`);
       }
     }
     // flags at the end of the run

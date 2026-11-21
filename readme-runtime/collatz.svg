@@ -1,11 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="800" height="300" viewBox="0 0 800 300" role="img" aria-labelledby="rrt rrd">
-<!-- README Runtime 0.1.0 - generated from collatz.wasm (sha256:dd40a4b6513c1fe9), export "step".
-     Every number on this card is computed by CSS when it is displayed: the rules .A and .B are
-     step() compiled to CSS math and applied once per nested g element. The only input is the
-     custom property rxb in the style attribute of g.R; change it and the browser recomputes the whole run.
-     Regenerate with: readme-runtime build -->
+<!-- README Runtime 0.1.0 - generated card, wasm sha256:dd40a4b6513c1fe9.
+     Every number on this card is computed by CSS when it is displayed: the rules .A and .B are the
+     exported step function compiled to CSS math, applied once per nested g element (the run is unrolled
+     into 120 levels when the card is built; no value is stored). The only input is the custom
+     property rxb in the style attribute of g.R: change it and the browser recomputes the run;
+     a value that CSS cannot compute exactly shows OUT OF RANGE. Regenerate with: readme-runtime build -->
 <title id="rrt">Collatz conjecture — README Runtime</title>
-<desc id="rrd">collatz.wasm step() runs live in CSS: starting from x0 = 27, the browser computes up to 120 steps and animates them.</desc>
+<desc id="rrd">collatz.wasm step() runs live in CSS: starting from the initial value in the SVG (27 as generated), the browser computes up to 120 steps and animates them.</desc>
 <style><![CDATA[
 @property --rxa{syntax:'<integer>';inherits:true;initial-value:0}
 @property --rxb{syntax:'<integer>';inherits:true;initial-value:0}
@@ -32,7 +33,7 @@
 @property --rhz{syntax:'<integer>';inherits:false;initial-value:0}
 @property --rlv{syntax:'<integer>';inherits:false;initial-value:0}
 @property --rrg{syntax:'<integer>';inherits:false;initial-value:0}
-@property --rab{syntax:'<integer>';inherits:true;initial-value:0}
+@property --rdv{syntax:'<integer>';inherits:true;initial-value:0}
 @property --rsx{syntax:'<integer>';inherits:true;initial-value:0}
 @property --rx0{syntax:'<integer>';inherits:true;initial-value:0}
 .R{
@@ -118,55 +119,56 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
 .j18{fill:hsl(8 70% 55%);opacity:calc(mod(round(down, var(--rx) / 262144), 2) * var(--ra))}
 .j19{fill:hsl(0 70% 55%);opacity:calc(mod(round(down, var(--rx) / 524288), 2) * var(--ra))}
 .js{fill:var(--red);opacity:calc(clamp(0, -1 * var(--rx), 1) * var(--ra))}
-.D{--rab:max(var(--rcb), -1 * var(--rcb));--rsx:var(--rsb)}
+.jm{fill:var(--mut);opacity:var(--ra)}
+.D{--rdv:max(var(--rcb), -1 * var(--rcb));--rsx:var(--rsb)}
 .hl{transform:translateX(calc(var(--rsb) * 3.7686px))}
-.d0 use{transform:translateY(calc(mod(var(--rab), 10) * -52px))}
-.d1 use{transform:translateY(calc(mod(round(down, var(--rab) / 10), 10) * -52px))}
-.d1{opacity:clamp(0, var(--rab) - 9, 1)}
-.d2 use{transform:translateY(calc(mod(round(down, var(--rab) / 100), 10) * -52px))}
-.d2{opacity:clamp(0, var(--rab) - 99, 1)}
-.d3 use{transform:translateY(calc(mod(round(down, var(--rab) / 1000), 10) * -52px))}
-.d3{opacity:clamp(0, var(--rab) - 999, 1)}
-.d4 use{transform:translateY(calc(mod(round(down, var(--rab) / 10000), 10) * -52px))}
-.d4{opacity:clamp(0, var(--rab) - 9999, 1)}
-.d5 use{transform:translateY(calc(mod(round(down, var(--rab) / 100000), 10) * -52px))}
-.d5{opacity:clamp(0, var(--rab) - 99999, 1)}
-.d6 use{transform:translateY(calc(mod(round(down, var(--rab) / 1000000), 10) * -52px))}
-.d6{opacity:clamp(0, var(--rab) - 999999, 1)}
-.neg{opacity:clamp(0, -1 * var(--rcb), 1)}
+.d0 use{transform:translateY(calc(mod(var(--rdv), 10) * -52px))}
+.d1 use{transform:translateY(calc(mod(round(down, var(--rdv) / 10), 10) * -52px))}
+.d1{opacity:clamp(0, var(--rdv) - 9, 1)}
+.d2 use{transform:translateY(calc(mod(round(down, var(--rdv) / 100), 10) * -52px))}
+.d2{opacity:clamp(0, var(--rdv) - 99, 1)}
+.d3 use{transform:translateY(calc(mod(round(down, var(--rdv) / 1000), 10) * -52px))}
+.d3{opacity:clamp(0, var(--rdv) - 999, 1)}
+.d4 use{transform:translateY(calc(mod(round(down, var(--rdv) / 10000), 10) * -52px))}
+.d4{opacity:clamp(0, var(--rdv) - 9999, 1)}
+.d5 use{transform:translateY(calc(mod(round(down, var(--rdv) / 100000), 10) * -52px))}
+.d5{opacity:clamp(0, var(--rdv) - 99999, 1)}
+.d6 use{transform:translateY(calc(mod(round(down, var(--rdv) / 1000000), 10) * -52px))}
+.d6{opacity:clamp(0, var(--rdv) - 999999, 1)}
+.neg{opacity:clamp(0, -1 * var(--rcb), 1);transform:translateX(calc((6 - (1 + clamp(0, var(--rdv) - 9, 1) + clamp(0, var(--rdv) - 99, 1) + clamp(0, var(--rdv) - 999, 1) + clamp(0, var(--rdv) - 9999, 1) + clamp(0, var(--rdv) - 99999, 1) + clamp(0, var(--rdv) - 999999, 1))) * 30px))}
 .num{opacity:calc(1 - min(1, round(down, var(--rfb) / 2)))}
-.L0{opacity:calc(.18 + .82 * mod(var(--rcb), 2))}
-.L1{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 2), 2))}
-.L2{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 4), 2))}
-.L3{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 8), 2))}
-.L4{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 16), 2))}
-.L5{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 32), 2))}
-.L6{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 64), 2))}
-.L7{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 128), 2))}
-.L8{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 256), 2))}
-.L9{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 512), 2))}
-.L10{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 1024), 2))}
-.L11{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 2048), 2))}
-.L12{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 4096), 2))}
-.L13{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 8192), 2))}
-.L14{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 16384), 2))}
-.L15{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 32768), 2))}
-.L16{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 65536), 2))}
-.L17{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 131072), 2))}
-.L18{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 262144), 2))}
-.L19{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 524288), 2))}
-.L20{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 1048576), 2))}
-.L21{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 2097152), 2))}
-.L22{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 4194304), 2))}
-.L23{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 8388608), 2))}
-.L24{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 16777216), 2))}
-.L25{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 33554432), 2))}
-.L26{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 67108864), 2))}
-.L27{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 134217728), 2))}
-.L28{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 268435456), 2))}
-.L29{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 536870912), 2))}
-.L30{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 1073741824), 2))}
-.L31{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 2147483648), 2))}
+.L0{opacity:calc(.18 + .82 * mod(var(--rcb), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
+.L1{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 2), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
+.L2{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 4), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
+.L3{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 8), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
+.L4{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 16), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
+.L5{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 32), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
+.L6{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 64), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
+.L7{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 128), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
+.L8{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 256), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
+.L9{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 512), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
+.L10{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 1024), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
+.L11{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 2048), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
+.L12{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 4096), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
+.L13{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 8192), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
+.L14{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 16384), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
+.L15{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 32768), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
+.L16{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 65536), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
+.L17{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 131072), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
+.L18{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 262144), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
+.L19{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 524288), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
+.L20{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 1048576), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
+.L21{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 2097152), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
+.L22{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 4194304), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
+.L23{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 8388608), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
+.L24{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 16777216), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
+.L25{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 33554432), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
+.L26{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 67108864), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
+.L27{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 134217728), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
+.L28{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 268435456), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
+.L29{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 536870912), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
+.L30{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 1073741824), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
+.L31{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 2147483648), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
 .s0 use{transform:translateY(calc(mod(var(--rsx), 10) * -20px))}
 .q0 use{transform:translateY(calc(mod(var(--rqb), 10) * -20px))}
 .s1 use{transform:translateY(calc(mod(round(down, var(--rsx) / 10), 10) * -20px))}
@@ -183,25 +185,27 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
 .st-range{opacity:mod(round(down, var(--rfb) / 2), 2)}
 .st-trap{opacity:round(down, var(--rfb) / 4)}
 .st-err{opacity:min(1, round(down, var(--rfb) / 2))}
-.tot-q{opacity:var(--rhb)}.tot-n{opacity:calc(1 - var(--rhb))}
+.tot-q{opacity:mod(var(--rfb), 2)}.tot-n{opacity:calc(1 - mod(var(--rfb), 2))}
 .x0 .z0 use{transform:translateY(calc(mod(var(--rx0), 10) * -20px))}
+.x0 .z0{opacity:clamp(0, 1000000 - var(--rx0), 1)}
 .x0 .z1 use{transform:translateY(calc(mod(round(down, var(--rx0) / 10), 10) * -20px))}
-.x0 .z1{opacity:clamp(0, var(--rx0) - 9, 1)}
+.x0 .z1{opacity:calc(clamp(0, var(--rx0) - 9, 1) * clamp(0, 1000000 - var(--rx0), 1))}
 .x0 .z2 use{transform:translateY(calc(mod(round(down, var(--rx0) / 100), 10) * -20px))}
-.x0 .z2{opacity:clamp(0, var(--rx0) - 99, 1)}
+.x0 .z2{opacity:calc(clamp(0, var(--rx0) - 99, 1) * clamp(0, 1000000 - var(--rx0), 1))}
 .x0 .z3 use{transform:translateY(calc(mod(round(down, var(--rx0) / 1000), 10) * -20px))}
-.x0 .z3{opacity:clamp(0, var(--rx0) - 999, 1)}
+.x0 .z3{opacity:calc(clamp(0, var(--rx0) - 999, 1) * clamp(0, 1000000 - var(--rx0), 1))}
 .x0 .z4 use{transform:translateY(calc(mod(round(down, var(--rx0) / 10000), 10) * -20px))}
-.x0 .z4{opacity:clamp(0, var(--rx0) - 9999, 1)}
+.x0 .z4{opacity:calc(clamp(0, var(--rx0) - 9999, 1) * clamp(0, 1000000 - var(--rx0), 1))}
 .x0 .z5 use{transform:translateY(calc(mod(round(down, var(--rx0) / 100000), 10) * -20px))}
-.x0 .z5{opacity:clamp(0, var(--rx0) - 99999, 1)}
+.x0 .z5{opacity:calc(clamp(0, var(--rx0) - 99999, 1) * clamp(0, 1000000 - var(--rx0), 1))}
 .x0 .z6 use{transform:translateY(calc(mod(round(down, var(--rx0) / 1000000), 10) * -20px))}
-.x0 .z6{opacity:clamp(0, var(--rx0) - 999999, 1)}
-.x0{--rx0:max(var(--rxb), -1 * var(--rxb))}.x0 .zn{opacity:clamp(0, -1 * var(--rxb), 1)}
+.x0 .z6{opacity:calc(clamp(0, var(--rx0) - 999999, 1) * clamp(0, 1000000 - var(--rx0), 1))}
+.x0{--rx0:max(var(--rxb), -1 * var(--rxb))}.x0 .zn{opacity:calc(clamp(0, -1 * var(--rxb), 1) * clamp(0, 1000000 - var(--rx0), 1));transform:translateX(calc((6 - (1 + clamp(0, var(--rx0) - 9, 1) + clamp(0, var(--rx0) - 99, 1) + clamp(0, var(--rx0) - 999, 1) + clamp(0, var(--rx0) - 9999, 1) + clamp(0, var(--rx0) - 99999, 1) + clamp(0, var(--rx0) - 999999, 1))) * 10px))}
+.x0 .zr{opacity:calc(1 - clamp(0, 1000000 - var(--rx0), 1))}
 ]]></style>
-<defs><clipPath id="cb"><rect width="30" height="52"/></clipPath><clipPath id="cs"><rect width="11" height="20"/></clipPath><g id="db" class="big" text-anchor="middle"><text x="15" y="40.56">0</text><text x="15" y="92.56">1</text><text x="15" y="144.56">2</text><text x="15" y="196.56">3</text><text x="15" y="248.56">4</text><text x="15" y="300.56">5</text><text x="15" y="352.56">6</text><text x="15" y="404.56">7</text><text x="15" y="456.56">8</text><text x="15" y="508.56">9</text></g><g id="ds" class="sm" text-anchor="middle"><text x="5.5" y="15.6">0</text><text x="5.5" y="35.6">1</text><text x="5.5" y="55.6">2</text><text x="5.5" y="75.6">3</text><text x="5.5" y="95.6">4</text><text x="5.5" y="115.6">5</text><text x="5.5" y="135.6">6</text><text x="5.5" y="155.6">7</text><text x="5.5" y="175.6">8</text><text x="5.5" y="195.6">9</text></g><g id="col"><rect class="j0" x="320" y="226" width="2.7686" height="6"/><rect class="j1" x="320" y="219" width="2.7686" height="6"/><rect class="j2" x="320" y="212" width="2.7686" height="6"/><rect class="j3" x="320" y="205" width="2.7686" height="6"/><rect class="j4" x="320" y="198" width="2.7686" height="6"/><rect class="j5" x="320" y="191" width="2.7686" height="6"/><rect class="j6" x="320" y="184" width="2.7686" height="6"/><rect class="j7" x="320" y="177" width="2.7686" height="6"/><rect class="j8" x="320" y="170" width="2.7686" height="6"/><rect class="j9" x="320" y="163" width="2.7686" height="6"/><rect class="j10" x="320" y="156" width="2.7686" height="6"/><rect class="j11" x="320" y="149" width="2.7686" height="6"/><rect class="j12" x="320" y="142" width="2.7686" height="6"/><rect class="j13" x="320" y="135" width="2.7686" height="6"/><rect class="j14" x="320" y="128" width="2.7686" height="6"/><rect class="j15" x="320" y="121" width="2.7686" height="6"/><rect class="j16" x="320" y="114" width="2.7686" height="6"/><rect class="j17" x="320" y="107" width="2.7686" height="6"/><rect class="j18" x="320" y="100" width="2.7686" height="6"/><rect class="j19" x="320" y="93" width="2.7686" height="6"/><rect class="js" x="320" y="86" width="2.7686" height="6"/></g></defs>
-<rect class="bg" x=".5" y=".5" width="799" height="299" rx="10"/><text x="20" y="29" font-size="15" font-weight="600">Collatz conjecture</text><text x="188.79999999999998" y="29" class="mono mut" font-size="12">collatz.wasm · step(i32) → i32</text><circle class="live pulse" cx="668" cy="25" r="4"/><text x="678" y="29" class="lbl" font-size="11">LIVE · CSS RUNTIME</text><line x1="0" y1="44" x2="800" y2="44" stroke="var(--line)"/><text x="40" y="70" class="lbl">STATE</text><text x="320" y="70" class="lbl">TRACE · ONE COLUMN PER step() CALL · BITS OF THE STATE</text><rect class="pn" x="314" y="80" width="468" height="159" rx="6"/><text x="320" y="255" class="mono mut" font-size="11">0</text><text x="776" y="255" class="mono mut" font-size="11" text-anchor="end">120</text><text x="548" y="255" class="mut" font-size="11" text-anchor="middle">step →</text><line x1="0" y1="260" x2="800" y2="260" stroke="var(--line)"/><text x="20" y="285" class="mono mut" font-size="11">step() in CSS → --rxa: calc((var(--rxb) * 3 + 1) * mod(var(--rxb), 2) + round(down, var(--rxb) / 2) * (1 - mod(…</text>
-<g class="R" style="--rxb:27"><use href="#col" class="col"/><g class="x0"><text x="40" y="233" class="lbl">INPUT x₀</text><text class="zn mono" x="104" y="234" font-size="15" font-weight="600">−</text><g class="dg sm z0" transform="translate(174 219)" clip-path="url(#cs)"><use href="#ds"/></g><g class="dg sm z1" transform="translate(164 219)" clip-path="url(#cs)"><use href="#ds"/></g><g class="dg sm z2" transform="translate(154 219)" clip-path="url(#cs)"><use href="#ds"/></g><g class="dg sm z3" transform="translate(144 219)" clip-path="url(#cs)"><use href="#ds"/></g><g class="dg sm z4" transform="translate(134 219)" clip-path="url(#cs)"><use href="#ds"/></g><g class="dg sm z5" transform="translate(124 219)" clip-path="url(#cs)"><use href="#ds"/></g><g class="dg sm z6" transform="translate(114 219)" clip-path="url(#cs)"><use href="#ds"/></g><text x="196" y="233" class="mut" font-size="11">← the only input</text></g>
+<defs><clipPath id="cb"><rect width="30" height="52"/></clipPath><clipPath id="cs"><rect width="11" height="20"/></clipPath><g id="db" class="big" text-anchor="middle"><text x="15" y="40.56">0</text><text x="15" y="92.56">1</text><text x="15" y="144.56">2</text><text x="15" y="196.56">3</text><text x="15" y="248.56">4</text><text x="15" y="300.56">5</text><text x="15" y="352.56">6</text><text x="15" y="404.56">7</text><text x="15" y="456.56">8</text><text x="15" y="508.56">9</text></g><g id="ds" class="sm" text-anchor="middle"><text x="5.5" y="15.6">0</text><text x="5.5" y="35.6">1</text><text x="5.5" y="55.6">2</text><text x="5.5" y="75.6">3</text><text x="5.5" y="95.6">4</text><text x="5.5" y="115.6">5</text><text x="5.5" y="135.6">6</text><text x="5.5" y="155.6">7</text><text x="5.5" y="175.6">8</text><text x="5.5" y="195.6">9</text></g><g id="col"><rect class="j0" x="320" y="226" width="2.7686" height="6"/><rect class="j1" x="320" y="219" width="2.7686" height="6"/><rect class="j2" x="320" y="212" width="2.7686" height="6"/><rect class="j3" x="320" y="205" width="2.7686" height="6"/><rect class="j4" x="320" y="198" width="2.7686" height="6"/><rect class="j5" x="320" y="191" width="2.7686" height="6"/><rect class="j6" x="320" y="184" width="2.7686" height="6"/><rect class="j7" x="320" y="177" width="2.7686" height="6"/><rect class="j8" x="320" y="170" width="2.7686" height="6"/><rect class="j9" x="320" y="163" width="2.7686" height="6"/><rect class="j10" x="320" y="156" width="2.7686" height="6"/><rect class="j11" x="320" y="149" width="2.7686" height="6"/><rect class="j12" x="320" y="142" width="2.7686" height="6"/><rect class="j13" x="320" y="135" width="2.7686" height="6"/><rect class="j14" x="320" y="128" width="2.7686" height="6"/><rect class="j15" x="320" y="121" width="2.7686" height="6"/><rect class="j16" x="320" y="114" width="2.7686" height="6"/><rect class="j17" x="320" y="107" width="2.7686" height="6"/><rect class="j18" x="320" y="100" width="2.7686" height="6"/><rect class="j19" x="320" y="93" width="2.7686" height="6"/><rect class="js" x="320" y="86" width="2.7686" height="6"/><rect class="jm" x="320" y="234" width="2.7686" height="3"/></g></defs>
+<rect class="bg" x=".5" y=".5" width="799" height="299" rx="10"/><text x="20" y="29" font-size="15" font-weight="600">Collatz conjecture</text><text x="189" y="29" class="mono mut" font-size="12">collatz.wasm · step(i32) → i32</text><circle class="live pulse" cx="668" cy="25" r="4"/><text x="678" y="29" class="lbl" font-size="11">LIVE · CSS RUNTIME</text><line x1="0" y1="44" x2="800" y2="44" stroke="var(--line)"/><text x="40" y="70" class="lbl">STATE</text><text x="320" y="70" class="lbl">TRACE · ONE COLUMN PER step() CALL · BITS OF THE STATE</text><rect class="pn" x="314" y="80" width="468" height="159" rx="6"/><text x="320" y="255" class="mono mut" font-size="11">0</text><text x="776" y="255" class="mono mut" font-size="11" text-anchor="end">120</text><text x="548" y="255" class="mut" font-size="11" text-anchor="middle">step →</text><line x1="0" y1="260" x2="800" y2="260" stroke="var(--line)"/><text x="20" y="285" class="mono mut" font-size="11">step() in CSS → --rxa: calc((var(--rxb) * 3 + 1) * mod(var(--rxb), 2) + round(down, var(--rxb) / 2) * (1 - mod(…</text>
+<g class="R" style="--rxb:27"><use href="#col" class="col"/><g class="x0"><text x="40" y="233" class="lbl">INPUT x₀</text><text class="zn mono" x="104" y="234" font-size="15" font-weight="600">−</text><g class="dg sm z0" transform="translate(174 219)" clip-path="url(#cs)"><use href="#ds"/></g><g class="dg sm z1" transform="translate(164 219)" clip-path="url(#cs)"><use href="#ds"/></g><g class="dg sm z2" transform="translate(154 219)" clip-path="url(#cs)"><use href="#ds"/></g><g class="dg sm z3" transform="translate(144 219)" clip-path="url(#cs)"><use href="#ds"/></g><g class="dg sm z4" transform="translate(134 219)" clip-path="url(#cs)"><use href="#ds"/></g><g class="dg sm z5" transform="translate(124 219)" clip-path="url(#cs)"><use href="#ds"/></g><g class="dg sm z6" transform="translate(114 219)" clip-path="url(#cs)"><use href="#ds"/></g><text class="zr" x="114" y="233" font-size="11" style="fill:var(--red)">out of range</text><text x="196" y="233" class="mut" font-size="11">← the only input</text></g>
 <g class="A"><use href="#col" class="col"/>
 <g class="B"><use href="#col" class="col"/>
 <g class="A"><use href="#col" class="col"/>
@@ -321,5 +325,5 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
 <g class="A"><use href="#col" class="col"/>
 <g class="B"><use href="#col" class="col"/>
 <g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/><g class="D"><g class="num"><text class="neg mono" x="38" y="116.47999999999999" font-size="40" font-weight="600">−</text><g class="dg d0" transform="translate(242 78)" clip-path="url(#cb)"><use href="#db"/></g><g class="dg d1" transform="translate(212 78)" clip-path="url(#cb)"><use href="#db"/></g><g class="dg d2" transform="translate(182 78)" clip-path="url(#cb)"><use href="#db"/></g><g class="dg d3" transform="translate(152 78)" clip-path="url(#cb)"><use href="#db"/></g><g class="dg d4" transform="translate(122 78)" clip-path="url(#cb)"><use href="#db"/></g><g class="dg d5" transform="translate(92 78)" clip-path="url(#cb)"><use href="#db"/></g><g class="dg d6" transform="translate(62 78)" clip-path="url(#cb)"><use href="#db"/></g></g><text class="st-range" x="40" y="112" font-size="22" font-weight="600" style="fill:var(--red)">OUT OF RANGE</text><text class="st-trap" x="40" y="112" font-size="22" font-weight="600" style="fill:var(--red)">TRAP</text><rect class="L0" x="272" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L1" x="265" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L2" x="258" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L3" x="251" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L4" x="244" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L5" x="237" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L6" x="230" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L7" x="223" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L8" x="211" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L9" x="204" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L10" x="197" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L11" x="190" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L12" x="183" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L13" x="176" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L14" x="169" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L15" x="162" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L16" x="150" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L17" x="143" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L18" x="136" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L19" x="129" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L20" x="122" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L21" x="115" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L22" x="108" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L23" x="101" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L24" x="89" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L25" x="82" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L26" x="75" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L27" x="68" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L28" x="61" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L29" x="54" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L30" x="47" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L31" x="40" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><text x="40" y="176" class="mono mut" font-size="10">i32 register · bit 31 … 0</text><text x="40" y="203" class="lbl">STEP</text><g class="dg sm s0" transform="translate(104 188)" clip-path="url(#cs)"><use href="#ds"/></g><g class="dg sm s1" transform="translate(94 188)" clip-path="url(#cs)"><use href="#ds"/></g><g class="dg sm s2" transform="translate(84 188)" clip-path="url(#cs)"><use href="#ds"/></g><text x="122" y="203" class="mono mut" font-size="15">/</text><g class="tot-q"><g class="dg sm q0" transform="translate(156 188)" clip-path="url(#cs)"><use href="#ds"/></g><g class="dg sm q1" transform="translate(146 188)" clip-path="url(#cs)"><use href="#ds"/></g><g class="dg sm q2" transform="translate(136 188)" clip-path="url(#cs)"><use href="#ds"/></g></g><text class="tot-n mono mut" x="136" y="203" font-size="15">120</text><g class="st-run"><circle class="pulse" cx="190" cy="198" r="7" style="fill:var(--acc);fill-opacity:.35"/><circle cx="190" cy="198" r="4" style="fill:var(--acc)"/><text x="200" y="203" class="lbl" style="fill:var(--acc)">RUNNING</text></g><g class="st-end"><circle cx="190" cy="198" r="4" style="fill:var(--mut)"/><text x="200" y="203" class="lbl">END</text></g><g class="st-halt"><circle cx="190" cy="198" r="4" style="fill:var(--blue)"/><text x="200" y="203" class="lbl" style="fill:var(--blue)">HALTED</text></g><g class="st-err"><circle cx="190" cy="198" r="4" style="fill:var(--red)"/><text x="200" y="203" class="lbl" style="fill:var(--red)">STOPPED</text></g><rect class="hl" x="319" y="83" width="4.7686" height="153" rx="1" fill="none" stroke="var(--fg)" stroke-opacity=".55"/></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g>
+<g class="B"><use href="#col" class="col"/><g class="D"><g class="num"><text class="neg mono" x="38" y="116.47999999999999" font-size="40" font-weight="600">−</text><g class="dg d0" transform="translate(242 78)" clip-path="url(#cb)"><use href="#db"/></g><g class="dg d1" transform="translate(212 78)" clip-path="url(#cb)"><use href="#db"/></g><g class="dg d2" transform="translate(182 78)" clip-path="url(#cb)"><use href="#db"/></g><g class="dg d3" transform="translate(152 78)" clip-path="url(#cb)"><use href="#db"/></g><g class="dg d4" transform="translate(122 78)" clip-path="url(#cb)"><use href="#db"/></g><g class="dg d5" transform="translate(92 78)" clip-path="url(#cb)"><use href="#db"/></g><g class="dg d6" transform="translate(62 78)" clip-path="url(#cb)"><use href="#db"/></g></g><text class="st-range" x="40" y="112" font-size="22" font-weight="600" style="fill:var(--red)">OUT OF RANGE</text><text class="st-trap" x="40" y="112" font-size="22" font-weight="600" style="fill:var(--red)">TRAP</text><rect class="L0" x="272" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L1" x="265" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L2" x="258" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L3" x="251" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L4" x="244" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L5" x="237" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L6" x="230" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L7" x="223" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L8" x="211" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L9" x="204" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L10" x="197" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L11" x="190" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L12" x="183" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L13" x="176" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L14" x="169" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L15" x="162" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L16" x="150" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L17" x="143" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L18" x="136" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L19" x="129" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L20" x="122" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L21" x="115" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L22" x="108" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L23" x="101" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L24" x="89" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L25" x="82" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L26" x="75" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L27" x="68" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L28" x="61" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L29" x="54" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L30" x="47" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L31" x="40" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><text x="40" y="176" class="mono mut" font-size="10">i32 register · bit 31 … 0</text><text x="40" y="203" class="lbl">STEP</text><g class="dg sm s0" transform="translate(104 188)" clip-path="url(#cs)"><use href="#ds"/></g><g class="dg sm s1" transform="translate(94 188)" clip-path="url(#cs)"><use href="#ds"/></g><g class="dg sm s2" transform="translate(84 188)" clip-path="url(#cs)"><use href="#ds"/></g><text x="122" y="203" class="mono mut" font-size="15">/</text><g class="tot-q"><g class="dg sm q0" transform="translate(156 188)" clip-path="url(#cs)"><use href="#ds"/></g><g class="dg sm q1" transform="translate(146 188)" clip-path="url(#cs)"><use href="#ds"/></g><g class="dg sm q2" transform="translate(136 188)" clip-path="url(#cs)"><use href="#ds"/></g></g><text class="tot-n mono mut" x="136" y="203" font-size="15">120</text><g class="st-run"><circle class="pulse" cx="190" cy="198" r="7" style="fill:var(--acc);fill-opacity:.35"/><circle cx="190" cy="198" r="4" style="fill:var(--acc)"/><text x="200" y="203" class="lbl" style="fill:var(--acc)">RUNNING</text></g><g class="st-end"><circle cx="190" cy="198" r="4" style="fill:var(--mut)"/><text x="200" y="203" class="lbl">END</text></g><g class="st-halt"><circle cx="190" cy="198" r="4" style="fill:var(--blue)"/><text x="200" y="203" class="lbl" style="fill:var(--blue)">HALTED</text></g><g class="st-err"><circle cx="190" cy="198" r="4" style="fill:var(--red)"/><text x="200" y="203" class="lbl" style="fill:var(--red)">STOPPED</text></g><rect class="hl" x="319" y="83" width="4.7686" height="150" rx="1" fill="none" stroke="var(--fg)" stroke-opacity=".55"/></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g>
 </svg>

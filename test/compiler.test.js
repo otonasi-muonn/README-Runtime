@@ -5,7 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { compileStep, UnsupportedError } from '../src/compiler/program.js';
 import { evalExact } from '../src/compiler/ir.js';
-import { translate, MODELS, V, evalAst, storeInteger, toCss } from '../src/compiler/css.js';
+import { translate, MODELS, V, evalAst, storeInteger, toCss, STORED_LIMIT } from '../src/compiler/css.js';
 import { unary, op, c, get, set, tee, I32, I64 } from './helpers/wasm-builder.js';
 
 const SMALL = [0, 1, 2, 3, 7, 8, 15, 16, 27, 100, 255, 256, 1000, 4095, 65535, 99999, 999999, -1, -2, -7, -8, -100, -999, -65536, -999999];
@@ -18,18 +18,28 @@ async function realRun(bytes, x) {
   }
 }
 
+// Evaluate the translated step (with its range guards) under a browser arithmetic model.
+// `flagged` is what the card would show as OUT OF RANGE: a guard fired or the new state
+// cannot be stored exactly.
 function cssEval(program, x, model) {
   const roots = [{ node: program.step, name: 'out' }];
   if (program.trap) roots.push({ node: program.trap, name: 'trap' });
-  const { defs } = translate(roots, () => V('in'), { tempPrefix: 't' });
+  const { defs, guards } = translate(roots, () => V('in'), { tempPrefix: 't', inputRange: { lo: -STORED_LIMIT, hi: STORED_LIMIT }, checkedRoots: new Set(['out', 'trap']) });
   const env = new Map([['in', model.store(x)]]);
-  for (const d of defs) env.set(d.name, storeInteger(evalAst(d.ast, (n) => env.get(n), model), model));
-  return { out: env.get('out'), trap: program.trap ? env.get('trap') : 0 };
+  const get = (n) => env.get(n);
+  for (const d of defs) env.set(d.name, storeInteger(evalAst(d.ast, get, model), model));
+  const out = env.get('out');
+  const flagged = guards.some((g) => evalAst(g, get, model) !== 0) || Math.abs(out) > STORED_LIMIT;
+  return { out, flagged, trap: program.trap ? env.get('trap') : 0 };
 }
 
+// The property every card relies on: for each input, under every browser model, the CSS
+// either equals the real WebAssembly result or raises its range flag. Never a silent wrong
+// value. `mustBeExact` lists inputs that may not be flagged.
 async function check(name, body, inputs = SMALL, opts = {}) {
   const bytes = unary(body, opts);
   const program = compileStep(bytes, { exportName: 'f' });
+  let exact = 0;
   for (const x of inputs) {
     const real = await realRun(bytes, x);
     const [ir] = evalExact([program.step], [x]);
@@ -37,13 +47,19 @@ async function check(name, body, inputs = SMALL, opts = {}) {
     assert.equal(irTrap, real.trap ? 1 : 0, `${name}: IR trap flag for x=${x}`);
     if (real.trap) continue;
     assert.equal(ir, real.value, `${name}: IR for x=${x}`);
-    if (Math.abs(real.value) > 999999) continue; // outside the CSS-exact range by definition
+    const flags = [];
     for (const [m, model] of Object.entries(MODELS)) {
       const css = cssEval(program, x, model);
       assert.equal(css.trap, 0, `${name}: CSS trap flag for x=${x} (${m})`);
-      assert.equal(css.out, real.value, `${name}: CSS (${m}) for x=${x}`);
+      if (!css.flagged) assert.equal(css.out, real.value, `${name}: CSS (${m}) for x=${x} is wrong and not flagged`);
+      flags.push(css.flagged);
     }
+    assert.ok(flags.every((f) => f === flags[0]), `${name}: models disagree on the range flag for x=${x}`);
+    if (Math.abs(real.value) > STORED_LIMIT) assert.ok(flags[0], `${name}: result ${real.value} for x=${x} must be flagged`);
+    if (!flags[0]) exact++;
+    if ((opts.mustBeExact ?? []).includes(x)) assert.ok(!flags[0], `${name}: x=${x} should compute exactly`);
   }
+  assert.ok(exact > 0, `${name}: every input was flagged`);
   return program;
 }
 
@@ -55,8 +71,11 @@ test('arithmetic', async () => {
   await check('div_s 7', [get(0), c(7), op.div_s]);
   await check('div_s -3', [get(0), c(-3), op.div_s]);
   await check('rem_s 7', [get(0), c(7), op.rem_s]);
-  await check('div_u 10', [get(0), c(10), op.div_u], SMALL.filter((x) => x >= 0));
-  await check('rem_u 10', [get(0), c(10), op.rem_u], SMALL.filter((x) => x >= 0));
+  await check('div_u 10', [get(0), c(10), op.div_u]);
+  await check('rem_u 10', [get(0), c(10), op.rem_u]);
+  await check('rem_u 1000 (C unsigned %)', [get(0), c(31), op.mul, c(7), op.add, c(1000), op.rem_u]);
+  await check('div_u -3 (divisor >= 2^31)', [get(0), c(-3), op.div_u]);
+  await check('rem_u -3 (divisor >= 2^31)', [get(0), c(-3), op.rem_u], SMALL.filter((x) => x >= -3));
 });
 
 test('division by a variable traps exactly when wasm traps', async () => {

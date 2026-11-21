@@ -10,9 +10,30 @@
 // model and the build compares every model against the real WebAssembly engine.
 
 import { topoOrder } from './ir.js';
+import { transfer, interval, analyzeRanges } from './range.js';
 
 export const STORED_LIMIT = 999999;
-export const INLINE_LIMIT = 2 ** 23;
+// Inline (unstored) values: float32 represents every integer with |v| <= 2^24 exactly, so a
+// guard that fires for |v| >= 2^24 is sound even when the browser rounds. Operands of a
+// division or modulo by anything but a power of two need |v| < 2^23 so that the float32
+// quotient never rounds across an integer.
+export const INLINE_LIMIT = 2 ** 24 - 1;
+export const DIVISION_OPERAND_LIMIT = 2 ** 23 - 1;
+const isPow2 = (v) => v > 0 && (v & (v - 1)) === 0;
+// The tightest limit any consumer imposes on a node.
+function consumerLimits(order) {
+  const lim = new Map();
+  const tighten = (n, v) => { if (v < (lim.get(n.id) ?? INLINE_LIMIT)) lim.set(n.id, v); };
+  for (const n of order) {
+    if (['div_s', 'div_u', 'rem_s', 'rem_u'].includes(n.op)) {
+      const d = n.args[1];
+      if (!(d.op === 'const' && isPow2(Math.abs(d.value)))) n.args.forEach((a) => tighten(a, DIVISION_OPERAND_LIMIT));
+    }
+    if (n.op === 'extend8_s') tighten(n.args[0], INLINE_LIMIT - 128);
+    if (n.op === 'extend16_s') tighten(n.args[0], INLINE_LIMIT - 32768);
+  }
+  return lim;
+}
 const BITS = 23; // bits that carry information for values inside the supported range
 
 // ---------------------------------------------------------------------------------------
@@ -149,9 +170,33 @@ function template(node, inputAst) {
     case 'sub': return sub(A, B);
     case 'mul': return mul(A, B);
     case 'div_s': return round('to-zero', div(A, safe(b, B)));
-    case 'div_u': return round('down', div(A, safe(b, B)));
+    case 'div_u': {
+      // Unsigned: a negative i32 means a + 2^32. With a constant divisor this is exact:
+      // floor(u(a)/d) = floor(a/d) + s*(floor(2^32/d) + floor((mod(a,d) + 2^32 mod d)/d)).
+      const d = cv(b);
+      if (d !== undefined && d > 0) {
+        const q = round('down', div(A, N(d)));
+        if (a.bool) return q;
+        // (the large constant is multiplied by the sign first, so a >= 0 never produces a
+        // large intermediate value)
+        const sA = signBit(A);
+        const carry = round('down', div(add(mod(A, N(d)), N(2 ** 32 % d)), N(d)));
+        return add(add(q, mul(sA, N(Math.floor(2 ** 32 / d)))), mul(sA, carry));
+      }
+      if (d !== undefined && d < 0) return mul(signBit(A), clamp(N(0), add(sub(A, N(d)), N(1)), N(1))); // u(d) >= 2^31
+      return round('down', div(A, safe(b, B))); // variable divisor: valid for a >= 0, b > 0 (guarded)
+    }
     case 'rem_s': return rem(A, safe(b, B));
-    case 'rem_u': return mod(A, safe(b, B));
+    case 'rem_u': {
+      const d = cv(b);
+      if (d !== undefined && d > 0) {
+        if (a.bool) return d === 1 ? N(0) : A;
+        return mod(add(mod(A, N(d)), mul(signBit(A), N(2 ** 32 % d))), N(d));
+      }
+      // u(d) >= 2^31: a >= 0 -> a; d <= a < 0 -> a - d; a < d -> a + 2^32 (guarded)
+      if (d !== undefined && d < 0) return add(A, mul(signBit(A), N(-d)));
+      return mod(A, safe(b, B)); // variable divisor: valid for a >= 0, b > 0 (guarded)
+    }
     case 'and': return and2(a, A, b, B);
     case 'or':
       if (a.bool && b.bool) return max(A, B);
@@ -231,13 +276,61 @@ function ownSize(ast) {
 }
 
 const TEMP_MIN_SIZE = 40;
+// Maximum parenthesis nesting of one inlined expression. Browsers silently drop calc()
+// trees that are nested too deeply (measured: Firefox fails beyond ~75 levels, Chromium
+// ~95, WebKit ~105). Substituting a registered property resets the depth, so deeper
+// expressions are split into temporaries.
+export const MAX_DEPTH = 24;
+// Every emitted declaration (including the machine's wrappers and guards) must stay below.
+export const MAX_DECL_DEPTH = 40;
+
+// Parenthesis depth of ser(ast); refDepth(node) gives the depth of an inlined child.
+// refPrec(node) gives the precedence the inlined child will have once resolved (a child
+// that is an operator gets parenthesized, which adds a level).
+export function astDepth(n, refDepth = () => 0, refPrec = () => 3) {
+  const P = (x) => (x.k === 'ref' ? refPrec(x.node) : prec(x));
+  switch (n.k) {
+    case 'n': return 0;
+    case 'v': return 1;
+    case 'ref': return refDepth(n.node);
+    case 'f': return 1 + Math.max(0, ...n.args.map((a) => astDepth(a, refDepth, refPrec)));
+    default: {
+      const p = PREC[n.k];
+      let da = astDepth(n.a, refDepth, refPrec);
+      let db = astDepth(n.b, refDepth, refPrec);
+      if (P(n.a) < p) da += 1;
+      const pb = P(n.b);
+      if ((pb <= p && pb !== 3) || (n.b.k === 'n' && n.b.v < 0)) db += 1;
+      return Math.max(da, db);
+    }
+  }
+}
+
+// Maximum nesting of parentheses in a serialized declaration value.
+export function textDepth(str) {
+  let d = 0, m = 0;
+  for (const ch of str) {
+    if (ch === '(') { d++; if (d > m) m = d; } else if (ch === ')') d--;
+  }
+  return m;
+}
+
+const isLeaf = (n) => n.op === 'const' || n.op === 'input';
+const exceedsLimit = (r, limit) => !r || r.lo < -limit || r.hi > limit;
+const MAX_DUPLICATION = 20000; // characters of CSS a non-storable shared value may be copied into
+const exceeds = (r, limit) => !r || r.lo < -limit || r.hi > limit;
 
 // Translate IR roots into CSS property definitions.
 //   roots: [{ node, name }]   each root becomes the property --name
 //   inputAst(i):              CSS AST for IR input i
 //   tempPrefix:               prefix for shared temporaries (registered <integer> props)
-// Returns { defs: [{ name, ast, node }], temps: [names] } in dependency order.
-export function translate(roots, inputAst, { tempPrefix = 'rr-t' } = {}) {
+//   ranges:                   optional Map(node id -> {lo, hi}) from analyzeRanges(); when
+//                             given, a guard is emitted for every node whose value may leave
+//                             the exactly representable range for some admissible input
+//   checkedRoots:             root names whose range the caller already guards
+// Returns { defs: [{ name, ast, node }], temps: [names], guards: [ast] } in dependency
+// order. Each guard evaluates to 1 when the value it watches cannot be exact.
+export function translate(roots, inputAst, { tempPrefix = 'rr-t', inputRange = null, checkedRoots = new Set() } = {}) {
   const order = topoOrder(roots.map((r) => r.node));
   const tmpl = new Map();
   const size = new Map();
@@ -254,15 +347,41 @@ export function translate(roots, inputAst, { tempPrefix = 'rr-t' } = {}) {
   for (const r of roots) uses.set(r.node.id, (uses.get(r.node.id) ?? 0) + 1);
   const temp = new Map(); // node id -> property name
   let tempCount = 0;
+  // 1) shared subexpressions become temporaries (top-down, so use counts are final). A value
+  //    that may exceed STORED_LIMIT stays inline (stored values keep only 6 significant
+  //    digits in Chromium) unless duplicating it would be too large.
+  const unclamped = inputRange ? analyzeRanges(roots.map((r) => r.node), inputRange) : null;
+  const storable = (n) => !unclamped || !exceedsLimit(unclamped.get(n.id), STORED_LIMIT);
   for (let i = order.length - 1; i >= 0; i--) {
     const n = order[i];
     const u = uses.get(n.id) ?? 0;
-    const leaf = n.op === 'const' || n.op === 'input';
-    if (rootName.has(n.id) && !leaf) temp.set(n.id, rootName.get(n.id));
-    else if (!leaf && u >= 2 && size.get(n.id) > TEMP_MIN_SIZE) temp.set(n.id, `${tempPrefix}${tempCount++}`);
+    if (rootName.has(n.id) && !isLeaf(n)) temp.set(n.id, rootName.get(n.id));
+    else if (!isLeaf(n) && u >= 2 && size.get(n.id) > TEMP_MIN_SIZE && (storable(n) || size.get(n.id) * u > MAX_DUPLICATION)) temp.set(n.id, `${tempPrefix}${tempCount++}`);
     const mult = temp.has(n.id) ? 1 : u;
     if (mult === 0) continue;
     forEachRef(tmpl.get(n.id), (c) => uses.set(c.id, (uses.get(c.id) ?? 0) + mult));
+  }
+  // 2) keep every inlined expression shallow: split the deepest inline child into a
+  //    temporary until the node fits (bottom-up, so children are already final)
+  const depth = new Map();
+  const refDepth = (c) => (temp.has(c.id) ? 1 : depth.get(c.id));
+  const refPrec = (c) => {
+    if (temp.has(c.id)) return 3;
+    const t = tmpl.get(c.id);
+    return t.k === 'ref' ? refPrec(t.node) : prec(t);
+  };
+  for (const n of order) {
+    if (isLeaf(n)) { depth.set(n.id, astDepth(tmpl.get(n.id))); continue; }
+    for (;;) {
+      const d = astDepth(tmpl.get(n.id), refDepth, refPrec);
+      if (d <= MAX_DEPTH) { depth.set(n.id, d); break; }
+      let best = null;
+      forEachRef(tmpl.get(n.id), (c) => {
+        if (!temp.has(c.id) && !isLeaf(c) && (!best || depth.get(c.id) > depth.get(best.id))) best = c;
+      });
+      if (!best) throw new Error(`internal: cannot split an expression of depth ${d}`);
+      temp.set(best.id, `${tempPrefix}${tempCount++}`);
+    }
   }
   // Resolve templates into concrete ASTs (refs to temps become var(), others inline).
   const resolved = new Map();
@@ -291,7 +410,46 @@ export function translate(roots, inputAst, { tempPrefix = 'rr-t' } = {}) {
     if (!defs.some((d) => d.name === r.name)) defs.push({ name: r.name, ast: resolveNode(r.node), node: r.node });
   }
   const temps = defs.filter((d) => !roots.some((r) => r.name === d.name)).map((d) => d.name);
-  return { defs, temps };
+
+  // 3) guards. A stored value must have at most 6 significant digits (Chromium), an inline
+  //    value must stay below 2^23 (Firefox float32; division stays exact too). Every Wasm
+  //    wrap-around lies far outside both. Interval analysis over the admissible inputs finds
+  //    each node whose value can first leave its range; that node gets a guard and its range
+  //    is clamped for its consumers (if the guard does not fire, the value is within the
+  //    limit). So "exact or flagged" holds for every admissible input, not only for the
+  //    verified trajectory.
+  const guards = [];
+  if (inputRange) {
+    const valueOf = (n) => (temp.has(n.id) ? V(temp.get(n.id)) : resolveNode(n));
+    const R = new Map();
+    const consumer = consumerLimits(order);
+    for (const n of order) {
+      const args = n.args.map((a) => R.get(a.id));
+      let r = n.op === 'input' ? interval(inputRange.lo, inputRange.hi) : transfer(n, ...args);
+      if (!isLeaf(n)) {
+        const stored = temp.has(n.id);
+        const limit = stored ? STORED_LIMIT : (consumer.get(n.id) ?? INLINE_LIMIT);
+        if (r.lo < -limit || r.hi > limit) {
+          if (!(stored && checkedRoots.has(temp.get(n.id)))) guards.push(clamp(N(0), sub(absV(valueOf(n)), N(limit)), N(1)));
+          r = interval(Math.max(r.lo, -limit), Math.min(r.hi, limit));
+        }
+        // unsigned division by a variable is translated for non-negative operands only
+        if (n.op === 'div_u' || n.op === 'rem_u') {
+          const [x, y] = n.args;
+          if (y.op !== 'const') {
+            for (const [arg, ar] of [[x, args[0]], [y, args[1]]]) {
+              if (arg.op === 'const' && arg.value < 0) guards.push(N(1));
+              else if (arg.op !== 'const' && ar.lo < 0) guards.push(signBit(valueOf(arg)));
+            }
+          } else if (n.op === 'rem_u' && y.value < 0 && x.op !== 'const' && args[0].lo < y.value) {
+            guards.push(clamp(N(0), sub(N(y.value), valueOf(x)), N(1))); // x < d: the result is x + 2^32
+          }
+        }
+      }
+      R.set(n.id, r);
+    }
+  }
+  return { defs, temps, guards };
 }
 
 // ---------------------------------------------------------------------------------------
@@ -299,13 +457,15 @@ export function translate(roots, inputAst, { tempPrefix = 'rr-t' } = {}) {
 
 export const MODELS = {
   // Doubles everywhere (WebKit; also the ideal model).
-  exact: { op: (x) => x, store: (x) => x },
-  // Firefox: calc() in float32; integers stored as i32.
-  firefox: { op: Math.fround, store: (x) => Math.fround(x) },
+  exact: { op: (x) => x, store: (x) => x, modrem: 'exact' },
+  // Firefox: calc() in float32 (rem/mod as a - b*trunc/floor(a/b), measured); integers
+  // stored as i32.
+  firefox: { op: Math.fround, store: (x) => Math.fround(x), modrem: 'divide' },
   // Chromium: doubles inside calc(), but a registered value is re-serialized with
   // 6 significant digits when substituted via var(); integers are clamped to int32.
   chromium: {
     op: (x) => x,
+    modrem: 'exact',
     store: (x) => {
       const c = Math.max(-2147483648, Math.min(2147483647, x));
       return Number(c.toPrecision(6));
@@ -315,8 +475,9 @@ export const MODELS = {
 
 export function evalAst(ast, env, model, stats) {
   const F = model.op;
+  let exempt = 0;
   const track = (v) => {
-    if (stats) {
+    if (stats && !exempt) {
       const m = Math.abs(v);
       if (m > stats.maxInline) stats.maxInline = m;
     }
@@ -335,7 +496,10 @@ export function evalAst(ast, env, model, stats) {
       case '*': return track(F(ev(n.a) * ev(n.b)));
       case '/': return track(F(ev(n.a) / ev(n.b)));
       case 'f': {
+        const cmp = n.fn === 'clamp' || n.fn === 'min' || n.fn === 'max';
+        if (cmp) exempt++;
         const xs = n.args.map(ev);
+        if (cmp) exempt--;
         switch (n.fn) {
           case 'round': {
             const x = xs[0];
@@ -344,11 +508,14 @@ export function evalAst(ast, env, model, stats) {
             return track(F(r));
           }
           case 'mod': {
+            if (model.modrem === 'divide') return track(F(xs[0] - F(xs[1] * Math.floor(F(xs[0] / xs[1])))));
             let r = xs[0] % xs[1];
             if (r !== 0 && (r < 0) !== (xs[1] < 0)) r += xs[1];
             return track(F(r));
           }
-          case 'rem': return track(F(xs[0] % xs[1]));
+          case 'rem':
+            if (model.modrem === 'divide') return track(F(xs[0] - F(xs[1] * Math.trunc(F(xs[0] / xs[1])))));
+            return track(F(xs[0] % xs[1]));
           case 'min': return Math.min(...xs);
           case 'max': return Math.max(...xs);
           case 'clamp': return Math.max(xs[0], Math.min(xs[1], xs[2]));

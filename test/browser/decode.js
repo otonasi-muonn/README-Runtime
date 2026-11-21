@@ -12,6 +12,9 @@ const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
 export function decodeCard(pngBuffer, machineInfo, { scale = 1 } = {}) {
   const png = PNG.sync.read(pngBuffer);
   const L = layout({ steps: machineInfo.steps }, { bits: machineInfo.bits });
+  if (png.width !== L.W * scale || png.height !== L.H * scale) {
+    return { broken: true, size: [png.width, png.height], cols: [], led: null, status: 'broken' };
+  }
   const at = (x, y) => px(png, x * scale, y * scale);
   // Card and panel backgrounds are sampled from the image itself (works for both themes).
   const cardBg = at(10, 60);
@@ -19,26 +22,24 @@ export function decodeCard(pngBuffer, machineInfo, { scale = 1 } = {}) {
 
   // 32-bit register LEDs (two's complement of the shown state)
   let u = 0;
-  const ledBits = [];
   for (let j = 0; j < 32; j++) {
-    const on = dist(at(L.ledX(j) + 2.5, L.leds.y + 4.5), cardBg) > 100;
-    ledBits.push(on ? 1 : 0);
-    if (on) u += 2 ** j;
+    if (dist(at(L.ledX(j) + 2.5, L.leds.y + 4.5), cardBg) > 100) u += 2 ** j;
   }
   const led = u >= 2 ** 31 ? u - 2 ** 32 : u;
 
-  // Trace: one column per level, rows = bits (+ sign row on top)
+  // Trace: one column per level. The marker under a column says the column holds a valid
+  // value (so a value of 0 is distinguishable from an empty column); rows are the bits.
   const cols = [];
   for (let k = 0; k <= machineInfo.steps; k++) {
     const x = Math.ceil(L.tr.x + k * L.cw) + 0.5;
-    let v = 0, lit = false;
+    const marked = dist(at(x, L.tr.y + L.tr.h + 2.5), panelBg) > 40;
+    let v = 0;
     for (let b = 0; b < L.bits; b++) {
       const y = Math.ceil(L.tr.y + (L.bits - b) * L.rh) + 2.5;
-      if (dist(at(x, y), panelBg) > 80) { v += 2 ** b; lit = true; }
+      if (dist(at(x, y), panelBg) > 80) v += 2 ** b;
     }
-    const sy = Math.ceil(L.tr.y) + 2.5;
-    if (dist(at(x, sy), panelBg) > 80) { v -= 2 ** L.bits; lit = true; }
-    cols.push(lit ? v : null);
+    if (dist(at(x, Math.ceil(L.tr.y) + 2.5), panelBg) > 80) v -= 2 ** L.bits;
+    cols.push(marked ? v : null);
   }
 
   // Status: colour of the solid status dot (text colour is unreliable because of subpixel
@@ -50,5 +51,5 @@ export function decodeCard(pngBuffer, machineInfo, { scale = 1 } = {}) {
   else if (b > r + 40 && b > g + 15) status = 'halted';
   else if (g > r + 25 && g > b + 10) status = 'running';
   else if (Math.abs(r - g) < 30 && Math.abs(g - b) < 30 && dist(dot, cardBg) > 40) status = 'end';
-  return { led, ledBits, cols, status, dot };
+  return { broken: false, led, cols, status, dot };
 }

@@ -46,6 +46,13 @@ export const OPNAMES = {
   0xd0: 'ref.null', 0xd1: 'ref.is_null', 0xd2: 'ref.func',
 };
 
+const FC_NAMES = {
+  0: 'i32.trunc_sat_f32_s', 1: 'i32.trunc_sat_f32_u', 2: 'i32.trunc_sat_f64_s', 3: 'i32.trunc_sat_f64_u',
+  4: 'i64.trunc_sat_f32_s', 5: 'i64.trunc_sat_f32_u', 6: 'i64.trunc_sat_f64_s', 7: 'i64.trunc_sat_f64_u',
+  8: 'memory.init', 9: 'data.drop', 10: 'memory.copy', 11: 'memory.fill', 12: 'table.init', 13: 'elem.drop',
+  14: 'table.copy', 15: 'table.grow', 16: 'table.size', 17: 'table.fill',
+};
+
 class Cursor {
   constructor(u8, pos = 0, end = u8.length) { this.u8 = u8; this.pos = pos; this.end = end; }
   eof() { return this.pos >= this.end; }
@@ -157,7 +164,17 @@ export function decodeBody(c) {
       case 0x44: c.bytes(8); break;
       case 0xd0: c.byte(); break;
       case 0xd2: ins.func = c.u32(); break;
-      case 0xfc: { ins.sub = c.u32(); ins.name = `0xfc ${ins.sub}`; throw new UnsupportedOpcode(ins); }
+      case 0xfc: {
+        // Decoded (not rejected here) so the lifter can name the instruction and give a hint.
+        ins.sub = c.u32();
+        ins.name = FC_NAMES[ins.sub] ?? `0xfc ${ins.sub}`;
+        if (ins.sub === 8) { c.u32(); c.byte(); } else if (ins.sub === 10) { c.byte(); c.byte(); }
+        else if (ins.sub === 11) c.byte();
+        else if (ins.sub === 12 || ins.sub === 14) { c.u32(); c.u32(); }
+        else if (ins.sub === 9 || (ins.sub >= 13 && ins.sub <= 17)) c.u32();
+        else if (ins.sub > 17) throw new UnsupportedOpcode(ins);
+        break;
+      }
       case 0xfd: throw new UnsupportedOpcode({ ...ins, name: 'SIMD (0xfd prefix)' });
       case 0xfb: throw new UnsupportedOpcode({ ...ins, name: 'GC (0xfb prefix)' });
       default:

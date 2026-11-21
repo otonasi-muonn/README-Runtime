@@ -1,7 +1,7 @@
 // SVG card: the visible face of the CSS machine.
 // Everything that depends on the program's values is driven by CSS custom properties that
 // the browser computes at view time; the markup only holds layout.
-import { N, V, toCss, signBit, absV } from '../compiler/css.js';
+import { N, V, toCss, signBit, absV, STORED_LIMIT } from '../compiler/css.js';
 import { declarations } from '../runtime/machine.js';
 
 export const TEMPLATE_VERSION = 1;
@@ -40,7 +40,7 @@ export function renderCard(machine, meta, opts = {}) {
   const steps = machine.steps;
 
   // ---------------------------------------------------------------- registered properties
-  const extra = ['rab', 'rsx', 'rx0'];
+  const extra = ['rdv', 'rsx', 'rx0'];
   let css = '';
   for (const [name, inherits] of machine.props) css += `@property --${name}{syntax:'<integer>';inherits:${inherits};initial-value:0}\n`;
   for (const name of extra) css += `@property --${name}{syntax:'<integer>';inherits:true;initial-value:0}\n`;
@@ -72,17 +72,19 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
     css += `.j${b}{fill:hsl(${hue} 70% 55%);opacity:calc(${toCss(cellBit(b))} * var(--ra))}\n`;
   }
   css += `.js{fill:var(--red);opacity:calc(${toCss(signBit(V('rx')))} * var(--ra))}\n`;
+  css += `.jm{fill:var(--mut);opacity:var(--ra)}\n`;
   // display (innermost level)
-  css += `.D{--rab:${toCss(absV(V(out.c)))};--rsx:var(--${out.s})}\n`;
+  css += `.D{--rdv:${toCss(absV(V(out.c)))};--rsx:var(--${out.s})}\n`;
   css += `.hl{transform:translateX(calc(var(--${out.s}) * ${r4(cw)}px))}\n`;
   for (let d = 0; d < L.digits.n; d++) {
     const p = 10 ** d;
-    css += `.d${d} use{transform:translateY(calc(${toCss(digitOf('rab', d))} * ${-L.digits.h}px))}\n`;
-    if (d > 0) css += `.d${d}{opacity:clamp(0, var(--rab) - ${p - 1}, 1)}\n`;
+    css += `.d${d} use{transform:translateY(calc(${toCss(digitOf('rdv', d))} * ${-L.digits.h}px))}\n`;
+    if (d > 0) css += `.d${d}{opacity:clamp(0, var(--rdv) - ${p - 1}, 1)}\n`;
   }
-  css += `.neg{opacity:${toCss(signBit(V(out.c)))}}\n`;
+  css += `.neg{opacity:${toCss(signBit(V(out.c)))};transform:translateX(calc((${L.digits.n - 1} - ${digitCount('rdv', L.digits.n)}) * ${L.digits.w}px))}\n`;
   css += `.num{opacity:calc(1 - min(1, round(down, var(--${out.f}) / 2)))}\n`;
-  for (let j = 0; j < 32; j++) css += `.L${j}{opacity:calc(.18 + .82 * ${toCss(cellBit(j, out.c))})}\n`;
+  const ok = `(1 - min(1, round(down, var(--${out.f}) / 2)))`;
+  for (let j = 0; j < 32; j++) css += `.L${j}{opacity:calc(.18 + .82 * ${toCss(cellBit(j, out.c))} * ${ok})}\n`;
   for (let d = 0; d < 3; d++) {
     css += `.s${d} use{transform:translateY(calc(${toCss(digitOf('rsx', d))} * -20px))}\n`;
     css += `.q${d} use{transform:translateY(calc(${toCss(digitOf(out.q, d))} * -20px))}\n`;
@@ -99,12 +101,14 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
   css += `.st-range{opacity:mod(round(down, ${F} / 2), 2)}\n`;
   css += `.st-trap{opacity:round(down, ${F} / 4)}\n`;
   css += `.st-err{opacity:min(1, round(down, ${F} / 2))}\n`;
-  css += `.tot-q{opacity:var(--${out.h})}.tot-n{opacity:calc(1 - var(--${out.h}))}\n`;
+  css += `.tot-q{opacity:mod(${F}, 2)}.tot-n{opacity:calc(1 - mod(${F}, 2))}\n`;
+  const inRange = `clamp(0, ${STORED_LIMIT + 1} - var(--rx0), 1)`;
   for (let d = 0; d < L.digits.n; d++) {
     css += `.x0 .z${d} use{transform:translateY(calc(${toCss(digitOf('rx0', d))} * -20px))}\n`;
-    if (d > 0) css += `.x0 .z${d}{opacity:clamp(0, var(--rx0) - ${10 ** d - 1}, 1)}\n`;
+    css += d > 0 ? `.x0 .z${d}{opacity:calc(clamp(0, var(--rx0) - ${10 ** d - 1}, 1) * ${inRange})}\n` : `.x0 .z0{opacity:${inRange}}\n`;
   }
-  css += `.x0{--rx0:${toCss(absV(V(machine.initProp)))}}.x0 .zn{opacity:${toCss(signBit(V(machine.initProp)))}}\n`;
+  css += `.x0{--rx0:${toCss(absV(V(machine.initProp)))}}.x0 .zn{opacity:calc(${toCss(signBit(V(machine.initProp)))} * ${inRange});transform:translateX(calc((${L.digits.n - 1} - ${digitCount('rx0', L.digits.n)}) * 10px))}\n`;
+  css += `.x0 .zr{opacity:calc(1 - ${inRange})}\n`;
 
   // ---------------------------------------------------------------- defs
   let defs = '';
@@ -118,6 +122,7 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
     col += `<rect class="j${b}" x="${tr.x}" y="${r4(y)}" width="${r4(Math.max(0.8, cw - (cw > 3 ? 1 : 0)))}" height="${r4(rh - 1)}"/>`;
   }
   col += `<rect class="js" x="${tr.x}" y="${tr.y}" width="${r4(Math.max(0.8, cw - (cw > 3 ? 1 : 0)))}" height="${r4(rh - 1)}"/>`;
+  col += `<rect class="jm" x="${tr.x}" y="${tr.y + tr.h + 1}" width="${r4(Math.max(0.8, cw - (cw > 3 ? 1 : 0)))}" height="3"/>`;
   col += '</g>';
   defs += col;
 
@@ -127,7 +132,7 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
   let body = '';
   body += `<rect class="bg" x=".5" y=".5" width="${W - 1}" height="${H - 1}" rx="10"/>`;
   body += `<text x="20" y="29" font-size="15" font-weight="600">${title}</text>`;
-  body += `<text x="${20 + Math.min(320, meta.title.length * 8.6) + 14}" y="29" class="mono mut" font-size="12">${esc(meta.wasmName)} · ${sig}</text>`;
+  body += `<text x="${Math.round(20 + Math.min(320, meta.title.length * 8.6) + 14)}" y="29" class="mono mut" font-size="12">${esc(meta.wasmName)} · ${sig}</text>`;
   body += `<circle class="live pulse" cx="${W - 132}" cy="25" r="4"/><text x="${W - 122}" y="29" class="lbl" font-size="11">LIVE · CSS RUNTIME</text>`;
   body += `<line x1="0" y1="44" x2="${W}" y2="44" stroke="var(--line)"/>`;
   body += `<text x="40" y="70" class="lbl">STATE</text>`;
@@ -171,13 +176,14 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
   disp += `<g class="st-halt"><circle cx="${stx}" cy="${sy + 10}" r="4" style="fill:var(--blue)"/><text x="${stx + 10}" y="${sy + 15}" class="lbl" style="fill:var(--blue)">HALTED</text></g>`;
   disp += `<g class="st-err"><circle cx="${stx}" cy="${sy + 10}" r="4" style="fill:var(--red)"/><text x="${stx + 10}" y="${sy + 15}" class="lbl" style="fill:var(--red)">STOPPED</text></g>`;
   // highlight of the current trace column
-  disp += `<rect class="hl" x="${r4(tr.x - 1)}" y="${tr.y - 3}" width="${r4(Math.max(2, cw + 1))}" height="${tr.h + 6}" rx="1" fill="none" stroke="var(--fg)" stroke-opacity=".55"/>`;
+  disp += `<rect class="hl" x="${r4(tr.x - 1)}" y="${tr.y - 3}" width="${r4(Math.max(2, cw + 1))}" height="${tr.h + 3}" rx="1" fill="none" stroke="var(--fg)" stroke-opacity=".55"/>`; // ends above the marker row
   disp += '</g>';
 
   // x0 label (lives in the root level, reads the init value directly)
   let x0 = `<g class="x0"><text x="40" y="${sy + 45}" class="lbl">INPUT x₀</text>`;
   x0 += `<text class="zn mono" x="104" y="${sy + 46}" font-size="15" font-weight="600">−</text>`;
   for (let d = 0; d < dg.n; d++) x0 += `<g class="dg sm z${d}" transform="translate(${114 + (dg.n - 1 - d) * 10} ${sy + 31})" clip-path="url(#cs)"><use href="#ds"/></g>`;
+  x0 += `<text class="zr" x="114" y="${sy + 45}" font-size="11" style="fill:var(--red)">out of range</text>`;
   x0 += `<text x="${196}" y="${sy + 45}" class="mut" font-size="11">← the only input</text></g>`;
 
   // ---------------------------------------------------------------- nested levels
@@ -189,16 +195,18 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
   }
   levels += disp + close;
 
-  // (XML comments may not contain a double hyphen, so custom properties are named without it.)
-  const header = `<!-- README Runtime ${meta.toolVersion} - generated from ${esc(meta.wasmName)} (sha256:${meta.wasmSha256.slice(0, 16)}), export "${esc(meta.exportName)}".
-     Every number on this card is computed by CSS when it is displayed: the rules .A and .B are
-     ${esc(meta.exportName)}() compiled to CSS math and applied once per nested g element. The only input is the
-     custom property ${machine.initProp} in the style attribute of g.R; change it and the browser recomputes the whole run.
-     Regenerate with: readme-runtime build -->`;
+  // XML comments may not contain a double hyphen, so no user-provided text goes in here
+  // (file and export names appear in <title>/<desc>/<text>, escaped).
+  const header = `<!-- README Runtime ${meta.toolVersion} - generated card, wasm sha256:${meta.wasmSha256.slice(0, 16)}.
+     Every number on this card is computed by CSS when it is displayed: the rules .A and .B are the
+     exported step function compiled to CSS math, applied once per nested g element (the run is unrolled
+     into ${steps} levels when the card is built; no value is stored). The only input is the custom
+     property ${machine.initProp} in the style attribute of g.R: change it and the browser recomputes the run;
+     a value that CSS cannot compute exactly shows OUT OF RANGE. Regenerate with: readme-runtime build -->`;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="rrt rrd">
 ${header}
 <title id="rrt">${title} — README Runtime</title>
-<desc id="rrd">${esc(meta.wasmName)} ${esc(meta.exportName)}() runs live in CSS: starting from x0 = ${machine.init}, the browser computes up to ${steps} steps and animates them.</desc>
+<desc id="rrd">${esc(meta.wasmName)} ${esc(meta.exportName)}() runs live in CSS: starting from the initial value in the SVG (${machine.init} as generated), the browser computes up to ${steps} steps and animates them.</desc>
 <style><![CDATA[
 ${css}]]></style>
 <defs>${defs}</defs>
@@ -218,4 +226,11 @@ function digitOf(name, d) {
   const x = V(name);
   if (d === 0) return { k: 'f', fn: 'mod', args: [x, N(10)] };
   return { k: 'f', fn: 'mod', args: [{ k: 'f', fn: 'round', mode: 'down', args: [{ k: '/', a: x, b: N(10 ** d) }] }, N(10)] };
+}
+
+// Number of decimal digits of the non-negative value in --name (1..n), as CSS text.
+function digitCount(name, n) {
+  let s = '1';
+  for (let d = 1; d < n; d++) s += ` + clamp(0, var(--${name}) - ${10 ** d - 1}, 1)`;
+  return `(${s})`;
 }

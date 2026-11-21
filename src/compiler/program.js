@@ -29,6 +29,9 @@ function findExport(mod, name, role) {
 // halt (0/1 predicate from an optional export).
 export function compileStep(wasmBytes, { exportName = 'step', haltExport = null } = {}) {
   const mod = parseModule(wasmBytes);
+  // Structural problems (bad indices, type errors) are reported by the engine's validator
+  // rather than surfacing later as confusing internal errors.
+  if (!WebAssembly.validate(wasmBytes)) throw new UnsupportedError('the file is not a valid WebAssembly module (WebAssembly.validate failed)');
   const ir = new IR();
   const stepExp = findExport(mod, exportName, 'step function');
   const lifted = liftFunction(mod, stepExp.index, { ir });
@@ -39,7 +42,8 @@ export function compileStep(wasmBytes, { exportName = 'step', haltExport = null 
   if (haltExport) {
     const h = findExport(mod, haltExport, 'halt predicate');
     const lh = liftFunction(mod, h.index, { ir });
-    if (lh.traps.length) throw new UnsupportedError(`halt predicate "${haltExport}" may trap; it must be total`);
+    const liveTraps = lh.traps.filter((t) => !(t.op === 'const' && t.value === 0));
+    if (liveTraps.length) throw new UnsupportedError(`halt predicate "${haltExport}" may trap; it must be total`);
     halt = ir.bool(lh.results[0]);
   }
   return { mod, ir, step: lifted.results[0], trap, halt, exportName, haltExport };
