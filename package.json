@@ -1,0 +1,22 @@
+{
+  "name": "readme-runtime",
+  "version": "0.1.0",
+  "description": "Run your WebAssembly inside your GitHub README: compiles a .wasm state-update function into a live, CSS-computed animated SVG.",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "readme-runtime": "bin/readme-runtime.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test \"test/**/*.test.js\"",
+    "test:browser": "node test/browser/run.js"
+  },
+  "devDependencies": {
+    "@yowasp/clang": "21.1.4-3",
+    "playwright": "^1.65.1",
+    "pngjs": "^7.0.0"
+  }
+}

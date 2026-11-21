@@ -1,0 +1,4 @@
+# Generated cards and lock are compared byte-for-byte by "readme-runtime check".
+*.svg text eol=lf
+readme-runtime.lock.json text eol=lf
+*.wasm binary
