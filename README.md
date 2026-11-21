@@ -17,7 +17,7 @@
 --rxa: calc((var(--rxb) * 3 + 1) * mod(var(--rxb), 2) + round(down, var(--rxb) / 2) * (1 - mod(var(--rxb), 2)));
 ```
 
-試しに [`readme-runtime/collatz.svg`](readme-runtime/collatz.svg) をテキストエディタで開き、`style="--rxb:27"` を `--rxb:97` に変えてブラウザで開いてください。生成し直さなくても、ブラウザが97からの118ステップを計算し直します。
+試しに [`readme-runtime/collatz.svg`](readme-runtime/collatz.svg) をテキストエディタで開き、`style="--rxb:27"` を `--rxb:97` に変えてブラウザで開いてください。生成し直さなくても、ブラウザが97からの118ステップを計算し直します。CSSで正確に計算できない値になる初期値（例: 77671）に変えると、間違った数字は出さずに `OUT OF RANGE` で止まります。
 
 ### 言語は問いません（Rustの例）
 
@@ -36,7 +36,8 @@ your code (C / Rust / ...)  ──build command──▶  .wasm  ──readme-ru
 1. `.wasm` から指定したexport関数を読み、制御フロー（`if` / `block` / `br_if` / `br_table` / `return` / 関数呼び出し）を記号実行して、分岐のない式に変換します。
 2. 式を `calc()` / `mod()` / `round()` / `clamp()` などのCSS数学関数に変換し、登録済みカスタムプロパティ（`@property … syntax:'<integer>'`）に割り当てます。
 3. SVGの中に `<g>` を入れ子にし、各段が親の状態から次の状態を計算します。段ごとにプロパティ名を交互に切り替えることで、CSSの循環参照を避けています。
-4. アニメーションする `--rt`（時計）が、何ステップ目まで表示するかを選びます。`prefers-reduced-motion` の環境では最終状態を静止表示します。
+4. 区間解析で、CSSで正確に表せない値になりうる箇所を見つけ、そこに範囲ガードを入れます。ガードが働くと、その段で `OUT OF RANGE` と表示して止まります。
+5. アニメーションする `--rt`（時計）が、何ステップ目まで表示するかを選びます。`prefers-reduced-motion` の環境では最終状態を静止表示します。
 
 ## 使い方
 
@@ -53,7 +54,7 @@ npx github:otonasi-muonn/README-Runtime build
 #    ![demo](readme-runtime/step.svg)
 ```
 
-> まだnpmには公開していないため、GitHubリポジトリから `npx` で実行します。再現性が必要な場合は `github:otonasi-muonn/README-Runtime#<tag>` のように固定してください。
+> まだnpmには公開していないため、GitHubリポジトリから `npx` で実行します。`init` が作るワークフローは、生成に使ったバージョンのタグ（`github:otonasi-muonn/README-Runtime#v0.1.0`）に固定されます。新しい版のジェネレータは異なる（同じく正しい）SVGを出しうるため、更新するときはワークフローの版と `build` をそろえてください。
 
 使えるかどうかだけ確かめるには:
 
@@ -103,9 +104,16 @@ npx github:otonasi-muonn/README-Runtime inspect build/step.wasm
 
 | 変更 | 動作 |
 |---|---|
-| `build.inputs` のファイル、または `build.command` | ビルドコマンドを実行し、カードも作り直す |
+| `build.inputs` のファイル、または `build.command` | ビルドコマンドを実行する。できた `.wasm` が前回と同じバイト列なら、カードは作り直さない |
 | `.wasm`、カードの設定、README Runtime本体（変換器・テンプレート） | カードだけ作り直す |
 | 何も変わっていない | 何もしない（`--force` で強制） |
+
+`build.inputs` の書き方:
+
+- ファイルのパス、またはディレクトリ（その下のすべてのファイル）を指定します。
+- globも使えます。`*` と `?` はパスの1階層内、`**` は0個以上のディレクトリに一致します（`src/**` はsrc以下のすべて、`src/**/*.c` はsrc以下のすべての `.c`）。
+- どのファイルにも一致しないパターンはエラーになります（ソースを変えたのに何も起きない、という事故を防ぐため）。
+- カード自身の出力（`.wasm` とSVG）と `readme-runtime.lock.json` は、パターンに含まれていても自動的に除外します。
 
 ハッシュは改行コードを正規化して計算するため、WindowsとLinuxのチェックアウトで結果が変わりません。
 
@@ -133,35 +141,64 @@ CSSには桁あふれする整数型がなく、`calc()` は浮動小数点で�
 
 | | Chromium (Chrome/Edge) | Firefox | WebKit (Safari) |
 |---|---|---|---|
-| 式の途中の計算 | double | **float32** | double |
+| 式の途中の計算 | double | **float32**（`mod()`/`rem()` も `a − b·floor(a/b)` をfloat32で計算） | double |
 | `var()` で受け渡す計算済みの値 | **有効数字6桁に丸める** | float32 | double |
+| `calc()` の入れ子の深さ | 約95段まで | **約75段まで**（超えると宣言ごと無効） | 約105段まで |
 
-- **状態と、段の間で受け渡す値: |x| ≤ 999,999**。式の途中の値: |x| < 2²³。
-- ビルド時に、本物のWasmの実行結果と、生成したCSSを3つのブラウザの演算モデルで評価した結果を全ステップ比較します。範囲を超える値が出るとエラーで止まり、カードは生成しません（例: 初期値77671は14ステップ目で1,327,102になるため拒否）。
-- 閲覧時に範囲を超えた場合（SVGの初期値を書き換えたときなど）は、間違った数字を出さずに `OUT OF RANGE` と表示して止まります。
-- 対応命令: i32の算術・ビット演算・シフト・比較・`select`、`block` / `if` / `br` / `br_if` / `br_table` / `return`、非importの関数呼び出し（インライン展開）、immutableなglobal。
-- 非対応（明確なエラーになります）: ループ、線形メモリ、i64・浮動小数点、import関数の呼び出し、再帰、mutableなglobal、可変量のrotate。ループはREADME Runtime自身が担当するので、`step()` には1ステップ分だけを書いてください。
-- 0除算などのトラップは本物のWasmと同じステップで検出し、カードに `STOPPED` / `TRAP` と表示します。
-- ステップ数は最大400（WebKitが約510段を超える入れ子を処理できないことを実測）。
+この実測から、次の範囲を保証します。
 
-動作確認したブラウザ: Chrome 157 / Edge 157（Windows）、Playwright 1.65 の Chromium・Firefox・WebKit。必要な機能: `@property`、`mod()` / `round()`、CSSアニメーション（Chrome/Edge 125以降、Firefox 128以降、Safari 16.4以降が目安）。
+- **状態と、段の間で受け渡す値: |x| ≤ 999,999**。
+- 式の途中の値: |x| < 2²⁴（2の冪以外で割る・剰余を取る値は |x| < 2²³）。
+- 式は入れ子24段ごとに一時プロパティへ分割し、どの宣言も40段以内に収めます。
+
+保証のしかた:
+
+- **ビルド時**: 本物のWasmの実行結果と、生成したCSSを3つのブラウザの演算モデルで評価した結果を全ステップ比較します。範囲を超える値が出るとエラーで止まり、カードは生成しません（例: 初期値77671は14ステップ目で1,327,102になるため拒否。`(x * 65536) % 32749` のように途中で2²⁴を超える式も拒否）。
+- **閲覧時**: すべての状態（|x| ≤ 999,999）について区間解析を行い、範囲を超えうる値には「範囲ガード」をCSSに埋め込みます。SVGの初期値を書き換えた場合でも、表示は **本物のWasmと同じ値か、`OUT OF RANGE` で停止するかのどちらか** です。間違った数字は表示しません（i32の桁あふれに依存するコードも、桁あふれが起きる入力では停止します）。
+
+対応する命令:
+
+- i32の算術・ビット演算・シフト・比較・`select`（符号なしの除算・剰余・比較を含む）
+- `block` / `if` / `br` / `br_if` / `br_table` / `return`、非importの関数呼び出し（インライン展開）、immutableなglobal
+
+非対応（命令名とヒントつきのエラーになります）:
+
+- ループ、線形メモリ、i64・浮動小数点、import関数の呼び出し、再帰、mutableなglobal、可変量のrotate
+- ループはREADME Runtime自身が担当するので、`step()` には1ステップ分だけを書いてください。
+
+その他:
+
+- 0除算などのトラップは、本物のWasmと同じステップで検出し、カードに `TRAP` / `STOPPED` と表示します。
+- 実行は、ビルド時に `steps` 段の入れ子として展開されます。値はすべて表示時にCSSが計算し、SVGには保存されません。
+- ステップ数は最大400です（WebKitが約510段を超える入れ子を処理できないことを実測）。
+
+動作確認したブラウザ: Chrome 157 / Edge 157（Windows）、Playwright 1.65 の Chromium・Firefox・WebKit。
+必要な機能: `@property`、`mod()` / `round()`、CSSアニメーション。目安は Chrome/Edge 125以降、Firefox 128以降、Safari 16.4以降です。
 
 ## 検証
 
 ```sh
-npm test                    # Wasm → IR → CSS の照合（約40種類の命令パターン）、決定性、範囲エラー
+npm test                    # 単体・結合テスト 50件（下記）
 npm run test:browser        # 実ブラウザで <img> 表示したピクセルを解読して、本物のWasmと照合
 node bin/readme-runtime.js check
 ```
+
+`npm test` の内容:
+
+- 約80の命令パターンについて、すべての入力・3つのブラウザ演算モデルで「本物のWasmと一致するか、範囲フラグが立つか」を確認します（[`test/compiler.test.js`](test/compiler.test.js)）。
+- 出力の決定性、範囲エラー、トラップ、停止判定を確認します（[`test/pipeline.test.js`](test/pipeline.test.js)）。
+- 敵対的レビューで見つかった不具合の再現ケースを回帰テストにしています（[`test/soundness.test.js`](test/soundness.test.js)）。
+- キャッシュ・差分ビルド・`check` の挙動を確認します（[`test/project.test.js`](test/project.test.js)）。
 
 ブラウザ検証（[`test/browser/run.js`](test/browser/run.js)）の条件:
 
 - SVGを `image/svg+xml` と、GitHubと同じCSP（`default-src 'none'; style-src 'unsafe-inline'; sandbox`）で配信し、JavaScriptを無効にしたページの `<img>` で表示します。
 - 値はスクリーンショットのピクセル（32bitレジスタのLED、トレースの全列、状態ドットの色）だけから読み取ります。
-- **生成済みSVGの初期値だけを書き換えた13通り**（生成器はその値を知りません）で、本物のWasmの軌道と一致することを確認します。範囲外になる初期値では `OUT OF RANGE` で止まることを確認します。
+- 対象は14プログラムです。C（Collatz、90分岐のif連鎖、符号なし剰余）、Rust（LFSR）、命令を直接組んだWasm（LCG、xorshift、桁あふれ依存、2乗の剰余など）を含みます。
+- 各プログラムについて、**生成済みSVGの初期値だけを書き換えた値**（生成器はその値を知りません）でも、表示が本物のWasmの軌道と一致するか、範囲外になるステップで `OUT OF RANGE` になることを確認します。
 - 時計を固定した決定的な検証、実際のアニメーション（時間とともにステップが進み、どの瞬間も正しい）、`prefers-reduced-motion` の3種類を行います。
 
-直近の結果: Chromium・Firefox・WebKit・Chrome 157・Edge 157 で 124/124 合格。
+直近の結果（2026-11-22）: Chromium・Firefox・WebKit（Playwright 1.65.1）、Chrome 157、Edge 157 の5エンジンで **304/304 合格**。14プログラムと、生成済みSVGの初期値を書き換えた33通りを含みます。
 
 ### GitHub上での確認手順
 

@@ -65,7 +65,8 @@ export async function verifyRun(wasmBytes, program, machine, cfg) {
       if (levels[k].get('rrg') !== 0) {
         throw new VerifyError(
           `step ${k}: a value computed by ${call(k)} can leave the range that CSS represents exactly in every browser ` +
-          `(stored values |v| <= ${STORED_LIMIT.toLocaleString('en-US')}, intermediate values |v| < 2^23); the card would stop here with OUT OF RANGE. ` +
+          `(stored values |v| <= ${STORED_LIMIT.toLocaleString("en-US")}; intermediate values |v| < 2^24, or < 2^23 for operands of a division); the card would stop here with OUT OF RANGE. ` +
+          `CSS evaluates both arms of every conditional, so this includes values on a branch Wasm does not take here. ` +
           `Keep intermediate values smaller, or use fewer "steps" / a halt condition.`);
       }
       const got = stateAt(machine, levels, k);
