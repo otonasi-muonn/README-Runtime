@@ -126,6 +126,28 @@ test('renders are deterministic even when the component uses Math.random', async
   assert.equal(renderWith(b, p), renderWith(b, p));
 });
 
+test('a CRLF checkout builds the same card, and check accepts it', async (t) => {
+  // Windows checkouts with autocrlf: a multi-line class string then contains "\r\n"
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rr-ui-crlf-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true, maxRetries: 5 }));
+  fs.cpSync(path.join(root, 'examples/mockcraft'), path.join(dir, 'mc'), { recursive: true });
+  const demo = path.join(dir, 'mc/demo.tsx');
+  const src = fs.readFileSync(demo, 'utf8').replace('<div style={{', '<div className="rr-a\n      rr-b" style={{');
+  assert.ok(src.includes('rr-b'), 'the fixture edit applies');
+  fs.writeFileSync(demo, src.replace(/\r?\n/g, '\r\n'));
+  const card = {
+    name: 'mc', wasm: 'mc/logic.wasm', export: 'step', init: 1536, steps: 8,
+    ui: { entry: 'mc/demo.tsx', tsconfig: 'mc/tsconfig.json', views: { dx: 'view_dx', dy: 'view_dy', on: 'view_on', sel: 'view_sel', hits: 'view_hits' } },
+  };
+  const cfg = path.join(dir, 'readme-runtime.json');
+  fs.writeFileSync(cfg, JSON.stringify({ cards: [card] }));
+  await build(cfg, { log: () => {} });
+  const svg = fs.readFileSync(path.join(dir, 'readme-runtime/mc.svg'), 'utf8');
+  assert.match(svg, /class="rr-a\n {6}rr-b"/);
+  assert.ok(!svg.includes('\r'));
+  assert.deepEqual(await check(cfg, { log: () => {} }), []);
+});
+
 test('editing a reused component or stylesheet regenerates the UI card; nothing else does', async (t) => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rr-ui-proj-'));
   t.after(() => fs.rmSync(dir, { recursive: true, force: true, maxRetries: 5 }));

@@ -69,6 +69,9 @@ export async function generate(wasmBytes, opts) {
   } else {
     svg = renderCard(machine, meta, { bits: o.bits });
   }
+  // A CRLF checkout puts \r into rendered markup (e.g. multi-line class strings); XML reads
+  // \r\n as \n anyway, and a Linux build must give the same bytes.
+  svg = svg.replace(/\r\n?/g, '\n');
   checkWellFormed(svg);
   return { svg, verification, machine, program, ui: ui?.info ?? null, uiInputs: ui?.inputs ?? [] };
 }
