@@ -25,6 +25,28 @@
 
 [`examples/lfsr-rust/lfsr.rs`](examples/lfsr-rust/lfsr.rs) は Rust で書いた16ビットLFSRです。`readme-runtime.json` の `build.command` を `rustc …` にしているだけで、Cの例と同じ流れでカードになります。こちらは `xor` を含むビット演算がCSSで計算されています。
 
+### 既存のUIをそのまま使う（UIdesign / mockcraft の例）
+
+![mockcraft: the project's own React components, driven live by Wasm computed in CSS](readme-runtime/mockcraft.svg)
+
+[otonasi-muonn/UIdesign](https://github.com/otonasi-muonn/UIdesign)（画面モック工房 mockcraft、Next.js + React 19 + Tailwind 4）の実コンポーネントを、**1行も書き換えずに**使ったカードです。
+
+- 表示: `ElementView`・`buildPreset`・`mk`・`globals.css` を、コミット `2f97712` からバイト単位で同一のまま取り込んでいます（[`examples/mockcraft/upstream.json`](examples/mockcraft/upstream.json) にハッシュを記録し、テストで照合）。
+- 状態: [`examples/mockcraft/logic.ts`](examples/mockcraft/logic.ts)（AssemblyScript）が、カードの位置・向き・反射回数を1ステップずつ更新します。`view_*` 関数がUIに渡す値を計算します。
+- 作者が書いたのは [`examples/mockcraft/demo.tsx`](examples/mockcraft/demo.tsx)（約30行）だけです。どのコンポーネントを置き、view値をどのpropsに渡すかを書いています。
+
+仕組み:
+
+1. デモのTSXを esbuild で束ね、React の `renderToStaticMarkup` で静的HTMLにします（毎回新しいVMで、`Math.random` と `Date` を固定）。
+2. view値を変えて何度か描画し、出力の違いから束縛を推定します。
+   - style の数値が view に対して一次式なら `calc(var(--view) * a + b)` にします。
+   - テキスト中の数値は CSSカウンタで表示します。
+   - クラス名・文言・要素の有無の違いは、値ごとの変種にし、`@container style(--view: k)` で切り替えます。
+3. 推定したテンプレートが、実行中のすべての状態と、範囲内のランダムなview値で、コンポーネントの直接描画と一致することを確認してから出力します。
+4. 実ブラウザ検証では、`<img>`（JS無効）に表示したカードのUI部分が、同じ状態を直接描画した画像とピクセル単位で一致することを確認します。Firefox と WebKit は完全一致、Chromium はCSSカウンタの前後で数px の字送り差があります。
+
+フレーム（時刻ごとの画像）は1枚も保存していません。SVGが持つのは、静的なUIのひな形と変種、および束縛だけです。何を表示するかは、表示時にCSSがWasmの状態から計算します。
+
 ## 仕組み
 
 ```
@@ -64,6 +86,26 @@ npx github:otonasi-muonn/README-Runtime#v0.1.0 inspect build/step.wasm
 # step(i32) -> i32                 OK: can run in CSS as a step function
 ```
 
+### AIエージェントから使う
+
+すべてのコマンドは非対話で、`--json` を付けると結果をJSON 1個で返します。失敗時は `{ ok: false, error: { code, message, hint } }` を返し、終了コードは2です。手順は [`AGENTS.md`](AGENTS.md) にまとめています（エージェントのAGENTS.mdやSkillにそのまま貼れる分量です）。
+
+```sh
+readme-runtime analyze --json                      # 再利用できるコンポーネントを、実際に描画して判定
+readme-runtime init --ui src/components/X.tsx#X --name demo --json   # 生成直後からビルドできる雛形
+readme-runtime build --json                        # 変更のあったカードだけ作り直し、理由も返す
+readme-runtime check --json                        # CIと同じ検査。ファイルは書き換えない
+```
+
+- `analyze` は、各コンポーネントを props なしで実際に静的描画して判定します。判定は「そのまま使える」「props が必要」「フレームワーク専用のimportがある」「Canvas描画」「依存が未インストール」のいずれかです。
+- エラーコードの例:
+  - `UI_NONLINEAR`: view と表示の関係が一次式でない
+  - `RANGE_INTERMEDIATE`: 途中の値が大きすぎる
+  - `WASM_UNSUPPORTED`: ループなど非対応の命令がある
+  - `BUILD_COMMAND`: ビルドコマンドが失敗した
+
+  コードごとに修正方法を1つ返します。
+
 ### 設定 `readme-runtime.json`
 
 ```json
@@ -97,6 +139,7 @@ npx github:otonasi-muonn/README-Runtime#v0.1.0 inspect build/step.wasm
 | `haltExport` | 停止判定に使うexport関数（`(i32) -> i32`、非0で停止）。これもCSSに変換されます | なし |
 | `build.command` | `.wasm` を作るコマンド。言語非依存で、シェルでそのまま実行します | なし |
 | `build.inputs` | コマンドが読むソース（glob可）。これが変わったときだけ `command` を実行します | `build` があれば必須 |
+| `ui` | 既存UIのカードにする: `entry`（デモのTSX/JSX）、`views`（view名→export関数）、`css`（スタイルシート）、`tsconfig`、`width`/`height`、`credit` | なし |
 | `title` / `stepMs` / `hold` / `bits` / `out` | 表示タイトル / 1ステップのミリ秒 / 最終状態の保持ステップ数 / トレースの行数（4〜20） / 出力先 | `name` / 120 / 12 / 20 / `readme-runtime/<name>.svg` |
 
 ### キャッシュと差分ビルド
@@ -178,6 +221,28 @@ CSSには桁あふれする整数型がなく、`calc()` は浮動小数点で�
 
 動作確認したブラウザ: Chrome 157 / Edge 157（Windows）、Playwright 1.65 の Chromium・Firefox・WebKit。実機のSafari（macOS/iOS）では未確認です。
 必要な機能: `@property`、`mod()` / `round()`、CSSアニメーション。目安は Chrome/Edge 125以降、Firefox 128以降、Safari 16.4以降です。
+
+既存UIのカード（`ui`）の制約:
+
+- view値は ±999,999 以内です。
+- 表示の違いを値ごとの変種で表すviewは、64通り以内（組み合わせは512通り以内）にしてください。
+- テキスト中の数値は整数の一次式に限ります。
+- 変種の切り替えに `@container style()` を使います（実測した Chromium / Firefox / WebKit は対応）。
+- 外部画像とWebフォントは `<img>` 内では読み込まれないため、システムフォントで代替します。
+- Canvasへの命令的な描画、ブラウザAPIを描画中に使うコンポーネント、フレームワーク専用のimport（`next/font` など）は、そのままでは使えません（`analyze` が判定します）。
+
+## 技術選定
+
+採用技術は、2026年11月時点の候補と比較して選びました。
+
+| 領域 | 採用 | 比較と判断 |
+|---|---|---|
+| CSSでの計算 | 登録カスタムプロパティ + `calc()`/`mod()`/`round()`、入れ子の段 | `if()` はFirefoxが非対応（実測）。`@container style()` は3エンジンとも対応（実測）なので、UIの変種の切り替えに採用 |
+| Wasm→CSS | 独自のi32変換器 | 対象はi32のみで、命令名つきのエラーが必要。汎用の最適化器（Binaryenなど）は不要 |
+| TSX→静的マークアップ | `react-dom/server` をVM内で決定的に実行 | Satoriは独自のレイアウトとフォントでプロジェクトのCSSを再現できない。スクリーンショットはラスタで動かない |
+| バンドル | esbuild 0.28 | tsconfigのpathsとJSXに対応し、高速。Vite/Rollupはこの用途には過剰 |
+| スタイル | Tailwind 4 のコンパイラAPI（使用クラスのみ）/ 素のCSS | プロジェクトのCSSをそのまま使える |
+| TSプロジェクトの計算 | AssemblyScript 0.28 | JSをWasm化する方式（Javyなど）は、JSエンジンと線形メモリを含むため対象外 |
 
 ## 検証
 

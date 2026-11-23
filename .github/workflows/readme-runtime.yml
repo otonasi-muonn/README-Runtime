@@ -21,9 +21,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      # The CLI has no runtime dependencies, so no install step is needed.
+          cache: npm
+      # UI cards bundle the reused components (esbuild, React, Tailwind) during check.
+      - run: npm ci --ignore-scripts
       - name: readme-runtime check (read-only)
-        run: node bin/readme-runtime.js check
+        run: node bin/readme-runtime.js check --json
       - name: Unit and pipeline tests
         run: node --test "test/**/*.test.js"
       - name: Nothing was modified
@@ -42,6 +44,8 @@ jobs:
       - run: npx playwright install --with-deps chromium firefox webkit
       - name: Pixel-level comparison with the real Wasm engine
         run: node test/browser/run.js --browsers chromium,firefox,webkit
+      - name: Reused UI equals the real component's direct render
+        run: node test/browser/ui.js --browsers chromium,firefox,webkit
       - name: Keep screenshots of failures
         if: failure()
         uses: actions/upload-artifact@v4
