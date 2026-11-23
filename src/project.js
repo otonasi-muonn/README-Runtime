@@ -268,9 +268,12 @@ export async function build(configPath, { only = [], force = false, log = consol
     if (!force && prev.render === key && outOk) {
       cardState = 'cached';
     } else {
-      reason = force ? 'forced' : !prev.render ? 'first build' : prev.wasm !== entry.wasm ? 'wasm changed'
-        : card.options.ui && uiFiles && prev.uiInputs ? (Object.entries(uiFiles).filter(([f, h]) => prev.uiInputs[f] !== h).map(([f]) => f).join(', ') || 'options or generator changed') : !outOk ? 'card missing or edited' : 'options or generator changed';
-      if (card.options.ui && uiFiles && prev.uiInputs && Object.entries(uiFiles).some(([f, h]) => prev.uiInputs[f] !== h)) reason = `ui files changed: ${reason}`;
+      const changedUi = card.options.ui && uiFiles && prev.uiInputs ? Object.entries(uiFiles).filter(([f, h]) => prev.uiInputs[f] !== h).map(([f]) => f) : [];
+      const why = force ? ['forced'] : !prev.render ? ['first build'] : [
+        ...(prev.wasm !== entry.wasm ? ['wasm changed'] : []),
+        ...(changedUi.length ? [`ui files changed: ${changedUi.join(', ')}`] : []),
+      ];
+      reason = why.length ? why.join('; ') : !outOk ? 'card missing or edited' : 'options or generator changed';
       const r = await generate(wasm, card.options);
       lastGen = r;
       fs.mkdirSync(path.dirname(outPath), { recursive: true });

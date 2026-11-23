@@ -31,6 +31,9 @@ test('errors come back as JSON with a stable code and a hint', () => {
   assert.ok(json.error.hint.length > 10);
   const bad = run(['frobnicate']);
   assert.equal(bad.json.error.code, 'CONFIG_INVALID');
+  // user mistakes are not "internal errors"
+  assert.equal(run(['init', '--ui', 'src/Nope.tsx']).json.error.code, 'OPTION_INVALID');
+  assert.equal(run(['analyze', 'no/such/folder']).json.error.code, 'OPTION_INVALID');
 });
 
 test('check --json reports structured problems and never writes', () => {
@@ -67,7 +70,8 @@ test('analyze + init --ui + build: a fresh React project gets a working UI card'
   const again = run(['build'], dir);
   assert.deepEqual([again.json.cards[0].build, again.json.cards[0].card], ['cached', 'cached']);
   // the scaffolded AssemblyScript file opts out of the project's own type check and lint
-  assert.match(fs.readFileSync(path.join(dir, 'readme-runtime/demo/badge/logic.ts'), 'utf8'), /^\/\/ @ts-nocheck\n\/\* eslint-disable \*\//);
+  // (eslint-disable first: ESLint only disables rules from that comment on)
+  assert.match(fs.readFileSync(path.join(dir, 'readme-runtime/demo/badge/logic.ts'), 'utf8'), /^\/\* eslint-disable \*\/\n\/\/ @ts-nocheck\n/);
 });
 
 test('analyze: default exports, empty renders, readable React errors, sub-packages', (t) => {

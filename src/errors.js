@@ -22,7 +22,7 @@ export const HINTS = {
   UI_SIZE: 'Give the root element of the demo an inline width and height in px, or set "ui.width" and "ui.height".',
   UI_NONINTEGER_TEXT: 'Numbers shown as text must be integer functions of a view (a*view + b with integer a, b).',
   UI_NO_STATES: 'The run shows no state; check "steps" and the halt condition.',
-  DEPS_NOT_INSTALLED: 'Install the project dependencies (npm ci or the project package manager), then run analyze again.',
+  DEPS_NOT_INSTALLED: 'Install the project dependencies (npm ci or the project package manager) first; in CI, before readme-runtime check (the workflow from readme-runtime init does this).',
   CHECK_SOURCES_CHANGED: 'Run `readme-runtime build` and commit the result.',
   CHECK_WASM_CHANGED: 'Run `readme-runtime build` and commit the result.',
   CHECK_CARD_STALE: 'Run `readme-runtime build` (with the same README Runtime version as CI) and commit the result.',

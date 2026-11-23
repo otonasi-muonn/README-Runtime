@@ -103,6 +103,18 @@ test('the UI size comes from the root element, also when the root has variants',
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
+test('renders do not depend on the host time zone or locale; missing dependencies are named', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rr-ui-'));
+  try {
+    fs.writeFileSync(path.join(dir, 'd.jsx'), 'export default function D() { const d = new Date(); return <p>{d.getHours()}|{d.toLocaleDateString()}|{(1234567.5).toLocaleString()}|{new Intl.DateTimeFormat(undefined, { hour: "numeric" }).format(d)}</p>; }\n');
+    const b = await bundleEntry('d.jsx', { cwd: dir });
+    assert.equal(renderWith(b, {}), '<p>0|1/1/2026|1,234,567.5|12 AM</p>');
+    fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({ name: 'x', dependencies: { 'tiny-cls': '1.0.0' } }));
+    fs.writeFileSync(path.join(dir, 'e.jsx'), 'import cls from "tiny-cls";\nexport default function E() { return <p className={cls("a")}>x</p>; }\n');
+    await assert.rejects(bundleEntry('e.jsx', { cwd: dir }), (e) => e.code === 'DEPS_NOT_INSTALLED' && /"tiny-cls" is a dependency/.test(e.message));
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
 test('inference refuses a non-affine dependence on a wide view', async () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rr-ui-'));
   try {

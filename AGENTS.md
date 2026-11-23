@@ -16,9 +16,9 @@ $RR check --json                   # what CI runs; never writes
    without props; `needs props` ones need values from the demo. `exports[].name` is what to put
    after `#` (`default` for a default export).
 2. `init --ui` creates `readme-runtime/demo/<name>/logic.ts` (AssemblyScript) and `demo.tsx`, and a
-   card in `readme-runtime.json` (tsconfig and Tailwind entry CSS are detected). Keep the
-   `// @ts-nocheck` and `/* eslint-disable */` lines of `logic.ts`: they keep the project's own
-   type check and lint off the AssemblyScript file.
+   card in `readme-runtime.json` (tsconfig and Tailwind entry CSS are detected). Keep the first two
+   lines of `logic.ts` (`/* eslint-disable */`, then `// @ts-nocheck`): they keep the project's own
+   lint and type check off the AssemblyScript file.
 3. `logic.ts`: `step(s: i32): i32` advances one i32 state; each `view_<v>(s: i32): i32` is a value the
    UI uses (list it in `ui.views`). No loops, memory, floats or i64; keep every value within ±999,999.
    A view's range is derived from its code for every state (not only those the run reaches), so a
@@ -34,7 +34,9 @@ $RR check --json                   # what CI runs; never writes
    `UI_BUNDLE` (framework-only import such as `next/font`: pass the value as a prop instead).
 6. Embed `![demo](readme-runtime/<name>.svg)` in README.md; commit the SVG, `readme-runtime.json`,
    `readme-runtime.lock.json` and `readme-runtime/demo/<name>/` including `logic.wasm` (CI checks
-   against it and never builds it). Never edit generated SVGs or the lock by hand.
+   against it and never builds it). Never edit generated SVGs or the lock by hand. CI must install
+   the project's dependencies before `check` (`readme-runtime init --json` adds such a workflow).
+   Renders run in UTC with the en-US locale, so dates and numbers are the same on every machine.
 
 Working on README Runtime itself: `npm test` (unit), `npm run test:browser` and
 `npm run test:browser:ui` (real browsers, pixels from `<img>` with JS off). Generated cards are

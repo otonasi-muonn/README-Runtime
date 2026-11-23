@@ -5,6 +5,7 @@ import { CONFIG_FILE } from './project.js';
 import { TOOL_VERSION } from './version.js';
 import { parseModule } from './wasm/reader.js';
 import { listExports, compileStep } from './compiler/program.js';
+import { CodedError } from './errors.js';
 
 export const PACKAGE = `github:otonasi-muonn/README-Runtime#v${TOOL_VERSION}`;
 
@@ -25,6 +26,13 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 22
+      # UI cards bundle the project's own components during check: install its dependencies.
+      - if: hashFiles('package-lock.json') != ''
+        run: npm ci --ignore-scripts
+      - if: hashFiles('pnpm-lock.yaml') != ''
+        run: corepack enable && pnpm install --frozen-lockfile --ignore-scripts
+      - if: hashFiles('yarn.lock') != ''
+        run: corepack enable && yarn install --immutable
       # Pinned to the README Runtime version that generated the cards: a newer generator can
       # produce different (equally valid) SVG, so update this together with a rebuild.
       - run: npx --yes ${PACKAGE} check
@@ -37,8 +45,8 @@ export const ASC = 'assemblyscript@0.28.20';
 // values to the component's props and writes the real state logic.
 export function initUiCard(cwd, { component, name = 'demo', configPath = CONFIG_FILE, css = [], tsconfig = null }) {
   const [file, exportName = null] = component.split('#');
-  if (!fs.existsSync(path.resolve(cwd, file))) throw new Error(`component file ${file} not found`);
-  if (!/^[\w.-]+$/.test(name)) throw new Error('--name must be a simple identifier');
+  if (!fs.existsSync(path.resolve(cwd, file))) throw new CodedError('OPTION_INVALID', `component file ${file} not found`);
+  if (!/^[\w.-]+$/.test(name)) throw new CodedError('OPTION_INVALID', '--name must be a simple identifier (letters, digits, ".", "-", "_")');
   const dir = `readme-runtime/demo/${name}`;
   const created = [];
   const write = (rel, text) => {
@@ -66,8 +74,8 @@ export default function Demo({ t }: { t: number }) {
   );
 }
 `);
-  write(`${dir}/logic.ts`, `// @ts-nocheck
-/* eslint-disable */
+  write(`${dir}/logic.ts`, `/* eslint-disable */
+// @ts-nocheck
 // AssemblyScript, not TypeScript: the build command in ${configPath} compiles it to logic.wasm.
 // The two lines above keep the project's own type check and linter off this file.
 // step() advances the state, view_*() derive what the UI shows. i32 only, values within
@@ -77,7 +85,11 @@ export function step(s: i32): i32 { return s < 100 ? s + 1 : 0; }
 export function view_t(s: i32): i32 { return s; }
 `);
   const cfgPath = path.resolve(cwd, configPath);
-  const cfg = fs.existsSync(cfgPath) ? JSON.parse(fs.readFileSync(cfgPath, 'utf8')) : { cards: [] };
+  let cfg = { cards: [] };
+  if (fs.existsSync(cfgPath)) {
+    try { cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8')); } catch (e) { throw new CodedError('CONFIG_INVALID', `${configPath} is not valid JSON: ${e.message}`); }
+    if (!Array.isArray(cfg?.cards)) throw new CodedError('CONFIG_INVALID', `${configPath} needs a "cards" array`);
+  }
   if (cfg.cards.some((c) => c.name === name)) {
     created.push({ file: configPath, status: `kept (card "${name}" exists)` });
   } else {
@@ -98,6 +110,7 @@ export function view_t(s: i32): i32 { return s; }
     created,
     card: name,
     next: ['readme-runtime build --json', `edit ${dir}/logic.ts and ${dir}/demo.tsx`, 'readme-runtime build --json', 'readme-runtime check --json',
+      'readme-runtime init --json (adds a check-only CI workflow that installs the dependencies first; keeps existing files)',
       `commit readme-runtime/${name}.svg, ${dir}/ (including logic.wasm: CI checks against it and never builds it), ${configPath} and readme-runtime.lock.json`],
   };
 }

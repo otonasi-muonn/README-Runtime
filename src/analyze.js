@@ -7,7 +7,7 @@ import os from 'node:os';
 import { spawnSync } from 'node:child_process';
 import { parseModule } from './wasm/reader.js';
 import { listExports, compileStep } from './compiler/program.js';
-import { describeError } from './errors.js';
+import { describeError, CodedError } from './errors.js';
 import { CONFIG_FILE } from './project.js';
 
 const SKIP = new Set(['node_modules', '.git', '.next', 'dist', 'build', 'out', 'coverage', '.turbo', '.vercel', 'readme-runtime']);
@@ -64,6 +64,7 @@ function tool(cmd, args) {
 
 export async function analyzeProject(dir, { render = true, maxComponents = 40 } = {}) {
   const root = path.resolve(dir);
+  if (!fs.existsSync(root) || !fs.statSync(root).isDirectory()) throw new CodedError('OPTION_INVALID', `${dir} is not a folder`);
   // the package a file belongs to when it is not this one: the nearest folder below root
   // with its own package.json
   const ownerOf = (f) => {
@@ -114,8 +115,8 @@ export async function analyzeProject(dir, { render = true, maxComponents = 40 } 
       if (bundleEntry && !owner && !c.uses.includes('canvas')) {
         const stubDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rr-analyze-'));
         try {
-          const rel = path.relative(stubDir, path.join(root, f)).replace(/\\/g, '/');
-          fs.writeFileSync(path.join(stubDir, 'probe.jsx'), `import * as M from ${JSON.stringify(rel.startsWith('.') ? rel : `./${rel}`)};\nexport default function Probe() { const C = M[${JSON.stringify(name)}]; return <C />; }\n`);
+          // by absolute path: a relative one cannot cross drives (project on D:, %TEMP% on C:)
+          fs.writeFileSync(path.join(stubDir, 'probe.jsx'), `import * as M from ${JSON.stringify(path.join(root, f))};\nexport default function Probe() { const C = M[${JSON.stringify(name)}]; return <C />; }\n`);
           const b = await bundleEntry(path.join(stubDir, 'probe.jsx'), { tsconfig: tsconfigFile ? path.join(root, tsconfigFile) : undefined, cwd: root });
           const html = renderWith(b, {});
           entry.renders = true;
