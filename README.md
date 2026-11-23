@@ -47,6 +47,20 @@
 
 フレーム（時刻ごとの画像）は1枚も保存していません。SVGが持つのは、静的なUIのひな形と変種、および束縛だけです。何を表示するかは、表示時にCSSがWasmの状態から計算します。
 
+### Canvas アプリの描画処理を使う（air-drawing-board の例）
+
+![air-drawing-board: a real saved drawing replayed with the app's own renderStroke()](readme-runtime/air-drawing.svg)
+
+[otonasi-muonn/air-drawing-board](https://github.com/otonasi-muonn/air-drawing-board)（カメラで空中に描くアプリ、TypeScript + Canvas）は、DOMをコードで組み立て、Canvasに命令的に描きます。そのままでは静的描画できないため、どこまで再利用できるかを検証しました（詳細と失敗の記録: [`examples/air-drawing/README.md`](examples/air-drawing/README.md)）。
+
+- 無変更で再利用: 保存データの復号 `decodeDrawing()`、ストローク描画 `renderStroke()`、配色・太さの定義、`styles.css`、テスト用の実際の描画データ。`renderStroke()` は、描画命令をSVGのpathに記録する小さなCanvas代替（[`canvas-svg.ts`](examples/air-drawing/canvas-svg.ts)）の上で、ビルド時に実行します。
+- 事前計算: 各ストロークの「先頭k点まで描いた形」。点数ごとの変種としてSVGに入ります（4本で64 + 22 + 22 + 52通り）。
+- ライブ計算: どのストロークが何点まで描かれたか、選択中の色と太さ、点数の表示。Wasm（`step(t) = t + 1` と8つのview関数）をCSSが計算し、表示する変種を選びます。
+- 手書き: アプリのヘッダーとツールバーのマークアップ（元はDOM操作で生成するため）。
+- 再利用できなかったもの: カメラとMediaPipe、One Euro Filter（浮動小数点）、QRコード生成、タイマーと入力イベント、localStorage。
+
+このカードは、形を点数ごとに事前計算しているため、mockcraft より「録画」に近い構成です。違いは、変種がストロークごと・点数ごとに独立していて、どれを表示するかを表示時にCSSが決めることです。
+
 ## 仕組み
 
 ```
@@ -77,7 +91,7 @@ npx github:otonasi-muonn/README-Runtime#v0.1.0 build
 ```
 
 > まだnpmには公開していないため、GitHubリポジトリから `npx` で実行します。ローカルの `build` と、`init` が作るCIワークフローは同じバージョンのタグ（`#v0.1.0`）に固定してください。版が違うと、ジェネレータの出力が変わって `check` が失敗します（そのときは版の違いをメッセージで示します）。
-> **注意:** このリポジトリはまだpushしておらず、タグ `v0.1.0` も未作成です。公開時にタグを作成するまで、上のコマンドは動きません。
+> **注意:** 現在は開発ブランチ `dev/readme-runtime-mvp` だけを公開していて、タグ `v0.1.0` は未作成です。タグを作成するまで、上のコマンドは動きません（`node <checkout>/bin/readme-runtime.js` で代用できます）。
 
 使えるかどうかだけ確かめるには:
 
@@ -92,12 +106,12 @@ npx github:otonasi-muonn/README-Runtime#v0.1.0 inspect build/step.wasm
 
 ```sh
 readme-runtime analyze --json                      # 再利用できるコンポーネントを、実際に描画して判定
-readme-runtime init --ui src/components/X.tsx#X --name demo --json   # 生成直後からビルドできる雛形
+readme-runtime init --ui src/components/X.tsx#X --name demo --json   # 雛形（propsなしで描画できる部品なら、生成直後からビルドできる）
 readme-runtime build --json                        # 変更のあったカードだけ作り直し、理由も返す
 readme-runtime check --json                        # CIと同じ検査。ファイルは書き換えない
 ```
 
-- `analyze` は、各コンポーネントを props なしで実際に静的描画して判定します。判定は「そのまま使える」「props が必要」「フレームワーク専用のimportがある」「Canvas描画」「依存が未インストール」のいずれかです。
+- `analyze` は、各コンポーネントを props なしで実際に静的描画して判定します。判定は「そのまま使える」「props が必要」「propsなしでは何も描画しない」「フレームワーク専用のimportがある」「Canvas描画」「依存が未インストール」のいずれかです。モノレポの親フォルダで実行すると、部品を持つサブパッケージを示します。
 - エラーコードの例:
   - `UI_NONLINEAR`: view と表示の関係が一次式でない
   - `RANGE_INTERMEDIATE`: 途中の値が大きすぎる
@@ -225,7 +239,9 @@ CSSには桁あふれする整数型がなく、`calc()` は浮動小数点で�
 既存UIのカード（`ui`）の制約:
 
 - view値は ±999,999 以内です。
-- 表示の違いを値ごとの変種で表すviewは、64通り以内（組み合わせは512通り以内）にしてください。
+- 表示の違いを値ごとの変種で表すviewは、64通り以内（組み合わせは512通り以内）にしてください。viewの値の範囲は、実行で現れる値ではなく、Wasmのコードからすべての状態について求めます（SVGの初期値を書き換えても正しく表示するため）。
+- ルート直下で要素が増減すると、UI全体が組み合わせごとに複製されます（`build` が `UI_WHOLE_VARIANTS` で警告します）。増減する部品は要素で包んでください。
+- スタイル: Tailwind 4 はREADME Runtime同梱のコンパイラで、Tailwind 3（`@tailwind base` など）はプロジェクト自身の tailwindcss 3・PostCSS・`tailwind.config` でコンパイルします（依存のインストールが必要）。
 - テキスト中の数値は整数の一次式に限ります。
 - 変種の切り替えに `@container style()` を使います（実測した Chromium / Firefox / WebKit は対応）。
 - 外部画像とWebフォントは `<img>` 内では読み込まれないため、システムフォントで代替します。
@@ -241,14 +257,15 @@ CSSには桁あふれする整数型がなく、`calc()` は浮動小数点で�
 | Wasm→CSS | 独自のi32変換器 | 対象はi32のみで、命令名つきのエラーが必要。汎用の最適化器（Binaryenなど）は不要 |
 | TSX→静的マークアップ | `react-dom/server` をVM内で決定的に実行 | Satoriは独自のレイアウトとフォントでプロジェクトのCSSを再現できない。スクリーンショットはラスタで動かない |
 | バンドル | esbuild 0.28 | tsconfigのpathsとJSXに対応し、高速。Vite/Rollupはこの用途には過剰 |
-| スタイル | Tailwind 4 のコンパイラAPI（使用クラスのみ）/ 素のCSS | プロジェクトのCSSをそのまま使える |
+| スタイル | Tailwind 4 のコンパイラAPI / Tailwind 3 はプロジェクト自身の tailwindcss 3 + PostCSS（どちらも使用クラスのみ）/ 素のCSS | プロジェクトのCSSをそのまま使える。Tailwind 3 のファイルを 4 で処理すると、v3のテーマがないため色や余白が無言で消える（実測）ので分けた |
 | TSプロジェクトの計算 | AssemblyScript 0.28 | JSをWasm化する方式（Javyなど）は、JSエンジンと線形メモリを含むため対象外 |
 
 ## 検証
 
 ```sh
-npm test                    # 単体・結合テスト 54件（下記）
+npm test                    # 単体・結合テスト 69件（下記）
 npm run test:browser        # 実ブラウザで <img> 表示したピクセルを解読して、本物のWasmと照合
+npm run test:browser:ui     # 既存UIのカードが、同じ状態の直接描画とピクセル単位で一致するか
 node bin/readme-runtime.js check
 ```
 
@@ -258,6 +275,8 @@ node bin/readme-runtime.js check
 - 出力の決定性、範囲エラー、トラップ、停止判定を確認します（[`test/pipeline.test.js`](test/pipeline.test.js)）。
 - 2回の敵対的レビューで見つかった不具合の再現ケースを回帰テストにしています（[`test/soundness.test.js`](test/soundness.test.js)）。
 - キャッシュ・差分ビルド・`check` の挙動を確認します（[`test/project.test.js`](test/project.test.js)）。
+- 既存UIのカード: 上流ファイルのハッシュ、束縛の推定（条件付きで現れる要素を含む）、非一次式の拒否、Tailwind 3 / 4、描画の決定性、部品やCSSの変更による再生成を確認します（[`test/ui.test.js`](test/ui.test.js)）。
+- CLI: `--json` の形式、エラーコード、`analyze` の判定（default export、空の描画、サブパッケージ）、`init --ui` からビルドまでを確認します（[`test/cli.test.js`](test/cli.test.js)）。
 
 ブラウザ検証（[`test/browser/run.js`](test/browser/run.js)）の条件:
 
@@ -271,9 +290,9 @@ node bin/readme-runtime.js check
 
 ### GitHub上での確認手順
 
-このリポジトリはまだpushしていません。GitHub上で確認するには:
+開発ブランチ（`dev/readme-runtime-mvp`）で確認するには:
 
-1. pushしたあと、リポジトリのトップページでカードが表示され、ステップが進み、最後に `HALTED` になることを確認します。
+1. ブランチのトップページでカードが表示され、ステップが進むことを確認します（Collatz のカードは最後に `HALTED` になります）。
 2. 画像を右クリックして「新しいタブで画像を開く」で開き、`raw.githubusercontent.com` から配信されたSVGでも動くことを確認します。
 3. Actionsタブで `README Runtime` ワークフローが成功していることを確認します。
 
