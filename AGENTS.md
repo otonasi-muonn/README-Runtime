@@ -26,8 +26,11 @@ $RR check --json                   # what CI runs; never writes
 4. `demo.tsx`: render the project's own components with props computed from the views. Numbers in
    style values or text may be any `a*view + b`; anything else (class names, texts, whether an element
    exists) needs a view with at most 64 values. Give the root element an inline width/height in px.
-   A `UI_WHOLE_VARIANTS` warning means the whole UI is copied per view value: wrap each part that
-   appears or disappears (e.g. a component that renders null) in its own element.
+   Build warnings (`cards[].ui.warnings`): `UI_WHOLE_VARIANTS` means the whole UI is copied per view
+   value: wrap each part that appears or disappears (e.g. a component that renders null) in its own
+   element. `UI_STRUCTURAL_CSS` means child/sibling selectors may style switched elements
+   differently than in the app: look at the card. `ui.sampledViews` lists views whose
+   combinations were only sampled, not checked value by value.
 5. On an error, act on `error.code` + `error.hint`. Frequent ones: `WASM_UNSUPPORTED` (rewrite the
    named construct), `RANGE_*` (values too large for exact CSS), `UI_NONLINEAR` (make the dependence
    linear or the view smaller), `UI_RENDER` (missing props / browser APIs during render),
