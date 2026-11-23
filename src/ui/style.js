@@ -14,6 +14,32 @@ export function classCandidates(markups) {
   return [...set].sort();
 }
 
+// Tailwind 3 (@tailwind base/components/utilities + tailwind.config): compiled with the
+// project's own tailwindcss 3 and postcss, for exactly the classes the UI uses. Tailwind 4
+// would accept the file too, but without the v3 theme it silently drops colours and spacing.
+async function tailwind3(css, abs, f, candidates, { cwd, deps }) {
+  const req = createRequire(path.join(cwd, 'package.json'));
+  let version, tailwind, postcss, loadConfig;
+  try {
+    version = req('tailwindcss/package.json').version;
+    tailwind = req('tailwindcss');
+    postcss = req('postcss');
+    loadConfig = req('tailwindcss/loadConfig');
+  } catch {
+    throw new UiError('UI_CSS', `${f} uses Tailwind 3 directives (@tailwind base/components/utilities): install the project's dependencies (tailwindcss 3 and postcss) so README Runtime can compile it with the project's own Tailwind`);
+  }
+  if (!version.startsWith('3.')) throw new UiError('UI_CSS', `${f} uses @tailwind base/components (Tailwind 3 syntax) but the project has tailwindcss ${version}`);
+  const configFile = ['ts', 'js', 'cjs', 'mjs'].map((x) => path.join(cwd, `tailwind.config.${x}`)).find((p) => fs.existsSync(p));
+  if (configFile) deps.add(configFile);
+  try {
+    const config = configFile ? loadConfig(configFile) : {};
+    const content = [{ raw: `<div class="${candidates.join(' ')}"></div>`, extension: 'html' }];
+    return (await postcss([tailwind({ ...config, content })]).process(css, { from: abs })).css;
+  } catch (e) {
+    throw new UiError('UI_CSS', `Tailwind ${version} could not compile ${f}: ${e.message}`);
+  }
+}
+
 export async function compileUiCss(files, candidates, { cwd = process.cwd() } = {}) {
   const parts = [];
   const deps = new Set();
@@ -22,7 +48,9 @@ export async function compileUiCss(files, candidates, { cwd = process.cwd() } = 
     if (!fs.existsSync(abs)) throw new UiError('UI_CSS', `stylesheet ${f} not found`);
     deps.add(abs);
     const css = fs.readFileSync(abs, 'utf8');
-    if (/@import\s+["']tailwindcss|@tailwind\b|@theme\b/.test(css)) {
+    if (/@tailwind\s+(base|components)\b/.test(css) && !/@import\s+["']tailwindcss/.test(css)) {
+      parts.push(await tailwind3(css, abs, f, candidates, { cwd, deps }));
+    } else if (/@import\s+["']tailwindcss|@tailwind\b|@theme\b/.test(css)) {
       const { compile } = await import('@tailwindcss/node');
       let compiler;
       // `@import "tailwindcss"` resolves from the project when it has Tailwind installed,
@@ -47,7 +75,8 @@ export async function compileUiCss(files, candidates, { cwd = process.cwd() } = 
   }
   // The component expects to live in the project's page: rules written for html/body (base
   // font, text colour, line height) are applied to the wrapper that hosts it instead.
-  let css = parts.join('\n').replace(/(^|[\s,}(])(html|body)(?=\s*[,{:])/g, '$1.rr-ui');
+  // (CRLF from a Windows checkout would make the card differ from a build on Linux)
+  let css = parts.join('\n').replace(/\r\n?/g, '\n').replace(/(^|[\s,}(])(html|body)(?=\s*[,{:])/g, '$1.rr-ui');
   // Framework-provided font variables (next/font and the like) do not exist in an image:
   // map each undefined --font-* to a system stack instead of letting the declaration fail.
   const used = new Set([...css.matchAll(/var\(--(font-[\w-]+)\)/g)].map((m) => m[1]));

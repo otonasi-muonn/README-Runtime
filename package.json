@@ -19,7 +19,8 @@
     "@yowasp/clang": "21.1.4-3",
     "assemblyscript": "0.28.20",
     "playwright": "^1.65.1",
-    "pngjs": "^7.0.0"
+    "pngjs": "^7.0.0",
+    "tailwindcss3": "npm:tailwindcss@3.4.19"
   },
   "dependencies": {
     "@tailwindcss/node": "4.3.5",

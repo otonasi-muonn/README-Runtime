@@ -5,11 +5,14 @@ import { classCandidates, compileUiCss } from './style.js';
 
 export { UiError };
 
-function rootSize(template) {
-  const first = template.children?.find((c) => c.type === 'el');
-  const style = first?.attrs.find(([k]) => k === 'style')?.[1] ?? '';
-  const px = (prop) => Number(new RegExp(`(?:^|;)\\s*${prop}\\s*:\\s*(\\d+(?:\\.\\d+)?)px`).exec(style)?.[1]);
-  return { width: px('width'), height: px('height') };
+// The root element's inline size. When the root itself has variants (a view changes its
+// children), every variant counts: the card must hold the largest.
+export function rootSize(template) {
+  const first = template.children?.find((c) => c.type === 'el' || c.type === 'switch');
+  const roots = first?.type === 'switch' ? first.variants.map((x) => x.node) : first ? [first] : [];
+  const px = (el, prop) => Number(new RegExp(`(?:^|;)\\s*${prop}\\s*:\\s*(\\d+(?:\\.\\d+)?)px`).exec(el.attrs?.find(([k]) => k === 'style')?.[1] ?? '')?.[1]);
+  const max = (prop) => (roots.length ? Math.max(...roots.map((el) => px(el, prop))) : NaN);
+  return { width: max('width'), height: max('height') };
 }
 
 // ui: { entry, tsconfig?, css?, views, width?, height?, credit? }  (paths relative to cwd)
@@ -29,8 +32,15 @@ export async function buildUi(ui, machine, verification, { cwd = process.cwd() }
   }
   const tsconfig = ui.tsconfig ? [ui.tsconfig.split('\\').join('/')] : [];
   const inputs = [...new Set([...bundle.inputs.filter((f) => !f.endsWith('readme-runtime-entry.jsx')), ...style.inputs, ...tsconfig])].sort();
+  // A variant region at the root means a full copy of the UI per combination of view values,
+  // usually because a component renders null for some values and so changes the root's
+  // child list. Say how to keep the variants small.
+  const warnings = info.discrete.filter((d) => d.path.split('.').length <= 1 && d.variants > 1).map((d) => ({
+    code: 'UI_WHOLE_VARIANTS',
+    message: `the whole UI is copied for each of ${d.variants} combinations of ${d.views.join(', ')}: an element appears or disappears directly under the root. Wrap each part that comes and goes (e.g. a component that renders null) in its own element, so only that element varies`,
+  }));
   return {
     markup, bindingCss, css: style.css, width, height, inputs,
-    info: { ...info, fontFallbacks: style.fontFallbacks, inputs, markupBytes: markup.length },
+    info: { ...info, fontFallbacks: style.fontFallbacks, inputs, markupBytes: markup.length, ...(warnings.length ? { warnings } : {}) },
   };
 }

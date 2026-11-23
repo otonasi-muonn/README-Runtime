@@ -113,6 +113,7 @@ async function run(cmd, pos, flags, log) {
     }
     case 'build': {
       const results = await build(configPath, { only: pos, force: !!flags.force, log, quiet: !!flags.json });
+      for (const r of results) for (const w of r.ui?.warnings ?? []) log(`${r.name}: warning ${w.code}: ${w.message}`);
       const written = results.filter((r) => r.card === 'written');
       if (written.length) {
         log('\nEmbed in README.md (the file name stays the same on every rebuild):');

@@ -66,6 +66,37 @@ test('inference: numbers and elements that exist only for some values of another
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
+test('Tailwind 3 projects are compiled with their own Tailwind 3 and config', async (t) => {
+  // a Tailwind 3 project: its own tailwindcss 3 (README Runtime's dev copy) and postcss
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rr-tw3-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true, maxRetries: 5 }));
+  fs.mkdirSync(path.join(dir, 'node_modules'));
+  fs.symlinkSync(path.join(root, 'node_modules/tailwindcss3'), path.join(dir, 'node_modules/tailwindcss'), 'junction');
+  fs.symlinkSync(path.join(root, 'node_modules/postcss'), path.join(dir, 'node_modules/postcss'), 'junction');
+  fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({ name: 'tw3', devDependencies: { tailwindcss: '3.4.19' } }));
+  fs.writeFileSync(path.join(dir, 'tailwind.config.js'), 'module.exports = { content: ["./src/**/*.jsx"], theme: { extend: { colors: { brand: "#123456" } } } };\n');
+  fs.writeFileSync(path.join(dir, 'app.css'), '@tailwind base;\r\n@tailwind components;\r\n@tailwind utilities;\r\nbody { color: #0f172a; }\r\n');
+  const { compileUiCss } = await import('../src/ui/style.js');
+  const out = await compileUiCss(['app.css'], ['bg-brand', 'px-4', 'text-slate-700'], { cwd: dir });
+  assert.match(out.css, /\.bg-brand \{[^}]*rgb\(18 52 86/, 'the project config (theme.extend) is used');
+  assert.match(out.css, /\.px-4 \{\s*padding-left: 1rem;/, 'the v3 default theme is used');
+  assert.match(out.css, /\.rr-ui \{\s*color: #0f172a;/, 'body rules move to the UI wrapper');
+  assert.ok(!out.css.includes('\r'), 'line endings are normalized');
+  assert.deepEqual(out.inputs, ['app.css', 'tailwind.config.js']);
+});
+
+test('the UI size comes from the root element, also when the root has variants', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rr-ui-'));
+  try {
+    fs.writeFileSync(path.join(dir, 'r.jsx'), 'export default function R({ on }) { return <div style={{ width: 320, height: 90 }}>{on ? <b>banner</b> : null}<p>body</p></div>; }\n');
+    const b = await bundleEntry('r.jsx', { cwd: dir });
+    const { template, info } = inferTemplate(b, [{ name: 'on', range: { lo: 0, hi: 1 } }], { base: { on: 0 } });
+    assert.equal(info.discrete[0].path, '0', 'the root element is the variant region');
+    const { rootSize } = await import('../src/ui/index.js');
+    assert.deepEqual(rootSize(template), { width: 320, height: 90 });
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
 test('inference refuses a non-affine dependence on a wide view', async () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rr-ui-'));
   try {
