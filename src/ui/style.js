@@ -40,9 +40,10 @@ async function tailwind3(css, abs, f, candidates, { cwd, deps }) {
   }
 }
 
-// Properties a page hands down to its content; everything else in an html/body rule lays out
-// the page itself and is dropped.
-const PASSED_ON = /^(--|font|color$|line-height|letter-spacing|word-spacing|text-|-webkit-text|-webkit-font|-moz-osx|tab-size|white-space|direction|writing-mode|hyphens|quotes|color-scheme|accent-color|caret-color|-webkit-tap-highlight-color|background)/;
+// Properties of an html/body rule that lay out the page itself (and would move or resize the
+// UI if applied to its wrapper) are dropped; everything else is handed down to the UI, which
+// includes text, colours, custom properties and resets such as box-sizing that * inherits.
+const PAGE_LAYOUT = /^(display|place-|align-|justify-|min-|max-|height$|width$|block-size|inline-size|margin|padding|overflow|position|inset|top$|left$|right$|bottom$|grid|flex|gap$|row-gap|column-gap|float|clear|z-index|transform|translate|scale|rotate|contain|container|zoom|scroll|overscroll)/;
 
 function pageRules(css) {
   // (a lookbehind: consecutive rules share the brace between them)
@@ -54,7 +55,7 @@ function pageRules(css) {
     const decls = body.split(';').map((d) => d.trim()).filter(Boolean);
     const prop = (d) => d.slice(0, d.indexOf(':')).trim().toLowerCase();
     let out = others.length ? `${others.join(', ')} {${body}}` : '';
-    const kept = decls.filter((d) => PASSED_ON.test(prop(d)));
+    const kept = decls.filter((d) => !PAGE_LAYOUT.test(prop(d)));
     if (kept.length) out += `${out ? '\n' : ''}.rr-ui { ${kept.join('; ')}; }`;
     const size = page.includes('html') && decls.find((d) => prop(d) === 'font-size');
     if (size) out += `${out ? '\n' : ''}svg:root { ${size}; }`;

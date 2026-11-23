@@ -136,9 +136,33 @@ test('attributes stay: type, ids, CSS-selected data-*; SVG defs get per-variant 
     assert.deepEqual(info.ignoredAttributes, ['data-debug (on)'], 'a data-* change nobody selects on is ignored');
     assert.match(markup, /data-debug="no"/, '...and keeps its base value instead of disappearing');
     assert.match(markup, /background:#0a0;opacity:0\.50/, 'number-like text that is not bound stays as written');
-    assert.match(markup, /<marker id="arrow-rr\d+-0">[\s\S]*url\(#arrow-rr\d+-0\)/, 'each variant references its own marker');
-    assert.match(markup, /<marker id="arrow-rr\d+-1">[\s\S]*url\(#arrow-rr\d+-1\)/);
+    assert.match(markup, /<marker id="arrow">[\s\S]*url\(#arrow\)/, 'the base variant keeps the original id');
+    assert.match(markup, /<marker id="arrow-rr\d+-1">[\s\S]*url\(#arrow-rr\d+-1\)/, 'another variant references its own marker');
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('cards keep what CSS uses: attr(), url(#id) from a stylesheet, inherited resets; structural selectors warn', async (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rr-ui-css-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true, maxRetries: 5 }));
+  fs.copyFileSync(path.join(root, 'examples/mockcraft/logic.wasm'), path.join(dir, 'logic.wasm'));
+  fs.writeFileSync(path.join(dir, 'd.jsx'), `export default function D({ on }) {
+  return <div style={{ width: 300, height: 120 }}>
+    <b className="label" data-label={on ? 'OPEN' : 'CLOSED'} />
+    <svg width="60" height="20"><defs><linearGradient id="g1"><stop offset="0" stopColor="red" /></linearGradient></defs><rect className="grad" width="60" height="20" stroke={on ? 'black' : 'white'} /></svg>
+    <ul className="list"><li className={on ? 'on' : 'off'}><span className="label">a</span></li><li><span className="label">b</span></li></ul>
+  </div>;
+}
+`);
+  fs.writeFileSync(path.join(dir, 'a.css'), 'html { box-sizing: border-box; display: grid; min-height: 100vh; }\n*, *::before, *::after { box-sizing: inherit; }\n.label::after { content: attr(data-label); }\n.grad { fill: url(#g1); }\n.list > li .label { color: red; }\n');
+  const card = { name: 'c', wasm: 'logic.wasm', export: 'step', init: 1536, steps: 4, ui: { entry: 'd.jsx', css: ['a.css'], views: { on: 'view_on' } } };
+  fs.writeFileSync(path.join(dir, 'readme-runtime.json'), JSON.stringify({ cards: [card] }));
+  const [r] = await build(path.join(dir, 'readme-runtime.json'), { log: () => {} });
+  const svg = fs.readFileSync(path.join(dir, 'readme-runtime/c.svg'), 'utf8');
+  assert.ok(svg.includes('data-label="OPEN"') && svg.includes('data-label="CLOSED"'), 'an attribute read by attr() is visual: both values are in the card');
+  assert.ok(!r.ui.ignoredAttributes.some((a) => a.startsWith('data-label')));
+  assert.match(svg, /\.rr-s(\d+-\d) \.grad \{ fill: url\(#g1-rr\1\); \}/, 'a stylesheet url(#id) follows the renamed id in the non-base variant');
+  assert.match(svg, /\.rr-ui \{ box-sizing: border-box; \}/, 'an inherited reset reaches the UI; page layout (grid, 100vh) does not');
+  assert.ok(r.ui.warnings?.some((w) => w.code === 'UI_STRUCTURAL_CSS' && w.message.includes('.list > li .label')), 'a child combinator above a switched element warns');
 });
 
 test('an exact-value condition on a wide view fails loudly instead of rendering wrong', async () => {

@@ -383,8 +383,9 @@ export function instantiate(template, values, { ignore = new Set(template.ignore
 }
 
 // SVG definitions (markers, gradients, clip paths...) referenced by url(#id) or href="#id":
-// every variant carries its own copy, so each gets its own ids (the first element with an id
-// in the document would otherwise win, possibly inside a hidden variant).
+// every variant carries its own copy, so each non-base variant gets its own ids (the first
+// element with an id in the document would otherwise win, possibly inside a hidden variant).
+// The base variant keeps the original ids; CSS rules that use them are repeated per variant.
 const DEFS = new Set(['marker', 'lineargradient', 'radialgradient', 'clippath', 'mask', 'pattern', 'filter', 'symbol']);
 function ownDefs(node, suffix) {
   const ids = new Map();
@@ -395,7 +396,7 @@ function ownDefs(node, suffix) {
     n.children.forEach(collect);
   };
   collect(node);
-  if (!ids.size) return node;
+  if (!ids.size) return { node, ids };
   const ref = (v) => v.replace(/url\(\s*(['"]?)#([^)'"]+)\1\s*\)/g, (m, q, id) => (ids.has(id) ? `url(${q}#${ids.get(id)}${q})` : m));
   const fix = (n) => {
     if (n.type !== 'el') return n;
@@ -406,7 +407,7 @@ function ownDefs(node, suffix) {
     });
     return { ...n, attrs, children: n.children.map(fix) };
   };
-  return fix(node);
+  return { node: fix(node), ids };
 }
 
 // Serialize the template with CSS bindings. viewVar(name) -> CSS custom property name.
@@ -418,6 +419,7 @@ export function templateToXhtml(template, viewVar) {
   };
   const rules = [];
   let variantBytes = 0;
+  const renamed = []; // { cls, ids: [[from, to]] } per variant whose SVG ids were renamed
   const hooks = {
     attrs(n) {
       // all bindings of one attribute index into the tokens of its original value
@@ -452,7 +454,9 @@ export function templateToXhtml(template, viewVar) {
         const cls = `rr-s${sw.id}-${i}`;
         const query = Object.entries(x.combo).map(([k, v]) => `style(--${viewVar(k)}: ${v})`).join(' and ');
         if (i !== b) rules.push(`@container ${query} { .${cls} { display: contents; } .rr-c.rr-s${sw.id}-${b} { display: none; } }`);
-        const html = inner(ownDefs(x.node, `-rr${sw.id}-${i}`));
+        const own = i === b ? { node: x.node, ids: new Map() } : ownDefs(x.node, `-rr${sw.id}-${i}`);
+        if (own.ids.size) renamed.push({ cls, ids: [...own.ids] });
+        const html = inner(own.node);
         variantBytes += html.length;
         return `<rr-case class="rr-c ${cls}${i === b ? ' rr-d' : ''}">${html}</rr-case>`;
       }).join('');
@@ -460,5 +464,5 @@ export function templateToXhtml(template, viewVar) {
   };
   const markup = toXhtml(template, { hooks });
   const css = `.rr-c { display: none; }\n.rr-c.rr-d { display: contents; }\nrr-n::after { content: counter(rr-n); }\n${rules.join('\n')}\n`;
-  return { markup, css, variantBytes };
+  return { markup, css, variantBytes, renamed };
 }

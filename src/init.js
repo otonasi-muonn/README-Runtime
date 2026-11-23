@@ -33,6 +33,8 @@ jobs:
         run: corepack enable && pnpm install --frozen-lockfile --ignore-scripts
       - if: hashFiles('yarn.lock') != ''
         run: corepack enable && yarn install --immutable
+      - if: hashFiles('package.json') != '' && hashFiles('package-lock.json', 'pnpm-lock.yaml', 'yarn.lock') == ''
+        run: npm install --ignore-scripts --no-audit --no-fund
       # Pinned to the README Runtime version that generated the cards: a newer generator can
       # produce different (equally valid) SVG, so update this together with a rebuild.
       - run: npx --yes ${PACKAGE} check

@@ -16,7 +16,7 @@ export const HINTS = {
   UI_BUNDLE: 'Fix the import named in the message. Framework-only modules (next/*) cannot be bundled: pass their values as props from the demo entry.',
   UI_RENDER: 'The component threw during a static render: give it the props it needs in the demo entry and avoid browser APIs (window, document, canvas) while rendering.',
   UI_NONLINEAR: 'Make the markup depend on the view linearly (a number = a*view + b), or bound the view to at most 64 values in its own Wasm code (ranges are derived for every state, not only the states the run reaches).',
-  UI_TOO_MANY_VARIANTS: 'Split the view into separate views that change different elements, or narrow their ranges.',
+  UI_TOO_MANY_VARIANTS: 'Split the view into separate views that change different elements, or narrow their ranges. Inside inline SVG every change makes the whole <svg> one variant: move numbers to HTML elements or split the SVG.',
   UI_VERIFY: 'The demo was probed at a few view values and this combination renders differently from what the probes predict: either the output depends on something other than the props (time, randomness, module state), or a view acts non-linearly between the probes (rounding, clamping, formatting). Make numbers exact a*view + b, or use a small discrete view for that part.',
   UI_CSS: 'Check the stylesheet path in "ui.css". Tailwind 4 entry files are compiled with README Runtime\'s Tailwind; Tailwind 3 ones (@tailwind base) with the project\'s own tailwindcss 3, postcss and tailwind.config, so install its dependencies.',
   UI_SIZE: 'Give the root element of the demo an inline width and height in px, or set "ui.width" and "ui.height".',

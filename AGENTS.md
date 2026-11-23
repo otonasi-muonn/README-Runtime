@@ -29,8 +29,9 @@ $RR check --json                   # what CI runs; never writes
    Build warnings (`cards[].ui.warnings`): `UI_WHOLE_VARIANTS` means the whole UI is copied per view
    value: wrap each part that appears or disappears (e.g. a component that renders null) in its own
    element. `UI_STRUCTURAL_CSS` means child/sibling selectors may style switched elements
-   differently than in the app: look at the card. `ui.sampledViews` lists views whose
-   combinations were only sampled, not checked value by value.
+   differently than in the app: look at the card. Each value of a wide view is checked against
+   the component (`ui.verifiedEachValue`; `ui.sampledViews` were too wide), but combinations of
+   wide views are only sampled: a condition on two of them at once can slip through.
 5. On an error, act on `error.code` + `error.hint`. Frequent ones: `WASM_UNSUPPORTED` (rewrite the
    named construct), `RANGE_*` (values too large for exact CSS), `UI_NONLINEAR` (make the dependence
    linear or the view smaller), `UI_RENDER` (missing props / browser APIs during render),

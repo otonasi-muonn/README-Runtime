@@ -1,19 +1,19 @@
 {
   "version": 1,
   "tool": "0.1.0",
-  "generator": "27d28b98b779b17fcc482996abe292d9950fae963f5cd7556796394206a9372c",
+  "generator": "edb2f10b13beccea2794a7833928d2ee24f156c2589de51d19ce00fdc5c28338",
   "cards": {
     "collatz": {
       "inputs": "5a1e2f80a8418a91d76ca55f53442bf4af1948e61477b5ed9ac9ce0a83c3bff2",
       "wasm": "dd40a4b6513c1fe94042a3e636d706a1cf4400f255b9634abea9ccba907e787a",
       "out": "5de82f7acc2110d3a0c3261f7e03dc58915e716ad43679663b8183d817b79f5d",
-      "render": "d8e17412fd3e7b9ac9bc05f8ef1251bf97b6e03d9f9b491bb52e2b7b99b6e2de"
+      "render": "73cf3bc92b2caf70c998c80106881b12f4250f1a3fe887c79e379bdc1f81780d"
     },
     "lfsr-rust": {
       "inputs": "b79cf255e75a24be61c4ef512c66b76e880d5e0091c93a85e33c43660017a835",
       "wasm": "bac5ae0dce92bcae0ec8cf01117b79300f39bcb543f7c729f54fcb30bee41a73",
       "out": "2552d692e81f0a393b19bb6198fdf2c29edd2f7bb0cd5dd7f71850a55149e8f9",
-      "render": "efb51bdd6b19996ad41f9e6f7db75ead288ffc7c80acc2edb82299d5c6ae23df"
+      "render": "c86a47feab27fc3b232bfce85490f210a6b94f72834d571ea7b65d62c8ce3f81"
     },
     "mockcraft": {
       "inputs": "52e441ddcb27cd1f387a7661a40e4aba35ba4a2189e8001f1cb794cdcc1c9ac7",
@@ -30,7 +30,7 @@
         "examples/mockcraft/upstream/src/lib/icons.tsx": "288d28df6b9683782cad221a2c1499dda7dbe8c42aac8a7e225cfc39259219a9",
         "examples/mockcraft/upstream/src/lib/templates.ts": "cced791479232b822d801fa922894a9dca39c2d08693653507f23b96b5f773f4"
       },
-      "render": "79a0c6ea9567c7c541eac75b03b19c5fafee5f4e87bad2b391baea6d9c5a0c41"
+      "render": "fb5b31a241c2a59b94c2ba79cf4b8d7df5708f5b2fd4ad44133f6c82b2932965"
     },
     "air-drawing": {
       "inputs": "9609dc09810869fe5392acd99c27632501e80e3f47056069aaa0eb8d6baa0597",
@@ -44,7 +44,7 @@
         "examples/air-drawing/upstream/src/render/canvasRenderer.ts": "24d8034b5d53a9ddfbc41a113e7263d9baccaf3079120a0695dc2fac0f47f75a",
         "examples/air-drawing/upstream/src/styles.css": "a05f1cd091c2ee7715fecfbb44b3730d1f924c6c96a0cf9bdf537341cdd43161"
       },
-      "render": "be4285aab1b92469cdfc44a981c04818fc13ba107f9f5c0c32a4500f43799bf5"
+      "render": "7216522f52afcc67719b76b0848d61bcf51569c7fc279f891c00284d1eea19d0"
     }
   }
 }
