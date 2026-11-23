@@ -31,7 +31,7 @@ function tokenize(s) {
 }
 const skeleton = (parts) => parts.map((p) => (typeof p === 'number' ? '#' : p)).join('');
 
-const nodeAt = (tree, path) => path.reduce((n, i) => n.children[i], tree);
+const nodeAt = (tree, path) => path.reduce((n, i) => n?.children?.[i], tree);
 const pathKey = (p) => p.join('.');
 const isPrefix = (a, b) => a.length <= b.length && a.every((x, i) => x === b[i]);
 
@@ -41,6 +41,7 @@ const NON_VISUAL = (name) => /^(data-|aria-)/.test(name) || ['id', 'title', 'tab
 
 // Compare two trees: numeric sites { path, where, index, a, b } and structural sites { path }.
 function compare(a, b, path = [], out = { num: [], struct: [], ignored: [] }) {
+  if (!a || !b) { out.struct.push({ path }); return out; }
   // a different node: the parent element is the region; a different child list: this element
   if (a.type !== b.type || (a.type === 'el' && a.tag !== b.tag)) { out.struct.push({ path: path.slice(0, -1) }); return out; }
   if (a.children && a.children.length !== b.children.length) { out.struct.push({ path }); return out; }
@@ -129,7 +130,9 @@ export function inferTemplate(bundle, views, { base, samples = [] }) {
     if (structs.length) {
       const size = v.range.hi - v.range.lo + 1;
       if (size > MAX_DISCRETE) {
-        throw new UiError('UI_NONLINEAR', `the UI depends on view "${v.name}" in a way that is not affine (element ${pathKey(structs[0])}), and "${v.name}" can take ${size} values (more than ${MAX_DISCRETE}). Make the markup depend on it linearly (numbers in style/text), or reduce its range in the Wasm view function.`, { view: v.name, path: structs[0] });
+        const seen = samples.map((s) => s[v.name]);
+        const run = seen.length ? ` The run itself shows only ${Math.min(...seen)}..${Math.max(...seen)}, but` : '';
+        throw new UiError('UI_NONLINEAR', `the UI depends on view "${v.name}" in a way that is not affine (element ${pathKey(structs[0])}), and "${v.name}" can take ${size} values (${v.range.lo}..${v.range.hi}; more than ${MAX_DISCRETE}).${run} view ranges are derived from the Wasm code for every possible state (an edited init can reach any of them), so the view function itself must bound the value (e.g. a comparison chain or x % n). Or make the markup depend on it linearly (numbers in style/text).`, { view: v.name, path: structs[0], range: v.range });
       }
       // a discrete view: every value of its range is rendered, so no changed element is missed
       for (let x = v.range.lo; x <= v.range.hi; x++) {
@@ -152,56 +155,43 @@ export function inferTemplate(bundle, views, { base, samples = [] }) {
   const groups = new Map();
   for (const v of discrete) { const r = find(v); if (!groups.has(r)) groups.set(r, []); groups.get(r).push(v); }
   const range = Object.fromEntries(views.map((v) => [v.name, v.range]));
-  const switches = []; // { views, combos, regionPath, variants: [tree] }
-  for (const members of groups.values()) {
-    const paths = minimalRegions(members.flatMap((v) => regions.get(v)));
-    for (const p of paths) {
-      // only the views that actually change this element are enumerated for it
-      const relevant = members.filter((v) => regions.get(v).some((q) => isPrefix(q, p) || isPrefix(p, q)));
-      let combos = [{}];
-      for (const v of relevant) {
-        const next = [];
-        for (const c of combos) for (let k = range[v].lo; k <= range[v].hi; k++) next.push({ ...c, [v]: k });
-        combos = next;
-        if (combos.length > MAX_COMBINATIONS) {
-          throw new UiError('UI_TOO_MANY_VARIANTS', `views ${relevant.join(', ')} change the same element and together take more than ${MAX_COMBINATIONS} combinations; narrow their ranges or let them affect different elements`, { views: relevant });
-        }
+  const size = (v) => range[v].hi - range[v].lo + 1;
+  const combosOf = (names) => {
+    let combos = [{}];
+    for (const v of names) {
+      const next = [];
+      for (const c of combos) for (let k = range[v].lo; k <= range[v].hi; k++) next.push({ ...c, [v]: k });
+      combos = next;
+      if (combos.length > MAX_COMBINATIONS) {
+        throw new UiError('UI_TOO_MANY_VARIANTS', `views ${names.join(', ')} change the same element and together take more than ${MAX_COMBINATIONS} combinations; narrow their ranges or let them affect different elements`, { views: names });
       }
-      const variants = combos.map((c) => {
-        const tree = render(bundle, { ...base, ...c }, cache);
-        return { combo: c, node: structuredClone(nodeAt(tree, p)), props: { ...base, ...c } };
-      });
-      switches.push({ views: relevant, group: members, path: p, variants });
     }
-  }
-  const inSwitch = (p) => switches.find((s) => isPrefix(s.path, p));
-
-  // numeric bindings outside switches go on the base tree; inside a switch they are
-  // re-derived per variant (the variant's own render, probed again)
-  const template = structuredClone(R0);
+    return combos;
+  };
+  const regionOf = (props, p) => nodeAt(render(bundle, props, cache), p);
   const bind = (node, site, view, fit) => {
     node.binds ??= [];
     node.binds.push({ where: site.where, index: site.index, view, ...fit });
   };
-  for (const v of views) {
-    for (const { site, points } of numeric.get(v.name).values()) {
-      if (inSwitch(site.path)) continue;
-      if (regions.get(v.name)?.some((p) => isPrefix(p, site.path))) continue;
-      bind(nodeAt(template, site.path), site, v.name, fitAffine(points));
-    }
-  }
-  for (const sw of switches) {
+
+  // Inside a switch, the other views are probed again in every variant: a number or an
+  // element can exist for some values of the switching views only (a conditional subtree),
+  // so probing around the base render alone would miss it. A view whose numbers there are
+  // affine is bound per variant; one that changes the structure (or a number non-affinely)
+  // joins the switch and is enumerated with it. Returns that view, or null when done.
+  function bindVariants(sw) {
+    const found = [];
     for (const variant of sw.variants) {
       for (const v of views) {
         if (sw.views.includes(v.name)) continue;
-        if (![...numeric.get(v.name).values()].some(({ site }) => isPrefix(sw.path, site.path))) continue;
         const b0 = variant.props[v.name];
+        const ends = [v.range.lo, v.range.hi].filter((x) => x !== b0);
+        const differs = (x) => { const d = compare(variant.node, regionOf({ ...variant.props, [v.name]: x }, sw.path)); return d.struct.length || d.num.length; };
+        if (!ends.some(differs)) continue;
         const pts = new Map();
-        const own = nodeAt(render(bundle, variant.props, cache), sw.path);
         for (const x of probes(b0, v.range)) {
-          const other = nodeAt(render(bundle, { ...variant.props, [v.name]: x }, cache), sw.path);
-          const d = compare(own, other);
-          if (d.struct.length) throw new UiError('UI_NONLINEAR', `view "${v.name}" changes the structure of an element that also depends on ${sw.views.join(', ')}; handle "${v.name}" as discrete by narrowing its range`, { view: v.name });
+          const d = compare(variant.node, regionOf({ ...variant.props, [v.name]: x }, sw.path));
+          if (d.struct.length) return v.name;
           for (const s of d.num) {
             const k = siteKey(s);
             if (!pts.has(k)) pts.set(k, { site: s, points: [{ v: b0, y: s.a }] });
@@ -209,11 +199,47 @@ export function inferTemplate(bundle, views, { base, samples = [] }) {
           }
         }
         for (const { site, points } of pts.values()) {
-          const fit = fitAffine(points);
-          if (!fit) throw new UiError('UI_NONLINEAR', `view "${v.name}" is not affine inside the variants of ${sw.views.join(', ')}`, { view: v.name });
-          bind(nodeAt(variant.node, site.path), site, v.name, fit);
+          const fit = points.length >= 3 && fitAffine(points);
+          if (!fit) return v.name;
+          found.push([variant, site, v.name, fit]);
         }
       }
+    }
+    for (const [variant, site, view, fit] of found) bind(nodeAt(variant.node, site.path), site, view, fit);
+    return null;
+  }
+
+  const switches = []; // { views, path, variants: [{ combo, props, node }] }
+  for (const members of groups.values()) {
+    for (const p of minimalRegions(members.flatMap((v) => regions.get(v)))) {
+      // only the views that actually change this element are enumerated for it
+      const sw = { views: members.filter((v) => regions.get(v).some((q) => isPrefix(q, p) || isPrefix(p, q))), path: p };
+      for (;;) {
+        sw.variants = combosOf(sw.views).map((combo) => {
+          const props = { ...base, ...combo };
+          const node = regionOf(props, p);
+          if (!node) throw new UiError('UI_NONLINEAR', `element ${pathKey(p)} does not exist for view values ${JSON.stringify(combo)}: the views ${sw.views.join(', ')} change the structure around it; let one view decide whether the whole block is shown`, { views: sw.views, path: p });
+          return { combo, props, node: structuredClone(node) };
+        });
+        const more = bindVariants(sw);
+        if (!more) break;
+        if (size(more) > MAX_DISCRETE) {
+          throw new UiError('UI_NONLINEAR', `view "${more}" changes element ${pathKey(p)} in a way that is not affine when ${sw.views.join(', ')} take other values (e.g. it is shown only for some of them), and "${more}" can take ${size(more)} values (more than ${MAX_DISCRETE}). Make that part depend on "${more}" linearly in every case (e.g. keep the element and hide it with a style), or narrow "${more}" in its Wasm view function.`, { view: more, path: p });
+        }
+        sw.views = [...sw.views, more];
+      }
+      switches.push(sw);
+    }
+  }
+  const inSwitch = (p) => switches.find((s) => isPrefix(s.path, p));
+
+  // numeric bindings outside switches go on the base tree (inside, bindVariants did them)
+  const template = structuredClone(R0);
+  for (const v of views) {
+    for (const { site, points } of numeric.get(v.name).values()) {
+      if (inSwitch(site.path)) continue;
+      if (regions.get(v.name)?.some((p) => isPrefix(p, site.path))) continue;
+      bind(nodeAt(template, site.path), site, v.name, fitAffine(points));
     }
   }
   // replace switch regions (deepest first, so paths stay valid)
@@ -230,20 +256,25 @@ export function inferTemplate(bundle, views, { base, samples = [] }) {
     ignoredAttributes: [...new Set(ignored.map((x) => `${x.attr} (${x.view})`))],
     renders: cache.size,
   };
-  // The template must reproduce every state of the verified run exactly, and also random
-  // combinations of view values within their ranges (states an edited initial value could
-  // reach), so the bindings are checked beyond the probes they were inferred from.
+  // The template must reproduce every state of the verified run exactly, and also view
+  // values the run does not show (states an edited initial value could reach): random
+  // combinations, both ends of every range, and every variant of every switch with random
+  // values for the other views. So the bindings are checked beyond the probes they came from.
   let seed = 0x9e3779b9;
   const rnd = () => { seed ^= seed << 13; seed >>>= 0; seed ^= seed >>> 17; seed ^= seed << 5; seed >>>= 0; return seed / 4294967296; };
+  const random = () => Object.fromEntries(views.map((v) => [v.name, v.range.lo + Math.floor(rnd() * (v.range.hi - v.range.lo + 1))]));
   const extra = [];
-  for (let i = 0; i < 24; i++) extra.push(Object.fromEntries(views.map((v) => [v.name, v.range.lo + Math.floor(rnd() * (v.range.hi - v.range.lo + 1))])));
+  for (let i = 0; i < 64; i++) extra.push(random());
   extra.push(Object.fromEntries(views.map((v) => [v.name, v.range.lo])), Object.fromEntries(views.map((v) => [v.name, v.range.hi])));
+  for (const sw of switches) for (const x of sw.variants) extra.push({ ...random(), ...x.combo });
   for (const s of [...samples, ...extra]) {
     const want = toXhtml(render(bundle, s, cache), { hooks: { attrs: stripIgnored } });
     const got = instantiate(template, s);
     if (want !== got) {
-      const at = [...want].findIndex((ch, i) => ch !== got[i]);
-      throw new UiError('UI_VERIFY', `the inferred template differs from a direct render for view values ${JSON.stringify(s)} near "${want.slice(Math.max(0, at - 40), at + 40)}"`, { views: s });
+      let at = 0;
+      while (want[at] === got[at]) at++;
+      const near = (t) => JSON.stringify(t.slice(Math.max(0, at - 50), at + 50));
+      throw new UiError('UI_VERIFY', `the inferred template differs from a direct render for view values ${JSON.stringify(s)}: the component renders ${near(want)} but the template gives ${near(got)}`, { views: s });
     }
   }
   info.verifiedStates = samples.length;

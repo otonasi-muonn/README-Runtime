@@ -9,9 +9,11 @@ import url from 'node:url';
 import crypto from 'node:crypto';
 import { bundleEntry, renderWith, UiError } from '../src/ui/bundle.js';
 import { inferTemplate, instantiate, templateToXhtml } from '../src/ui/infer.js';
+import { parseHtml, toXhtml } from '../src/ui/html.js';
 import { build, check } from '../src/project.js';
 
 const root = path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), '..');
+const parseAndSerialize = (html) => toXhtml(parseHtml(html));
 
 test('the mockcraft example uses the upstream files byte-for-byte', () => {
   const dir = path.join(root, 'examples/mockcraft');
@@ -38,6 +40,30 @@ test('inference: affine style numbers, text counters, discrete variants', async 
   assert.match(markup, /counter-reset:rr-n calc\(var\(--rview_n\) \* 3 \+ 1\)/);
   assert.match(css, /@container style\(--rview_on: 1\)/);
   assert.ok(!/\b(ON|OFF)\b/.test(markup.replace(/<rr-case[^>]*>.*?<\/rr-case>/g, '')), 'text that depends on a view only appears inside variants');
+});
+
+test('inference: numbers and elements that exist only for some values of another view', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rr-ui-'));
+  try {
+    // the box (and its numbers) exist only in mode 1; the badge only in mode 2, and its class
+    // depends on "on" there only
+    fs.writeFileSync(path.join(dir, 'c.jsx'), `export default function C({ mode, x, on }) {
+  return <div style={{ width: 300, height: 100 }}>
+    <span className={mode === 1 ? 'tab sel' : 'tab'}>edit</span>
+    {mode === 1 && <i className="box" style={{ left: 20 + x * 4, top: 8 }}>{x * 2}</i>}
+    {mode === 2 && <b className={on ? 'badge on' : 'badge'}>preview</b>}
+  </div>;
+}
+`);
+    const b = await bundleEntry('c.jsx', { cwd: dir });
+    const views = [{ name: 'mode', range: { lo: 0, hi: 2 } }, { name: 'x', range: { lo: 0, hi: 200 } }, { name: 'on', range: { lo: 0, hi: 1 } }];
+    const { template } = inferTemplate(b, views, { base: { mode: 0, x: 0, on: 0 }, samples: [{ mode: 0, x: 0, on: 0 }] });
+    for (const s of [{ mode: 1, x: 0, on: 0 }, { mode: 1, x: 137, on: 1 }, { mode: 2, x: 5, on: 1 }, { mode: 2, x: 5, on: 0 }]) {
+      assert.equal(instantiate(template, s), parseAndSerialize(renderWith(b, s)), JSON.stringify(s));
+    }
+    const { markup } = templateToXhtml(template, (v) => `rview_${v}`);
+    assert.match(markup, /left:calc\(\(var\(--rview_x\) \* 4 \+ 20\) \* 1px\)/, 'x is bound inside the mode-1 variant');
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
 test('inference refuses a non-affine dependence on a wide view', async () => {
