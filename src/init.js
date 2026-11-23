@@ -66,8 +66,13 @@ export default function Demo({ t }: { t: number }) {
   );
 }
 `);
-  write(`${dir}/logic.ts`, `// State logic (AssemblyScript): step() advances the state, view_*() derive what the UI shows.
-// i32 only; keep values within +-999,999 (README Runtime refuses anything CSS cannot compute exactly).
+  write(`${dir}/logic.ts`, `// @ts-nocheck
+/* eslint-disable */
+// AssemblyScript, not TypeScript: the build command in ${configPath} compiles it to logic.wasm.
+// The two lines above keep the project's own type check and linter off this file.
+// step() advances the state, view_*() derive what the UI shows. i32 only, values within
+// +-999,999. Each view's range is derived from this code for every possible state, so a view
+// that switches markup (classes, texts, elements) must be bounded here to at most 64 values.
 export function step(s: i32): i32 { return s < 100 ? s + 1 : 0; }
 export function view_t(s: i32): i32 { return s; }
 `);
@@ -89,7 +94,12 @@ export function view_t(s: i32): i32 { return s; }
     fs.writeFileSync(cfgPath, `${JSON.stringify(cfg, null, 2)}\n`);
     created.push({ file: configPath, status: 'card added' });
   }
-  return { created, card: name, next: ['readme-runtime build --json', `edit ${dir}/logic.ts and ${dir}/demo.tsx`, 'readme-runtime build --json'] };
+  return {
+    created,
+    card: name,
+    next: ['readme-runtime build --json', `edit ${dir}/logic.ts and ${dir}/demo.tsx`, 'readme-runtime build --json', 'readme-runtime check --json',
+      `commit readme-runtime/${name}.svg, ${dir}/ (including logic.wasm: CI checks against it and never builds it), ${configPath} and readme-runtime.lock.json`],
+  };
 }
 
 export function initProject(cwd, { wasm, exportName, init, configPath = CONFIG_FILE }) {

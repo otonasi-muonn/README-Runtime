@@ -97,6 +97,22 @@ export function renderWith(bundle, props) {
   try {
     return ctx.__rrRender({ ...props });
   } catch (e) {
-    throw new UiError('UI_RENDER', `the demo component threw while rendering with ${JSON.stringify(props)}: ${e.message}`);
+    throw new UiError('UI_RENDER', `the demo component threw while rendering with ${JSON.stringify(props)}: ${explainReactError(String(e?.message ?? e))}`);
   }
+}
+
+// React's production build throws "Minified React error #N; visit ...?args[]=..": say what
+// the frequent ones mean, so nobody has to look the number up.
+const REACT_ERRORS = {
+  130: 'a component is undefined (element type is invalid): check the import, e.g. a default export imported by name or the other way round',
+  31: 'an object was rendered as a React child; render one of its fields or map it to elements',
+  152: 'a component returned undefined; return null to render nothing',
+  301: 'too many re-renders: the component sets state while rendering',
+  321: 'invalid hook call: a hook is called outside a component body',
+};
+export function explainReactError(message) {
+  const m = /Minified React error #(\d+);[^?]*\??([^\s]*)/.exec(message);
+  if (!m) return message;
+  const args = [...m[2].matchAll(/args\[\]=([^&]*)/g)].map((a) => decodeURIComponent(a[1])).filter(Boolean);
+  return `${REACT_ERRORS[m[1]] ?? 'see https://react.dev/errors/' + m[1]} (React error #${m[1]}${args.length ? `, ${args.join(', ')}` : ''})`;
 }

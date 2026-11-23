@@ -66,4 +66,29 @@ test('analyze + init --ui + build: a fresh React project gets a working UI card'
   assert.equal(b.json.cards[0].reason, 'first build');
   const again = run(['build'], dir);
   assert.deepEqual([again.json.cards[0].build, again.json.cards[0].card], ['cached', 'cached']);
+  // the scaffolded AssemblyScript file opts out of the project's own type check and lint
+  assert.match(fs.readFileSync(path.join(dir, 'readme-runtime/demo/badge/logic.ts'), 'utf8'), /^\/\/ @ts-nocheck\n\/\* eslint-disable \*\//);
+});
+
+test('analyze: default exports, empty renders, readable React errors, sub-packages', (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rr-cli-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true, maxRetries: 5 }));
+  fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({ name: 'app', dependencies: { react: '19.3.1' } }));
+  fs.mkdirSync(path.join(dir, 'src'));
+  fs.writeFileSync(path.join(dir, 'src/Page.jsx'), 'export default function Page() { return <main className="page">hello</main>; }\n');
+  fs.writeFileSync(path.join(dir, 'src/Toast.jsx'), 'export function Toast({ msg }) { return msg ? <p>{msg}</p> : null; }\n');
+  fs.writeFileSync(path.join(dir, 'src/Broken.jsx'), 'const parts = {};\nexport function Broken() { const Nope = parts.Nope; return <Nope />; }\n');
+  fs.mkdirSync(path.join(dir, 'apps/web/src'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'apps/web/package.json'), JSON.stringify({ name: 'web', dependencies: { react: '19.3.1' } }));
+  fs.writeFileSync(path.join(dir, 'apps/web/src/Card.jsx'), 'export function Card() { return <div>card</div>; }\n');
+  const { status, json } = run(['analyze'], dir);
+  assert.equal(status, 0);
+  const by = (f) => json.components.find((c) => c.file === f);
+  assert.deepEqual(by('src/Page.jsx').exports.map((x) => [x.name, x.component, x.renders]), [['default', 'Page', true]]);
+  assert.equal(by('src/Page.jsx').reusable, 'yes');
+  assert.match(by('src/Toast.jsx').reusable, /^renders nothing/);
+  assert.match(by('src/Broken.jsx').exports[0].error.message, /component is undefined.*React error #130/);
+  assert.match(by('apps/web/src/Card.jsx').reusable, /package in apps\/web/);
+  assert.ok(json.warnings.some((w) => w.code === 'SUBPACKAGES' && w.message.includes('apps/web')));
+  assert.equal(json.nextSteps[0], 'readme-runtime init --ui src/Page.jsx --name demo --json');
 });

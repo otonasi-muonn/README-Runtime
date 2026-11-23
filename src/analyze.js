@@ -27,12 +27,23 @@ function walk(dir, exts, limit = 2000) {
 
 const readJson = (p) => { try { return JSON.parse(fs.readFileSync(p, 'utf8').replace(/^﻿/, '').replace(/\/\/[^\n]*|\/\*[\s\S]*?\*\//g, '').replace(/,(\s*[}\]])/g, '$1')); } catch { return null; } };
 
+// Exported components as { name, component }: name is what to import ("default" for the
+// default export, as in `init --ui file#default`), component the function's own name.
 function componentExports(src) {
-  const names = new Set();
-  for (const m of src.matchAll(/export\s+(?:default\s+)?function\s+([A-Z]\w*)/g)) names.add(m[1]);
-  for (const m of src.matchAll(/export\s+const\s+([A-Z]\w*)\s*(?::[^=]+)?=\s*(?:\(|React\.memo|memo\(|forwardRef|React\.forwardRef)/g)) names.add(m[1]);
-  if (/export\s+default\s+function\s*\(/.test(src)) names.add('default');
-  return [...names];
+  const out = new Map();
+  const add = (name, component = name) => { if (!out.has(name)) out.set(name, component); };
+  for (const m of src.matchAll(/export\s+default\s+(?:async\s+)?function\s*([A-Z]\w*)?\s*\(/g)) add('default', m[1] ?? 'default');
+  for (const m of src.matchAll(/export\s+(?:async\s+)?function\s+([A-Z]\w*)/g)) add(m[1]);
+  for (const m of src.matchAll(/export\s+const\s+([A-Z]\w*)\s*(?::[^=]+)?=\s*(?:\(|async\s*\(|React\.memo|memo\(|forwardRef|React\.forwardRef)/g)) add(m[1]);
+  const d = /export\s+default\s+(?:React\.memo\(|memo\()?([A-Z]\w*)\)?\s*;?\s*$/m.exec(src);
+  if (d) add('default', d[1]);
+  for (const m of src.matchAll(/export\s*\{([^}]*)\}/g)) {
+    for (const part of m[1].split(',')) {
+      const e = /^\s*([A-Z]\w*)(?:\s+as\s+(\w+))?\s*$/.exec(part);
+      if (e) add(e[2] ?? e[1], e[1]);
+    }
+  }
+  return [...out].map(([name, component]) => ({ name, component }));
 }
 
 function usage(src) {
@@ -53,6 +64,14 @@ function tool(cmd, args) {
 
 export async function analyzeProject(dir, { render = true, maxComponents = 40 } = {}) {
   const root = path.resolve(dir);
+  // the package a file belongs to when it is not this one: the nearest folder below root
+  // with its own package.json
+  const ownerOf = (f) => {
+    for (let d = path.dirname(path.join(root, f)); d.length > root.length; d = path.dirname(d)) {
+      if (fs.existsSync(path.join(d, 'package.json'))) return path.relative(root, d).replace(/\\/g, '/');
+    }
+    return null;
+  };
   const pkg = readJson(path.join(root, 'package.json'));
   const deps = { ...(pkg?.dependencies ?? {}), ...(pkg?.devDependencies ?? {}) };
   const tsconfigFile = fs.existsSync(path.join(root, 'tsconfig.json')) ? 'tsconfig.json' : null;
@@ -79,17 +98,20 @@ export async function analyzeProject(dir, { render = true, maxComponents = 40 } 
   };
 
   // components: static facts + a real render attempt with no props
-  const files = walk(root, ['.tsx', '.jsx']).slice(0, maxComponents);
+  const allFiles = walk(root, ['.tsx', '.jsx']);
+  const subPackages = [...new Set(allFiles.map(ownerOf).filter(Boolean))];
+  const files = allFiles.slice(0, maxComponents);
   let bundleEntry, renderWith;
   if (render && files.length && (deps.react || frameworks.length)) ({ bundleEntry, renderWith } = await import('./ui/bundle.js'));
   for (const f of files) {
     const src = fs.readFileSync(path.join(root, f), 'utf8');
     const names = componentExports(src);
     if (!names.length) continue;
-    const c = { file: f, exports: [], uses: usage(src) };
-    for (const name of names) {
-      const entry = { name, renders: null, error: null, markupBytes: null };
-      if (bundleEntry && !c.uses.includes('canvas')) {
+    const owner = ownerOf(f);
+    const c = { file: f, ...(owner ? { package: owner } : {}), exports: [], uses: usage(src) };
+    for (const { name, component } of names) {
+      const entry = { name, ...(component !== name ? { component } : {}), renders: null, error: null, markupBytes: null };
+      if (bundleEntry && !owner && !c.uses.includes('canvas')) {
         const stubDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rr-analyze-'));
         try {
           const rel = path.relative(stubDir, path.join(root, f)).replace(/\\/g, '/');
@@ -120,10 +142,13 @@ export async function analyzeProject(dir, { render = true, maxComponents = 40 } 
     }
     const codes = c.exports.map((x) => x.error?.code).filter(Boolean);
     c.reusable = c.uses.includes('canvas') ? 'no: imperative canvas drawing cannot be rendered to markup'
-      : c.exports.some((x) => x.renders) ? (c.uses.includes('hooks') ? 'yes, with the initial state of its hooks' : 'yes')
-        : codes.includes('DEPS_NOT_INSTALLED') ? 'unknown until dependencies are installed'
-          : codes.includes('UI_RENDER') ? 'needs props: give them in a demo entry'
-            : codes.length ? 'no: imports something that only runs inside the framework (see error)' : 'unknown';
+      : owner ? `unknown: belongs to the package in ${owner}/ (run analyze there)`
+        : c.exports.some((x) => x.markupBytes > 0) ? (c.uses.includes('hooks') ? 'yes, with the initial state of its hooks' : 'yes')
+          : c.exports.some((x) => x.renders) ? 'renders nothing without props (empty markup): give it props or state in a demo entry'
+            : codes.includes('DEPS_NOT_INSTALLED') ? 'unknown until dependencies are installed'
+              : codes.includes('UI_RENDER') ? 'needs props: give them in a demo entry'
+                : codes.length ? 'no: imports something that only runs inside the framework (see error)'
+                  : bundleEntry ? 'unknown' : 'unknown: no React dependency in this package.json';
     report.components.push(c);
   }
 
@@ -148,18 +173,37 @@ export async function analyzeProject(dir, { render = true, maxComponents = 40 } 
     rustWasmTarget: (tool('rustup', ['target', 'list', '--installed']) ?? '').includes('wasm32') || null,
     clang: tool('clang', ['--version']),
   };
-  const renders = report.components.filter((c) => c.exports.some((x) => x.renders));
+  if (subPackages.length) {
+    report.warnings.push({ code: 'SUBPACKAGES', message: `components here belong to other packages (${subPackages.slice(0, 5).join(', ')}): run analyze inside that folder, where its package.json, node_modules and tsconfig are` });
+  }
+  const renders = report.components.filter((c) => c.exports.some((x) => x.markupBytes > 0));
   report.summary = {
     componentFiles: report.components.length,
     renderableWithoutProps: renders.length,
     canvasOnly: report.components.filter((c) => c.uses.includes('canvas')).length,
     supportedWasmExports: report.wasm.flatMap((w) => w.exports ?? []).filter((x) => x.supported).length,
   };
+  const initUi = (c, x) => `readme-runtime init --ui ${c.file}${x.name === 'default' ? '' : `#${x.name}`} --name demo --json`;
   const pick = renders.find((c) => !c.uses.includes('hooks')) ?? renders[0];
+  const withProps = report.components.find((c) => /^(needs props|renders nothing)/.test(c.reusable));
+  const wasmPick = report.wasm.find((w) => w.exports?.some((x) => x.supported));
+  const warned = (code) => report.warnings.some((w) => w.code === code);
   if (pick) {
-    const exp = pick.exports.find((x) => x.renders).name;
-    report.nextSteps.push(`readme-runtime init --ui ${pick.file}${exp === 'default' ? '' : `#${exp}`} --name demo --json`);
+    report.nextSteps.push(initUi(pick, pick.exports.find((x) => x.markupBytes > 0)), 'edit the generated logic.ts (state + view_* functions) and demo.tsx (map views to props)');
+  } else if (withProps) {
+    report.nextSteps.push(initUi(withProps, withProps.exports[0]), 'give the component its props in the generated demo.tsx (computed from the views), and write logic.ts');
+  } else if (subPackages.length) {
+    report.nextSteps.push(...subPackages.slice(0, 3).map((p) => `cd ${p} && readme-runtime analyze --json`));
+    return report;
+  } else if (warned('DEPS_NOT_INSTALLED')) {
+    report.nextSteps.push("install the project's dependencies (npm ci), then run readme-runtime analyze --json again");
+    return report;
+  } else if (wasmPick) {
+    report.nextSteps.push(`readme-runtime init --wasm ${wasmPick.file} --json`);
+  } else {
+    report.nextSteps.push('nothing to reuse here: no React component renders and no .wasm has an (i32) -> i32 export. A card needs one of them (README: "Use it in your project")');
+    return report;
   }
-  report.nextSteps.push('edit the generated logic.ts (state + view_* functions) and demo.tsx (map views to props)', 'readme-runtime build --json', 'readme-runtime check --json');
+  report.nextSteps.push('readme-runtime build --json', 'readme-runtime check --json');
   return report;
 }
