@@ -1,24 +1,24 @@
 {
   "version": 1,
   "tool": "0.1.0",
-  "generator": "1cc38d2515d1c1d1c72ba4400e26ab6b3c2f209126e074da8f5bfd9b090ce41b",
+  "generator": "06573775a040d21f03efc845b8b896f028acf67031180f5ef23ca1ed63d5b7a5",
   "cards": {
     "collatz": {
       "inputs": "5a1e2f80a8418a91d76ca55f53442bf4af1948e61477b5ed9ac9ce0a83c3bff2",
       "wasm": "dd40a4b6513c1fe94042a3e636d706a1cf4400f255b9634abea9ccba907e787a",
       "out": "5de82f7acc2110d3a0c3261f7e03dc58915e716ad43679663b8183d817b79f5d",
-      "render": "c143e06c45bffa643a70f1ad03c51bd293458211c90ed9ca2fd039e7a57b7e27"
+      "render": "82cc1e7515312c323111145692a6830c35e05b127391e0f1ec83db422383d106"
     },
     "lfsr-rust": {
       "inputs": "b79cf255e75a24be61c4ef512c66b76e880d5e0091c93a85e33c43660017a835",
       "wasm": "bac5ae0dce92bcae0ec8cf01117b79300f39bcb543f7c729f54fcb30bee41a73",
       "out": "2552d692e81f0a393b19bb6198fdf2c29edd2f7bb0cd5dd7f71850a55149e8f9",
-      "render": "5fe938f237283e81cb06db182c7c629966e006457bd4bf029ed88985687ab355"
+      "render": "41e8b990fd1f1c0393bc2d47c97005f105c7503f5e3ba764bedaebf67dd605c7"
     },
     "mockcraft": {
       "inputs": "52e441ddcb27cd1f387a7661a40e4aba35ba4a2189e8001f1cb794cdcc1c9ac7",
       "wasm": "c257d18c9edd5c3e6477df556e7b5bee0fd043becf55604605894f0d476ac29a",
-      "out": "074e6c0c9cdb11cd03ec7e2508354faf00b27080c4dd59ba5bb8dc9a84d38954",
+      "out": "65dc23f7f127d6e04b86e2ba2daab5a9ff4ae74c442102a3484761b52b671870",
       "uiInputs": {
         "examples/mockcraft/demo.tsx": "375d39a247e2ae478be8b27e587ee3cecb50e4bd91a24d6e1e9bdb9c56410658",
         "examples/mockcraft/tsconfig.json": "1217a666ab46a6bca330bc74ceb2d6f214ace1ada1c653f1e6fa5fedb9473275",
@@ -30,7 +30,7 @@
         "examples/mockcraft/upstream/src/lib/icons.tsx": "288d28df6b9683782cad221a2c1499dda7dbe8c42aac8a7e225cfc39259219a9",
         "examples/mockcraft/upstream/src/lib/templates.ts": "cced791479232b822d801fa922894a9dca39c2d08693653507f23b96b5f773f4"
       },
-      "render": "1eb97c592d0b94224cdc5a5853b27e03fac628d4d3c870c971a35f3406950109"
+      "render": "439b75ca37821a30f675bb7bc1780e42457c533e4427d594248e3cac72f6c0a6"
     }
   }
 }

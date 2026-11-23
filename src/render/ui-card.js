@@ -39,7 +39,7 @@ svg{--rr-bg:#0d1117;--rr-line:#30363d;--rr-fg:#e6edf3;--rr-mut:#7d8590;--rr-acc:
 .rr-l{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;font-size:11px;letter-spacing:.08em;font-weight:600;fill:var(--rr-mut)}
 .rr-pulse{animation:rrpulse 1.2s ease-in-out infinite}@keyframes rrpulse{50%{opacity:.25}}
 .rr-sd text{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;font-weight:600;fill:var(--rr-fg)}
-.rr-ui{opacity:calc(.25 + .75 * var(--rok))}
+.rr-ui{opacity:calc(.25 + .75 * var(--rok));background:transparent}
 .st-run{opacity:calc((1 - min(1, ${F})) * (1 - clamp(0, var(--rsx) - ${steps - 1}, 1)) * var(--rok))}
 .st-end{opacity:calc((1 - min(1, ${F})) * clamp(0, var(--rsx) - ${steps - 1}, 1) * var(--rok))}
 .st-halt{opacity:calc(mod(${F}, 2) * var(--rok))}
