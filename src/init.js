@@ -30,6 +30,68 @@ jobs:
       - run: npx --yes ${PACKAGE} check
 `;
 
+export const ASC = 'assemblyscript@0.28.20';
+
+// `init --ui <file>[#Export]`: a working UI card skeleton around one of the project's own
+// components. It builds and renders as generated; the author (or an agent) then maps view
+// values to the component's props and writes the real state logic.
+export function initUiCard(cwd, { component, name = 'demo', configPath = CONFIG_FILE, css = [], tsconfig = null }) {
+  const [file, exportName = null] = component.split('#');
+  if (!fs.existsSync(path.resolve(cwd, file))) throw new Error(`component file ${file} not found`);
+  if (!/^[\w.-]+$/.test(name)) throw new Error('--name must be a simple identifier');
+  const dir = `readme-runtime/demo/${name}`;
+  const created = [];
+  const write = (rel, text) => {
+    const p = path.resolve(cwd, rel);
+    if (fs.existsSync(p)) { created.push({ file: rel, status: 'kept' }); return; }
+    fs.mkdirSync(path.dirname(p), { recursive: true });
+    fs.writeFileSync(p, text);
+    created.push({ file: rel, status: 'created' });
+  };
+  const rel = path.relative(path.resolve(cwd, dir), path.resolve(cwd, file)).replace(/\\/g, '/').replace(/\.(tsx|jsx|ts|js)$/, '');
+  const imp = exportName && exportName !== 'default' ? `import { ${exportName} as Component } from "${rel}";` : `import Component from "${rel}";`;
+  write(`${dir}/demo.tsx`, `// README Runtime demo for ${file}${exportName ? `#${exportName}` : ''}.
+// Props are view values computed in CSS from logic.wasm (see logic.ts). Map them to the
+// component's own props; numbers used in styles/text may be any a*view + b, anything else
+// (classes, texts, elements) needs a view with at most 64 values.
+${imp}
+
+export default function Demo({ t }: { t: number }) {
+  return (
+    <div style={{ position: "relative", width: 640, height: 320, overflow: "hidden" }}>
+      <div style={{ position: "absolute", left: 16 + t * 4, top: 16 }}>
+        <Component />
+      </div>
+    </div>
+  );
+}
+`);
+  write(`${dir}/logic.ts`, `// State logic (AssemblyScript): step() advances the state, view_*() derive what the UI shows.
+// i32 only; keep values within +-999,999 (README Runtime refuses anything CSS cannot compute exactly).
+export function step(s: i32): i32 { return s < 100 ? s + 1 : 0; }
+export function view_t(s: i32): i32 { return s; }
+`);
+  const cfgPath = path.resolve(cwd, configPath);
+  const cfg = fs.existsSync(cfgPath) ? JSON.parse(fs.readFileSync(cfgPath, 'utf8')) : { cards: [] };
+  if (cfg.cards.some((c) => c.name === name)) {
+    created.push({ file: configPath, status: `kept (card "${name}" exists)` });
+  } else {
+    cfg.cards.push({
+      name,
+      title: `${path.basename(file).replace(/\.\w+$/, '')} · live`,
+      wasm: `${dir}/logic.wasm`,
+      build: { command: `npx --yes -p ${ASC} asc ${dir}/logic.ts -O3 --runtime stub --noAssert -o ${dir}/logic.wasm`, inputs: [`${dir}/logic.ts`] },
+      export: 'step',
+      init: 0,
+      steps: 100,
+      ui: { entry: `${dir}/demo.tsx`, ...(tsconfig ? { tsconfig } : {}), ...(css.length ? { css } : {}), views: { t: 'view_t' } },
+    });
+    fs.writeFileSync(cfgPath, `${JSON.stringify(cfg, null, 2)}\n`);
+    created.push({ file: configPath, status: 'card added' });
+  }
+  return { created, card: name, next: ['readme-runtime build --json', `edit ${dir}/logic.ts and ${dir}/demo.tsx`, 'readme-runtime build --json'] };
+}
+
 export function initProject(cwd, { wasm, exportName, init, configPath = CONFIG_FILE }) {
   const lines = [];
   const cfgPath = path.resolve(cwd, configPath);

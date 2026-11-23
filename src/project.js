@@ -7,6 +7,7 @@ import url from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { generate, sha256, DEFAULTS } from './generate.js';
 import { TOOL_VERSION } from './version.js';
+import { CodedError } from './errors.js';
 
 export const CONFIG_FILE = 'readme-runtime.json';
 export const LOCK_FILE = 'readme-runtime.lock.json';
@@ -223,7 +224,7 @@ function writeLock(dir, lock) {
 const kb = (n) => `${(n / 1024).toFixed(1)} kB`;
 
 // Build every selected card. Returns a list of { name, build, card, summary } entries.
-export async function build(configPath, { only = [], force = false, log = console.log } = {}) {
+export async function build(configPath, { only = [], force = false, log = console.log, quiet = false } = {}) {
   const cfg = loadConfig(configPath);
   const lock = readLock(cfg.dir);
   const selected = only.length ? cfg.cards.filter((c) => only.includes(c.name)) : cfg.cards;
@@ -241,14 +242,17 @@ export async function build(configPath, { only = [], force = false, log = consol
         buildState = 'cached';
       } else {
         log(`${card.name}: build  $ ${card.build.command}`);
-        const r = spawnSync(card.build.command, { shell: true, cwd: cfg.dir, stdio: 'inherit' });
-        if (r.status !== 0) throw new Error(`${card.name}: build command failed (exit ${r.status ?? r.signal})`);
-        if (!fs.existsSync(wasmPath)) throw new Error(`${card.name}: build command did not produce ${card.wasm}`);
+        const r = spawnSync(card.build.command, { shell: true, cwd: cfg.dir, stdio: quiet ? 'pipe' : 'inherit', encoding: 'utf8' });
+        if (r.status !== 0) {
+          const tail = `${r.stdout ?? ''}${r.stderr ?? ''}`.trim().split('\n').slice(-15).join('\n');
+          throw new CodedError('BUILD_COMMAND', `${card.name}: build command failed (exit ${r.status ?? r.signal}): ${card.build.command}${tail ? `\n${tail}` : ''}`, { card: card.name, command: card.build.command, exitCode: r.status, output: tail });
+        }
+        if (!fs.existsSync(wasmPath)) throw new CodedError('WASM_MISSING', `${card.name}: build command did not produce ${card.wasm}`, { card: card.name });
         buildState = 'built';
       }
       entry.inputs = inp.hash;
     }
-    if (!fs.existsSync(wasmPath)) throw new Error(`${card.name}: ${card.wasm} not found${card.build ? '' : ' (add a "build" command or build it yourself)'}`);
+    if (!fs.existsSync(wasmPath)) throw new CodedError('WASM_MISSING', `${card.name}: ${card.wasm} not found${card.build ? '' : ' (add a "build" command or build it yourself)'}`, { card: card.name });
     const wasm = fs.readFileSync(wasmPath);
     entry.wasm = sha256(wasm);
     // UI cards also depend on every file the last render read (the demo, the reused
@@ -259,10 +263,16 @@ export async function build(configPath, { only = [], force = false, log = consol
     const outOk = fs.existsSync(outPath) && prev.out === sha256(normalizeEol(fs.readFileSync(outPath, 'utf8')));
     let cardState;
     let summary = '';
+    let reason = null;
+    let lastGen = null;
     if (!force && prev.render === key && outOk) {
       cardState = 'cached';
     } else {
+      reason = force ? 'forced' : !prev.render ? 'first build' : prev.wasm !== entry.wasm ? 'wasm changed'
+        : card.options.ui && uiFiles && prev.uiInputs ? (Object.entries(uiFiles).filter(([f, h]) => prev.uiInputs[f] !== h).map(([f]) => f).join(', ') || 'options or generator changed') : !outOk ? 'card missing or edited' : 'options or generator changed';
+      if (card.options.ui && uiFiles && prev.uiInputs && Object.entries(uiFiles).some(([f, h]) => prev.uiInputs[f] !== h)) reason = `ui files changed: ${reason}`;
       const r = await generate(wasm, card.options);
+      lastGen = r;
       fs.mkdirSync(path.dirname(outPath), { recursive: true });
       const old = fs.existsSync(outPath) ? normalizeEol(fs.readFileSync(outPath, 'utf8')) : null;
       if (old !== r.svg) fs.writeFileSync(outPath, r.svg);
@@ -274,7 +284,7 @@ export async function build(configPath, { only = [], force = false, log = consol
     }
     entry.render = card.options.ui ? renderKey(card, entry.wasm, entry.uiInputs) : key;
     lock.cards[card.name] = entry;
-    results.push({ name: card.name, build: buildState, card: cardState, out: card.out, summary });
+    results.push({ name: card.name, build: buildState, card: cardState, out: card.out, summary, reason, ...(lastGen ? { steps: lastGen.verification.endAt, end: lastGen.verification.trace.end, ui: lastGen.ui } : {}) });
     log(`${card.name}: wasm ${buildState === 'none' ? 'prebuilt' : buildState === 'cached' ? 'up to date (sources unchanged)' : 'rebuilt'} · card ${cardState === 'cached' ? 'up to date' : cardState === 'unchanged' ? 'regenerated (identical)' : `written ${card.out}`}${summary ? ` · ${summary}` : ''}`);
   }
   // keep entries of cards not selected; drop entries of cards removed from the config
@@ -284,26 +294,26 @@ export async function build(configPath, { only = [], force = false, log = consol
 }
 
 // Read-only verification for CI. Never runs build commands, never writes.
-export async function check(configPath, { log = console.log } = {}) {
+export async function check(configPath, { log = console.log, report = () => {} } = {}) {
   const cfg = loadConfig(configPath);
   const lock = readLock(cfg.dir);
   const problems = [];
   for (const card of cfg.cards) {
     const prev = lock.cards[card.name];
-    const fail = (msg) => { problems.push(`${card.name}: ${msg}`); log(`${card.name}: FAIL ${msg}`); };
-    if (!prev) { fail(`not in ${LOCK_FILE}; run "readme-runtime build" and commit the result`); continue; }
+    const fail = (msg, code = 'CHECK_CARD_STALE') => { problems.push(`${card.name}: ${msg}`); report({ card: card.name, code, message: msg }); log(`${card.name}: FAIL ${msg}`); };
+    if (!prev) { fail(`not in ${LOCK_FILE}; run "readme-runtime build" and commit the result`, 'CHECK_NOT_IN_LOCK'); continue; }
     if (card.build) {
       const inp = inputsHash(cfg.dir, card.build, allOutputs(cfg));
-      if (inp.hash !== prev.inputs) { fail(`sources changed since the last build (${inp.files.join(', ')}); run "readme-runtime build" and commit`); continue; }
+      if (inp.hash !== prev.inputs) { fail(`sources changed since the last build (${inp.files.join(', ')}); run "readme-runtime build" and commit`, 'CHECK_SOURCES_CHANGED'); continue; }
     }
     const wasmPath = path.join(cfg.dir, card.wasm);
-    if (!fs.existsSync(wasmPath)) { fail(`${card.wasm} is missing`); continue; }
+    if (!fs.existsSync(wasmPath)) { fail(`${card.wasm} is missing`, 'WASM_MISSING'); continue; }
     const wasm = fs.readFileSync(wasmPath);
-    if (sha256(wasm) !== prev.wasm) { fail(`${card.wasm} differs from the one the card was built from; run "readme-runtime build"`); continue; }
+    if (sha256(wasm) !== prev.wasm) { fail(`${card.wasm} differs from the one the card was built from; run "readme-runtime build"`, 'CHECK_WASM_CHANGED'); continue; }
     const outPath = path.join(cfg.dir, card.out);
-    if (!fs.existsSync(outPath)) { fail(`${card.out} is missing; run "readme-runtime build" and commit it`); continue; }
+    if (!fs.existsSync(outPath)) { fail(`${card.out} is missing; run "readme-runtime build" and commit it`, 'CHECK_CARD_MISSING'); continue; }
     let r;
-    try { r = await generate(wasm, card.options); } catch (e) { fail(`regeneration failed: ${e.message}`); continue; }
+    try { r = await generate(wasm, card.options); } catch (e) { fail(`regeneration failed: ${e.message}`, e.code && typeof e.code === 'string' ? e.code : 'INTERNAL'); continue; }
     const committed = normalizeEol(fs.readFileSync(outPath, 'utf8'));
     if (committed !== r.svg) {
       const why = lock.generator && lock.generator !== generatorHash()
