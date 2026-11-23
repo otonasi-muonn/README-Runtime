@@ -45,7 +45,9 @@ jobs:
       - name: Pixel-level comparison with the real Wasm engine
         run: node test/browser/run.js --browsers chromium,firefox,webkit
       - name: Reused UI equals the real component's direct render
-        run: node test/browser/ui.js --browsers chromium,firefox,webkit
+        run: |
+          node test/browser/ui.js --browsers chromium,firefox,webkit
+          node test/browser/ui.js --card air-drawing --browsers chromium,firefox,webkit
       - name: Keep screenshots of failures
         if: failure()
         uses: actions/upload-artifact@v7
