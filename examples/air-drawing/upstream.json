@@ -1,0 +1,12 @@
+{
+  "repository": "https://github.com/otonasi-muonn/air-drawing-board.git",
+  "commit": "d71f3368114119d9a47edf53b8cce6768c393b1a",
+  "note": "Byte-identical copies of upstream files: do not edit, re-sync with tools/sync-upstream.mjs. Checked by test/ui.test.js.",
+  "files": {
+    "src/codec/drawingCodec.ts": "ddd6112ab71d03f01c42eb5e4c477ef04f42d207cd26e23dfeba900ad1e9a1f9",
+    "src/domain/drawing.ts": "f2a5c9a23c7a79a123018ab10d288d6e8d6017b610fc807e357034eaa8d9fc79",
+    "src/render/canvasRenderer.ts": "24d8034b5d53a9ddfbc41a113e7263d9baccaf3079120a0695dc2fac0f47f75a",
+    "src/styles.css": "a05f1cd091c2ee7715fecfbb44b3730d1f924c6c96a0cf9bdf537341cdd43161",
+    "tests/fixtures/test-vectors-v1.json": "dba8e14357b3bbceb0b10d591074b59012f16e891cc95011ef99c278a3182779"
+  }
+}

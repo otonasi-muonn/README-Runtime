@@ -1,0 +1,40 @@
+{
+  "repository": "https://github.com/otonasi-muonn/air-drawing-board.git",
+  "commit": "d71f3368114119d9a47edf53b8cce6768c393b1a",
+  "comparedCommittedBlobs": true,
+  "hashes": {
+    "src/codec/drawingCodec.ts": "ddd6112ab71d03f01c42eb5e4c477ef04f42d207cd26e23dfeba900ad1e9a1f9",
+    "src/domain/drawing.ts": "f2a5c9a23c7a79a123018ab10d288d6e8d6017b610fc807e357034eaa8d9fc79",
+    "src/render/canvasRenderer.ts": "24d8034b5d53a9ddfbc41a113e7263d9baccaf3079120a0695dc2fac0f47f75a",
+    "src/styles.css": "a05f1cd091c2ee7715fecfbb44b3730d1f924c6c96a0cf9bdf537341cdd43161",
+    "tests/fixtures/test-vectors-v1.json": "dba8e14357b3bbceb0b10d591074b59012f16e891cc95011ef99c278a3182779"
+  },
+  "prefixCases": 160,
+  "failures": [
+    {
+      "name": "65-value geometry view (deliberate range probe)",
+      "code": "UI_NONLINEAR",
+      "message": "the UI depends on view \"k0\" in a way that is not affine (element 0.1.0.0.0), and \"k0\" can take 65 values (0..64; more than 64). view ranges are derived from the Wasm code for every possible state (an edited init can reach any of them), so the view function itself must bound the value (e.g. a comparison chain or x % n). Or make the markup depend on it linearly (numbers in style/text)."
+    },
+    {
+      "name": "renderAll with the renderStroke-only shim",
+      "code": "Error",
+      "message": "canvas-svg: CanvasRenderingContext2D.save is not recorded (only what renderStroke uses is)"
+    },
+    {
+      "name": "renderActive with the renderStroke-only shim",
+      "code": "Error",
+      "message": "canvas-svg: CanvasRenderingContext2D.clearRect is not recorded (only what renderStroke uses is)"
+    },
+    {
+      "name": "renderStrokesToDataUrl in Node (default canvas factory)",
+      "code": "ReferenceError",
+      "message": "document is not defined"
+    },
+    {
+      "name": "pixel readback outside the recorder contract",
+      "code": "Error",
+      "message": "canvas-svg: CanvasRenderingContext2D.getImageData is not recorded (only what renderStroke uses is)"
+    }
+  ]
+}

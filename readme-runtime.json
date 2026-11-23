@@ -60,6 +60,43 @@
       "init": 1,
       "steps": 120,
       "bits": 16
+    },
+    {
+      "name": "air-drawing",
+      "title": "air-drawing-board · replay",
+      "wasm": "examples/air-drawing/logic.wasm",
+      "build": {
+        "command": "node examples/air-drawing/prepare.mjs && npx asc examples/air-drawing/logic.ts -O3 --runtime stub --noAssert -o examples/air-drawing/logic.wasm",
+        "inputs": [
+          "examples/air-drawing/prepare.mjs",
+          "examples/air-drawing/logic.ts",
+          "examples/air-drawing/upstream/src/codec/drawingCodec.ts",
+          "examples/air-drawing/upstream/src/domain/drawing.ts",
+          "examples/air-drawing/upstream/tests/fixtures/test-vectors-v1.json"
+        ]
+      },
+      "export": "step",
+      "init": 0,
+      "steps": 177,
+      "hold": 24,
+      "stepMs": 50,
+      "ui": {
+        "entry": "examples/air-drawing/demo.tsx",
+        "css": [
+          "examples/air-drawing/upstream/src/styles.css"
+        ],
+        "views": {
+          "k0": "view_k0",
+          "k1": "view_k1",
+          "k2": "view_k2",
+          "k3": "view_k3",
+          "col": "view_col",
+          "wid": "view_wid",
+          "n": "view_n",
+          "pts": "view_pts"
+        },
+        "credit": "drawing + renderStroke() from air-drawing-board@d71f336 (unchanged)"
+      }
     }
   ]
 }

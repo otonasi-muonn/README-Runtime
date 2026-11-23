@@ -1,0 +1,108 @@
+{
+  "svgSha256": "e88e1b83f8222f7e2e46f2e15907140e1bed04ae3154c4e84eec2396ace6cbc5",
+  "clocksPinnedOnly": true,
+  "states": [
+    {
+      "t": 20,
+      "state": 20,
+      "views": {
+        "k0": 17,
+        "k1": 0,
+        "k2": 0,
+        "k3": 0,
+        "col": 0,
+        "wid": 1,
+        "n": 1,
+        "pts": 17
+      }
+    },
+    {
+      "t": 150,
+      "state": 150,
+      "views": {
+        "k0": 63,
+        "k1": 21,
+        "k2": 21,
+        "k3": 24,
+        "col": 5,
+        "wid": 2,
+        "n": 4,
+        "pts": 129
+      }
+    }
+  ],
+  "stage": {
+    "x": 44,
+    "y": 144,
+    "w": 464,
+    "h": 344
+  },
+  "results": [
+    {
+      "browser": "chromium",
+      "version": "159.0.8154.6",
+      "javaScriptEnabled": false,
+      "frames": [
+        {
+          "t": 20,
+          "stageDiff": 0,
+          "uiDiff": 0,
+          "inkPixels": 1024,
+          "screenshot": "screenshots/chromium-t20.png"
+        },
+        {
+          "t": 150,
+          "stageDiff": 0,
+          "uiDiff": 0,
+          "inkPixels": 4838,
+          "screenshot": "screenshots/chromium-t150.png"
+        }
+      ],
+      "changedStagePixels": 4484
+    },
+    {
+      "browser": "firefox",
+      "version": "159.0",
+      "javaScriptEnabled": false,
+      "frames": [
+        {
+          "t": 20,
+          "stageDiff": 0,
+          "uiDiff": 0,
+          "inkPixels": 1026,
+          "screenshot": "screenshots/firefox-t20.png"
+        },
+        {
+          "t": 150,
+          "stageDiff": 0,
+          "uiDiff": 0,
+          "inkPixels": 4839,
+          "screenshot": "screenshots/firefox-t150.png"
+        }
+      ],
+      "changedStagePixels": 4491
+    },
+    {
+      "browser": "webkit",
+      "version": "27.2",
+      "javaScriptEnabled": false,
+      "frames": [
+        {
+          "t": 20,
+          "stageDiff": 0,
+          "uiDiff": 0,
+          "inkPixels": 1024,
+          "screenshot": "screenshots/webkit-t20.png"
+        },
+        {
+          "t": 150,
+          "stageDiff": 0,
+          "uiDiff": 0,
+          "inkPixels": 4838,
+          "screenshot": "screenshots/webkit-t150.png"
+        }
+      ],
+      "changedStagePixels": 4493
+    }
+  ]
+}

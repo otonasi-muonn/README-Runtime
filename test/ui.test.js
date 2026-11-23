@@ -15,14 +15,20 @@ import { build, check } from '../src/project.js';
 const root = path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), '..');
 const parseAndSerialize = (html) => toXhtml(parseHtml(html));
 
-test('the mockcraft example uses the upstream files byte-for-byte', () => {
-  const dir = path.join(root, 'examples/mockcraft');
-  const m = JSON.parse(fs.readFileSync(path.join(dir, 'upstream.json'), 'utf8'));
-  assert.match(m.repository, /otonasi-muonn\/UIdesign/);
-  for (const [f, hash] of Object.entries(m.files)) {
-    const got = crypto.createHash('sha256').update(fs.readFileSync(path.join(dir, 'upstream', f))).digest('hex');
-    assert.equal(got, hash, f);
+test('the examples use the upstream files byte-for-byte', () => {
+  const repos = {};
+  for (const name of fs.readdirSync(path.join(root, 'examples'))) {
+    const dir = path.join(root, 'examples', name);
+    if (!fs.existsSync(path.join(dir, 'upstream.json'))) continue;
+    const m = JSON.parse(fs.readFileSync(path.join(dir, 'upstream.json'), 'utf8'));
+    repos[name] = m.repository;
+    for (const [f, hash] of Object.entries(m.files)) {
+      const got = crypto.createHash('sha256').update(fs.readFileSync(path.join(dir, 'upstream', f))).digest('hex');
+      assert.equal(got, hash, `${name}: ${f}`);
+    }
   }
+  assert.match(repos.mockcraft, /otonasi-muonn\/UIdesign/);
+  assert.match(repos['air-drawing'], /otonasi-muonn\/air-drawing-board/);
 });
 
 test('inference: affine style numbers, text counters, discrete variants', async () => {
