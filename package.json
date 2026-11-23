@@ -16,7 +16,15 @@
   },
   "devDependencies": {
     "@yowasp/clang": "21.1.4-3",
+    "assemblyscript": "0.28.20",
     "playwright": "^1.65.1",
     "pngjs": "^7.0.0"
+  },
+  "dependencies": {
+    "@tailwindcss/node": "4.3.5",
+    "esbuild": "0.28.2",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "tailwindcss": "4.3.5"
   }
 }

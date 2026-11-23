@@ -4,8 +4,8 @@
 //   3. generated CSS under browser models    -> validates the CSS translation and its range
 import { evalExact } from './compiler/ir.js';
 import { MODELS, STORED_LIMIT } from './compiler/css.js';
-import { simulateMachine } from './runtime/machine.js';
-import { referenceTrace } from './runtime/reference.js';
+import { simulateMachine, evalDisplay, viewProp } from './runtime/machine.js';
+import { referenceTrace, instantiate } from './runtime/reference.js';
 
 export class VerifyError extends Error {}
 
@@ -95,5 +95,28 @@ export async function verifyRun(wasmBytes, program, machine, cfg) {
     }
     models[name] = { maxInline: stats.maxInline, maxStored: stats.maxStored };
   }
-  return { trace, models, endAt, lastValid };
+  // 4. view functions: for every state the card shows, the CSS view values equal the real
+  //    Wasm view exports under every model, without a range flag
+  const viewSamples = [];
+  if (program.views?.length) {
+    const ex = await instantiate(wasmBytes);
+    const seen = new Set();
+    for (const x of values.slice(0, lastValid + 1)) {
+      if (seen.has(x)) continue;
+      seen.add(x);
+      const want = Object.fromEntries(program.views.map((v) => [v.name, ex[v.export](x) | 0]));
+      for (const [name, model] of Object.entries(MODELS)) {
+        const env = evalDisplay(machine, x, model);
+        if (env.get('rvf') !== 0) {
+          throw new VerifyError(`state ${x}: a view function computes a value outside the range CSS represents exactly (${name} model); keep view values within ±${STORED_LIMIT.toLocaleString('en-US')}`);
+        }
+        for (const v of program.views) {
+          const got = env.get(viewProp(v.name));
+          if (got !== want[v.name]) throw new VerifyError(`state ${x}: view "${v.name}" (${v.export}) is ${want[v.name]} in WebAssembly but ${got} in the generated CSS under the ${name} model`);
+        }
+      }
+      viewSamples.push(want);
+    }
+  }
+  return { trace, models, endAt, lastValid, viewSamples };
 }

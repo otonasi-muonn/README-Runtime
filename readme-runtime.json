@@ -1,6 +1,36 @@
 {
   "cards": [
     {
+      "name": "mockcraft",
+      "title": "mockcraft · editor auto-pilot",
+      "wasm": "examples/mockcraft/logic.wasm",
+      "build": {
+        "command": "npx asc examples/mockcraft/logic.ts -O3 --runtime stub --noAssert -o examples/mockcraft/logic.wasm",
+        "inputs": [
+          "examples/mockcraft/logic.ts"
+        ]
+      },
+      "export": "step",
+      "init": 1536,
+      "steps": 160,
+      "stepMs": 150,
+      "ui": {
+        "entry": "examples/mockcraft/demo.tsx",
+        "tsconfig": "examples/mockcraft/tsconfig.json",
+        "css": [
+          "examples/mockcraft/upstream/src/app/globals.css"
+        ],
+        "views": {
+          "dx": "view_dx",
+          "dy": "view_dy",
+          "on": "view_on",
+          "sel": "view_sel",
+          "hits": "view_hits"
+        },
+        "credit": "UI reused from UIdesign@2f97712 (unchanged)"
+      }
+    },
+    {
       "name": "collatz",
       "title": "Collatz conjecture",
       "wasm": "examples/collatz/collatz.wasm",

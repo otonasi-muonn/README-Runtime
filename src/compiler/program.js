@@ -27,7 +27,7 @@ function findExport(mod, name, role) {
 
 // Returns IR roots: step (next state), trap (0/1, or null when step can never trap),
 // halt (0/1 predicate from an optional export).
-export function compileStep(wasmBytes, { exportName = 'step', haltExport = null } = {}) {
+export function compileStep(wasmBytes, { exportName = 'step', haltExport = null, views = [] } = {}) {
   const mod = parseModule(wasmBytes);
   // Structural problems (bad indices, type errors) are reported by the engine's validator
   // rather than surfacing later as confusing internal errors.
@@ -46,5 +46,13 @@ export function compileStep(wasmBytes, { exportName = 'step', haltExport = null 
     if (liveTraps.length) throw new UnsupportedError(`halt predicate "${haltExport}" may trap; it must be total`);
     halt = ir.bool(lh.results[0]);
   }
-  return { mod, ir, step: lifted.results[0], trap, halt, exportName, haltExport };
+  // View functions: (i32) -> i32 exports evaluated on the shown state; their values drive
+  // the reused UI. Like the halt predicate they must be total.
+  const viewNodes = views.map(({ name, export: exp }) => {
+    const e = findExport(mod, exp, `view "${name}"`);
+    const lv = liftFunction(mod, e.index, { ir });
+    if (lv.traps.some((t) => !(t.op === 'const' && t.value === 0))) throw new UnsupportedError(`view function "${exp}" may trap; it must be total`);
+    return { name, export: exp, node: lv.results[0] };
+  });
+  return { mod, ir, step: lifted.results[0], trap, halt, views: viewNodes, exportName, haltExport };
 }

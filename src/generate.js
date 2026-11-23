@@ -4,6 +4,7 @@ import { compileStep } from './compiler/program.js';
 import { toCss, textDepth, MAX_DECL_DEPTH, STORED_LIMIT } from './compiler/css.js';
 import { buildMachine, MAX_STEPS } from './runtime/machine.js';
 import { renderCard } from './render/card.js';
+import { renderUiCard } from './render/ui-card.js';
 import { checkWellFormed } from './render/xml.js';
 import { verifyRun } from './verify.js';
 import { TOOL_VERSION } from './version.js';
@@ -32,11 +33,20 @@ export async function generate(wasmBytes, opts) {
     throw new OptionError(`"halt" must be an integer with |halt| <= ${STORED_LIMIT.toLocaleString('en-US')}`);
   }
   if (o.haltExport && o.haltValue !== undefined && o.haltValue !== null) throw new OptionError('use either "halt" (a value) or "haltExport" (a predicate), not both');
-  const program = compileStep(wasmBytes, { exportName: o.export, haltExport: o.haltExport ?? null });
+  let views = [];
+  if (o.ui) {
+    if (!o.ui.entry || typeof o.ui.entry !== 'string') throw new OptionError('"ui.entry" (the demo component file) is required');
+    if (!o.ui.views || typeof o.ui.views !== 'object' || !Object.keys(o.ui.views).length) throw new OptionError('"ui.views" must map view names to exported (i32) -> i32 functions, e.g. {"x": "view_x"}');
+    views = Object.entries(o.ui.views).map(([name, exp]) => {
+      if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(name)) throw new OptionError(`view name "${name}" must be an identifier (letters, digits, _)`);
+      return { name, export: exp };
+    });
+  }
+  const program = compileStep(wasmBytes, { exportName: o.export, haltExport: o.haltExport ?? null, views });
   const machine = buildMachine(program, { init: o.init, steps: o.steps, hold: o.hold, haltValue: o.haltValue ?? null });
   // Browsers silently drop calc() trees nested too deeply; the translation splits
   // expressions, and this makes sure nothing slipped through.
-  for (const d of [...machine.root, ...machine.level.A, ...machine.level.B]) {
+  for (const d of [...machine.root, ...machine.level.A, ...machine.level.B, ...machine.display]) {
     const depth = textDepth(toCss(d.ast));
     if (depth > MAX_DECL_DEPTH) throw new Error(`internal: --${d.name} is nested ${depth} levels deep (limit ${MAX_DECL_DEPTH})`);
   }
@@ -51,7 +61,14 @@ export async function generate(wasmBytes, opts) {
     wasmSha256: sha256(wasmBytes),
     cssSnippet: `${o.export}() in CSS → --rxa: ${toCss(stateDef.ast)}`,
   };
-  const svg = renderCard(machine, meta, { bits: o.bits });
+  let svg, ui = null;
+  if (o.ui) {
+    const { buildUi } = await import('./ui/index.js');
+    ui = await buildUi(o.ui, machine, verification, { cwd: o.cwd ?? process.cwd() });
+    svg = renderUiCard(machine, { ...meta, credit: o.ui.credit ?? '' }, ui);
+  } else {
+    svg = renderCard(machine, meta, { bits: o.bits });
+  }
   checkWellFormed(svg);
-  return { svg, verification, machine, program };
+  return { svg, verification, machine, program, ui: ui?.info ?? null, uiInputs: ui?.inputs ?? [] };
 }

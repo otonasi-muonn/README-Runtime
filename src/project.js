@@ -10,7 +10,8 @@ import { TOOL_VERSION } from './version.js';
 
 export const CONFIG_FILE = 'readme-runtime.json';
 export const LOCK_FILE = 'readme-runtime.lock.json';
-const CARD_KEYS = new Set(['name', 'wasm', 'build', 'export', 'init', 'steps', 'hold', 'stepMs', 'bits', 'halt', 'haltExport', 'title', 'out']);
+const CARD_KEYS = new Set(['name', 'wasm', 'build', 'export', 'init', 'steps', 'hold', 'stepMs', 'bits', 'halt', 'haltExport', 'title', 'out', 'ui']);
+const UI_KEYS = new Set(['entry', 'tsconfig', 'css', 'views', 'width', 'height', 'credit']);
 
 export class ConfigError extends Error {}
 
@@ -62,6 +63,13 @@ export function loadConfig(configPath) {
       if (typeof c.build.command !== 'string' || !c.build.command.trim()) throw new ConfigError(`${where}: "build.command" must be a non-empty string`);
       if (!Array.isArray(c.build.inputs) || !c.build.inputs.length) throw new ConfigError(`${where}: "build.inputs" must list the source files (globs allowed) the command reads`);
     }
+    if (c.ui !== undefined) {
+      if (!c.ui || typeof c.ui !== 'object') throw new ConfigError(`${where}: "ui" must be an object`);
+      for (const k of Object.keys(c.ui)) if (!UI_KEYS.has(k)) throw new ConfigError(`${where}: unknown key "ui.${k}" (allowed: ${[...UI_KEYS].join(', ')})`);
+      if (typeof c.ui.entry !== 'string') throw new ConfigError(`${where}: "ui.entry" (the demo component, .tsx/.jsx) is required`);
+      if (!c.ui.views || typeof c.ui.views !== 'object' || !Object.keys(c.ui.views).length) throw new ConfigError(`${where}: "ui.views" must map view names to exported (i32) -> i32 functions`);
+      if (c.ui.css !== undefined && !(Array.isArray(c.ui.css) && c.ui.css.every((x) => typeof x === 'string'))) throw new ConfigError(`${where}: "ui.css" must be a list of stylesheet paths`);
+    }
     return {
       name: c.name,
       wasm: c.wasm,
@@ -78,6 +86,8 @@ export function loadConfig(configPath) {
         haltExport: c.haltExport ?? null,
         title: c.title ?? c.name,
         wasmName: path.basename(c.wasm),
+        ui: c.ui ?? null,
+        cwd: dir,
       },
     };
   });
@@ -172,12 +182,23 @@ export function inputsHash(dir, build, outputs = []) {
   return { hash: sha256(parts.join('\n')), files };
 }
 
+function fileHash(dir, f) {
+  const p = path.join(dir, f);
+  return fs.existsSync(p) ? sha256(eolNormalizedBytes(fs.readFileSync(p))) : null;
+}
+// Current hashes of the files a previous UI render read (null: unknown, render again).
+function hashListed(dir, listed) {
+  if (!listed || typeof listed !== 'object') return null;
+  return Object.fromEntries(Object.keys(listed).sort().map((f) => [f, fileHash(dir, f)]));
+}
+
 // Every card's .wasm and SVG: another card's outputs change when that card is built, so they
 // can never be stable inputs.
 const allOutputs = (cfg) => cfg.cards.flatMap((c) => [c.wasm, c.out]);
 
-export function renderKey(card, wasmHash) {
-  return sha256(JSON.stringify({ wasm: wasmHash, options: card.options, generator: generatorHash() }));
+export function renderKey(card, wasmHash, uiFiles = null) {
+  const { cwd, ...options } = card.options;
+  return sha256(JSON.stringify({ wasm: wasmHash, options, generator: generatorHash(), ui: uiFiles }));
 }
 
 export function readLock(dir) {
@@ -230,7 +251,10 @@ export async function build(configPath, { only = [], force = false, log = consol
     if (!fs.existsSync(wasmPath)) throw new Error(`${card.name}: ${card.wasm} not found${card.build ? '' : ' (add a "build" command or build it yourself)'}`);
     const wasm = fs.readFileSync(wasmPath);
     entry.wasm = sha256(wasm);
-    const key = renderKey(card, entry.wasm);
+    // UI cards also depend on every file the last render read (the demo, the reused
+    // components, the stylesheets): their current hashes are part of the key.
+    const uiFiles = card.options.ui ? hashListed(cfg.dir, prev.uiInputs) : null;
+    const key = renderKey(card, entry.wasm, uiFiles);
     const outPath = path.join(cfg.dir, card.out);
     const outOk = fs.existsSync(outPath) && prev.out === sha256(normalizeEol(fs.readFileSync(outPath, 'utf8')));
     let cardState;
@@ -244,10 +268,11 @@ export async function build(configPath, { only = [], force = false, log = consol
       if (old !== r.svg) fs.writeFileSync(outPath, r.svg);
       cardState = old === r.svg ? 'unchanged' : 'written';
       entry.out = sha256(r.svg);
+      if (card.options.ui) entry.uiInputs = Object.fromEntries(r.uiInputs.map((f) => [f, fileHash(cfg.dir, f)]));
       const end = r.verification.trace.end;
       summary = `${kb(r.svg.length)}, ${end.kind === 'halt' ? `halts at step ${end.at}` : end.kind === 'trap' ? `traps at step ${end.at}` : `${end.at} steps`}, verified against Wasm under ${Object.keys(r.verification.models).length} browser arithmetic models`;
     }
-    entry.render = key;
+    entry.render = card.options.ui ? renderKey(card, entry.wasm, entry.uiInputs) : key;
     lock.cards[card.name] = entry;
     results.push({ name: card.name, build: buildState, card: cardState, out: card.out, summary });
     log(`${card.name}: wasm ${buildState === 'none' ? 'prebuilt' : buildState === 'cached' ? 'up to date (sources unchanged)' : 'rebuilt'} · card ${cardState === 'cached' ? 'up to date' : cardState === 'unchanged' ? 'regenerated (identical)' : `written ${card.out}`}${summary ? ` · ${summary}` : ''}`);

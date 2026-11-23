@@ -1,0 +1,461 @@
+@import "tailwindcss";
+
+/* ===== Design tokens (ported from the original mockcraft.html :root) ===== */
+@theme {
+  --color-ink-900: #0a0a0d;
+  --color-ink-850: #121217;
+  --color-ink-800: #17171d;
+  --color-ink-750: #1d1d24;
+  --color-ink-700: #23232b;
+  --color-line: #2c2c35;
+  --color-line-2: #3a3a45;
+  --color-fg: #eceae5;
+  --color-fg-dim: #a4a19a;
+  /* bumped from #6d6a64 to meet WCAG AA for small secondary text (R10) */
+  --color-fg-mute: #7d7a73;
+  --color-accent: #ff6a45;
+  --color-accent-600: #e6502d;
+  --color-accent-soft: rgba(255, 106, 69, 0.14);
+
+  /* font families are wired to the next/font CSS variables set in layout.tsx */
+  --font-ui: var(--font-jakarta), system-ui, sans-serif;
+  --font-disp: var(--font-bricolage), Georgia, serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+
+  --shadow-panel: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
+/* ===== Base ===== */
+html,
+body {
+  height: 100%;
+}
+body {
+  background: var(--color-ink-900);
+  color: var(--color-fg);
+  font-family: var(--font-ui);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+input,
+textarea,
+select {
+  font-family: inherit;
+}
+::selection {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+/* ===== Reusable component classes (ported design system) =====
+   Centralized here so the React components and the parallel UI agents share one
+   visual vocabulary. Layout/one-off styling is done with Tailwind utilities in
+   the components themselves; these cover the most-repeated atoms. */
+@layer components {
+  /* Inline icon: the injected SVG fills the span, so sizing the span sizes it. */
+  .mc-icon {
+    display: inline-flex;
+    width: 1em;
+    height: 1em;
+    flex: none;
+  }
+  .mc-icon > svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Text/number/select/textarea field */
+  .mc-inp {
+    width: 100%;
+    background: var(--color-ink-750);
+    border: 1px solid var(--color-line);
+    border-radius: 8px;
+    padding: 9px 11px;
+    font-size: 13px;
+    color: var(--color-fg);
+    outline: none;
+    transition: border-color 0.12s;
+  }
+  .mc-inp:focus {
+    border-color: var(--color-accent);
+  }
+  textarea.mc-inp {
+    resize: vertical;
+    min-height: 62px;
+    line-height: 1.5;
+  }
+  select.mc-inp {
+    appearance: none;
+    cursor: pointer;
+    padding-right: 30px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23a4a19a' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+  }
+
+  /* Inspector button (toggleable option / action) */
+  .mc-ibtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 9px;
+    border-radius: 8px;
+    background: var(--color-ink-750);
+    border: 1px solid var(--color-line);
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--color-fg-dim);
+    transition: 0.12s;
+  }
+  .mc-ibtn:hover {
+    background: var(--color-ink-700);
+    color: var(--color-fg);
+    border-color: var(--color-line-2);
+  }
+  .mc-ibtn.is-on {
+    background: var(--color-accent-soft);
+    color: var(--color-accent);
+    border-color: rgba(255, 106, 69, 0.4);
+  }
+  .mc-ibtn.is-danger:hover {
+    color: #ff7a6a;
+    border-color: #5a2a24;
+    background: #241715;
+  }
+  .mc-ibtn.is-sq {
+    padding: 8px;
+  }
+  .mc-ibtn .mc-icon {
+    width: 14px;
+    height: 14px;
+  }
+
+  /* Range slider */
+  .mc-range {
+    width: 100%;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    border-radius: 3px;
+    background: var(--color-ink-700);
+    outline: none;
+  }
+  .mc-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    cursor: pointer;
+    box-shadow: 0 0 0 3px var(--color-accent-soft);
+  }
+  .mc-range::-moz-range-thumb {
+    width: 15px;
+    height: 15px;
+    border: none;
+    border-radius: 50%;
+    background: var(--color-accent);
+    cursor: pointer;
+  }
+}
+
+/* ===== Utilities ===== */
+@layer utilities {
+  /* Dotted canvas background used by the board and flow views. */
+  .mc-dotgrid {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+    background-size: 26px 26px;
+  }
+}
+
+/* ===== Canvas elements (shared appearance for board / flow / play) =====
+   Ported from the legacy .el-* / selection CSS. Components apply the geometry
+   via inline style (elementStyle) and toggle the is-on / is-linked / is-selected
+   modifier classes. */
+.el {
+  position: absolute;
+  box-sizing: border-box;
+  display: flex;
+  user-select: none;
+}
+.editmode .el {
+  cursor: move;
+}
+.el-btn {
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  line-height: 1.2;
+  padding: 0 14px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.el-text {
+  align-items: center;
+  line-height: 1.35;
+  overflow: hidden;
+}
+.el-text .t {
+  display: block;
+  width: 100%;
+}
+.el-input {
+  align-items: center;
+  padding: 0 14px;
+  border-radius: 9px;
+  overflow: hidden;
+}
+.el-input .ph {
+  opacity: 0.85;
+}
+.el-box {
+  border-radius: 14px;
+}
+.el-image {
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  overflow: hidden;
+  color: #5b5852;
+  background: linear-gradient(135deg, #efece6, #e2ded6);
+}
+.el-image::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.025) 0 10px, transparent 10px 20px);
+}
+.el-image .imlbl {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.el-image .imlbl .mc-icon {
+  width: 17px;
+  height: 17px;
+  opacity: 0.6;
+}
+.el-avatar {
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+.el-icon {
+  align-items: center;
+  justify-content: center;
+}
+.el-icon > .mc-icon {
+  width: 72%;
+  height: 72%;
+}
+.el-badge {
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0 10px;
+  border-radius: 99px;
+  overflow: hidden;
+}
+.el-line {
+  align-items: center;
+}
+.el-toggle {
+  align-items: center;
+  padding: 3px;
+  border-radius: 99px;
+  background: #d8d4cc;
+  transition: background 0.15s;
+}
+.el-toggle.is-on {
+  background: var(--color-accent);
+}
+.el-toggle .knob {
+  width: calc(50% - 3px);
+  height: 100%;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s;
+}
+.el-toggle.is-on .knob {
+  transform: translateX(100%);
+}
+.el.is-linked::after {
+  content: "";
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3'%3E%3Cpath d='M5 12h14M13 6l6 6-6 6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  box-shadow: 0 0 0 2px #fff;
+  pointer-events: none;
+}
+.editmode .el:hover {
+  outline: 1.5px solid var(--color-accent-soft);
+  outline-offset: 1px;
+}
+.el .edit-target {
+  outline: none;
+  cursor: text;
+}
+
+/* selection box + handles + guides + marquee (editor board) */
+.selbox {
+  position: absolute;
+  pointer-events: none;
+  outline: 1.5px solid var(--color-accent);
+  z-index: 9998;
+}
+.selbox.is-multi {
+  outline-style: dashed;
+}
+.rz {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  background: #fff;
+  border: 1.5px solid var(--color-accent);
+  border-radius: 2px;
+  pointer-events: auto;
+}
+.rz[data-d="nw"] {
+  left: -6px;
+  top: -6px;
+  cursor: nwse-resize;
+}
+.rz[data-d="ne"] {
+  right: -6px;
+  top: -6px;
+  cursor: nesw-resize;
+}
+.rz[data-d="sw"] {
+  left: -6px;
+  bottom: -6px;
+  cursor: nesw-resize;
+}
+.rz[data-d="se"] {
+  right: -6px;
+  bottom: -6px;
+  cursor: nwse-resize;
+}
+.rz[data-d="n"] {
+  left: 50%;
+  top: -6px;
+  transform: translateX(-50%);
+  cursor: ns-resize;
+}
+.rz[data-d="s"] {
+  left: 50%;
+  bottom: -6px;
+  transform: translateX(-50%);
+  cursor: ns-resize;
+}
+.rz[data-d="w"] {
+  left: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: ew-resize;
+}
+.rz[data-d="e"] {
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: ew-resize;
+}
+.dim-tag {
+  position: absolute;
+  left: 50%;
+  bottom: -26px;
+  transform: translateX(-50%);
+  background: var(--color-accent);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 5px;
+  white-space: nowrap;
+}
+.guide {
+  position: absolute;
+  background: var(--color-accent);
+  z-index: 9997;
+  pointer-events: none;
+}
+.guide.v {
+  width: 1px;
+  top: 0;
+  bottom: 0;
+}
+.guide.h {
+  height: 1px;
+  left: 0;
+  right: 0;
+}
+.el.is-selected {
+  outline: 1.5px solid var(--color-accent);
+  outline-offset: 1px;
+}
+.marquee {
+  position: absolute;
+  border: 1px solid var(--color-accent);
+  background: rgba(255, 106, 69, 0.1);
+  z-index: 9996;
+  pointer-events: none;
+}
+
+/* scrollbars */
+::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-ink-700);
+  border-radius: 8px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-line-2);
+  background-clip: padding-box;
+  border: 3px solid transparent;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Toast: keyed CSS animation drives show + auto-hide (see ui/Toast.tsx). */
+@keyframes mc-toast {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 20px);
+  }
+  8%,
+  92% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, 20px);
+  }
+}
+.mc-toast-pop {
+  animation: mc-toast 1.8s ease forwards;
+}

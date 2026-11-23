@@ -1,19 +1,36 @@
 {
   "version": 1,
   "tool": "0.1.0",
-  "generator": "f77002e67b3fa32a23fd12b9ef3b4bb74acc9d4ef0c35d6b5a477e7930b808e1",
+  "generator": "27a647af840b38dfb6b9696c2a967ff64a25f0014ef44f018cfd3fa333d7b086",
   "cards": {
     "collatz": {
       "inputs": "5a1e2f80a8418a91d76ca55f53442bf4af1948e61477b5ed9ac9ce0a83c3bff2",
       "wasm": "dd40a4b6513c1fe94042a3e636d706a1cf4400f255b9634abea9ccba907e787a",
       "out": "5de82f7acc2110d3a0c3261f7e03dc58915e716ad43679663b8183d817b79f5d",
-      "render": "41f2d458983b74ca781cdf9dba0ab3797d2ffa6b1f0b7ad107ed63a6b34750f3"
+      "render": "0f21293569fe7f386516bdc9814fe1f9798680cbb041fe44ac517c2b13dc6958"
     },
     "lfsr-rust": {
       "inputs": "b79cf255e75a24be61c4ef512c66b76e880d5e0091c93a85e33c43660017a835",
       "wasm": "bac5ae0dce92bcae0ec8cf01117b79300f39bcb543f7c729f54fcb30bee41a73",
       "out": "2552d692e81f0a393b19bb6198fdf2c29edd2f7bb0cd5dd7f71850a55149e8f9",
-      "render": "634c1d4b20753b2216fb76c682b5979b3b844f63ee2d802e7ada7ac9fd48b8f4"
+      "render": "93e1901b20b45c84ea12ed332460a9991ec3eb8bc4ff95d9d29718900ffa0858"
+    },
+    "mockcraft": {
+      "inputs": "52e441ddcb27cd1f387a7661a40e4aba35ba4a2189e8001f1cb794cdcc1c9ac7",
+      "wasm": "c257d18c9edd5c3e6477df556e7b5bee0fd043becf55604605894f0d476ac29a",
+      "out": "074e6c0c9cdb11cd03ec7e2508354faf00b27080c4dd59ba5bb8dc9a84d38954",
+      "uiInputs": {
+        "examples/mockcraft/demo.tsx": "375d39a247e2ae478be8b27e587ee3cecb50e4bd91a24d6e1e9bdb9c56410658",
+        "examples/mockcraft/tsconfig.json": "1217a666ab46a6bca330bc74ceb2d6f214ace1ada1c653f1e6fa5fedb9473275",
+        "examples/mockcraft/upstream/src/app/globals.css": "ff78a060367d44163949b451077a288f26478570f8b08e209bb18ac08a9074df",
+        "examples/mockcraft/upstream/src/components/board/ElementView.tsx": "6fa9bf29404d9b65546f71b3ed28d4caf75f37aba0d0286ef4f3a544855c8361",
+        "examples/mockcraft/upstream/src/lib/cn.ts": "4cef1daee5cf1c2b45b045f966d58fa73351953836c685ac8375b8fc0f75dac0",
+        "examples/mockcraft/upstream/src/lib/defaults.ts": "89cfe3ca6a55e181285b08c3c10f20cfccfec3cdb9d25bea156ab6829d7a91d9",
+        "examples/mockcraft/upstream/src/lib/elementStyle.ts": "238b1df7b1bd9f37457d68cfc6c46e0fde762588d4509605c72f5bac15aa68ee",
+        "examples/mockcraft/upstream/src/lib/icons.tsx": "288d28df6b9683782cad221a2c1499dda7dbe8c42aac8a7e225cfc39259219a9",
+        "examples/mockcraft/upstream/src/lib/templates.ts": "cced791479232b822d801fa922894a9dca39c2d08693653507f23b96b5f773f4"
+      },
+      "render": "4b37178e8ee58d319ea1cb066ab1eb455524a4bf7707b9ff2458160aae5e8a8e"
     }
   }
 }

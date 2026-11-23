@@ -8,6 +8,7 @@
 
 import { compileStep } from '../compiler/program.js';
 import { MODELS, N, V, absV, add, clamp, evalAst, fn, max, mul, storeInteger, sub, toCss, translate, STORED_LIMIT } from '../compiler/css.js';
+import { analyzeRanges } from '../compiler/range.js';
 
 export const MAX_STEPS = 400; // WebKit stops resolving styles beyond ~510 nested levels (measured)
 
@@ -122,12 +123,45 @@ export function buildMachine(program, { init, steps, hold = 0, haltValue = null 
   root.push({ name: 'rx', ast: X0 }, { name: 'rk', ast: N(0) }, { name: 'ra', ast: sub(N(1), V('rrg')) });
 
   const innermost = steps % 2 === 1 ? 'A' : 'B';
+  // names readable by the display at the innermost level
+  const out = { c: n('c', innermost), s: n('s', innermost), f: n('f', innermost), q: n('q', innermost), h: n('h', innermost), e: n('e', innermost) };
+
+  // View functions run once, on the shown state, where the display lives. Their values are
+  // inherited registered properties, so the reused UI markup below can read them.
+  const display = [];
+  const viewProps = {};
+  const viewRanges = {};
+  if (program.views?.length) {
+    const roots = program.views.map((v) => ({ node: v.node, name: viewProp(v.name) }));
+    const tv = translate(roots, () => V(out.c), { tempPrefix: 'ru', inputRange: domain });
+    display.push(...tv.defs);
+    for (const t of tv.temps) props.set(t, false);
+    const ranges = analyzeRanges(program.views.map((v) => v.node), domain);
+    for (const v of program.views) {
+      viewProps[v.name] = viewProp(v.name);
+      props.set(viewProp(v.name), true);
+      const r = ranges.get(v.node.id);
+      viewRanges[v.name] = { lo: Math.max(r.lo, -STORED_LIMIT), hi: Math.min(r.hi, STORED_LIMIT) };
+    }
+    display.push(...tv.guards.map((g, i) => ({ name: `rvg${i}`, ast: g })));
+    tv.guards.forEach((_, i) => props.set(`rvg${i}`, false));
+    display.push({ name: 'rvf', ast: tv.guards.length ? fn('max', ...tv.guards.map((_, i) => V(`rvg${i}`))) : N(0) });
+    props.set('rvf', true);
+  }
   return {
     props, root, level, steps, T, hold, init, haltKind, haltValue, guardCount,
-    // names readable by the display at the innermost level
-    out: { c: n('c', innermost), s: n('s', innermost), f: n('f', innermost), q: n('q', innermost), h: n('h', innermost), e: n('e', innermost) },
+    out, display, viewProps, viewRanges,
     initProp: n('x', 'B'),
   };
+}
+
+export const viewProp = (name) => `rview_${name}`;
+
+// Evaluate the display definitions (view functions) for one shown state under a model.
+export function evalDisplay(machine, shown, model = MODELS.exact) {
+  const env = new Map([[machine.out.c, model.store(shown)]]);
+  for (const d of machine.display) env.set(d.name, storeInteger(evalAst(d.ast, (k) => env.get(k), model), model));
+  return env;
 }
 
 const guardName = (i) => `rg${i}`;
