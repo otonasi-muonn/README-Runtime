@@ -288,6 +288,8 @@ node bin/readme-runtime.js check
 
 直近の結果（2026-11-22）: Chromium・Firefox・WebKit（Playwright 1.65.1）、Chrome 157、Edge 157 の5エンジンで **409/409 合格**。21プログラムと、生成済みSVGの初期値を書き換えた47通りを含みます。
 
+既存UIのカード（[`test/browser/ui.js`](test/browser/ui.js)、2026-11-23）: mockcraft と air-drawing で、それぞれ **51/51 合格**（Chromium・Firefox・WebKit）。生成時の初期値と書き換えた初期値の両方で、時計を固定した場合とアニメーションを一時停止した場合を比べました。差は Firefox・WebKit が全件 0px、Chromium は air-drawing が 0px、mockcraft がCSSカウンタ周辺の字送りで最大104px（許容150px）です。github.com のブランチページでも、3エンジンでカードが動き、変種が切り替わることを確認しています。
+
 ### GitHub上での確認手順
 
 開発ブランチ（`dev/readme-runtime-mvp`）で確認するには:
