@@ -13,8 +13,14 @@ import { renderWith, UiError } from './bundle.js';
 
 export const MAX_DISCRETE = 64; // values of one discrete view
 export const MAX_COMBINATIONS = 512; // variants of one group of interacting views
+const EXHAUSTIVE_BUDGET = 8192; // renders spent on checking wide views value by value
 
-const NUM = /-?\d+(?:\.\d+)?/g;
+// A number token keeps its source text: an unbound "0.50" or "#000" must come out unchanged.
+class Num {
+  constructor(text) { this.text = text; this.v = Number(text); }
+  toString() { return this.text; }
+}
+const NUM = /-?(?:\d+(?:\.\d+)?|\.\d+)/g;
 function tokenize(s) {
   const parts = [];
   let last = 0;
@@ -22,59 +28,93 @@ function tokenize(s) {
     let start = m.index, text = m[0];
     // a "-" glued to a letter or digit is a hyphen, not a sign
     if (text[0] === '-' && start > 0 && /[\w)]/.test(s[start - 1])) { start++; text = text.slice(1); }
+    // digits glued to a name or a "#" are part of it (h1, translate3d, #0969da), not numbers
+    if (start > 0 && /[\w#]/.test(s[start - 1])) continue;
     if (start > last) parts.push(s.slice(last, start));
-    parts.push(Number(text));
+    parts.push(new Num(text));
     last = start + text.length;
   }
   if (last < s.length) parts.push(s.slice(last));
   return parts;
 }
-const skeleton = (parts) => parts.map((p) => (typeof p === 'number' ? '#' : p)).join('');
+const isNum = (p) => p instanceof Num;
+const skeleton = (parts) => parts.map((p) => (isNum(p) ? '#' : p)).join('');
 
 const nodeAt = (tree, path) => path.reduce((n, i) => n?.children?.[i], tree);
 const pathKey = (p) => p.join('.');
 const isPrefix = (a, b) => a.length <= b.length && a.every((x, i) => x === b[i]);
+const isSvg = (n) => n?.type === 'el' && n.tag.toLowerCase() === 'svg';
 
-// Visual attributes whose non-numeric change must be reproduced; others (data-*, aria-*,
-// ids, keys) are ignored when they change.
-const NON_VISUAL = (name) => /^(data-|aria-)/.test(name) || ['id', 'title', 'tabindex', 'role', 'key', 'name', 'for', 'type'].includes(name);
+// Attributes that change nothing on screen unless a stylesheet selects on them. When one of
+// them changes with a view and no CSS mentions it, its change is ignored (the base value is
+// kept in the card); every other attribute change makes variants.
+const QUIET = (name) => /^(data-|aria-)/.test(name) || ['title', 'tabindex', 'role', 'name', 'for'].includes(name);
 
-// Compare two trees: numeric sites { path, where, index, a, b } and structural sites { path }.
-function compare(a, b, path = [], out = { num: [], struct: [], ignored: [] }) {
-  if (!a || !b) { out.struct.push({ path }); return out; }
+// Compare two trees: numeric sites { path, where, index, a, b }, structural sites
+// { path, why } and ignored attribute changes. ctx: { visual(name), svg }.
+function compare(a, b, ctx, path = [], out = { num: [], struct: [], ignored: [] }) {
+  if (!a || !b) { out.struct.push({ path, why: 'structure' }); return out; }
   // a different node: the parent element is the region; a different child list: this element
-  if (a.type !== b.type || (a.type === 'el' && a.tag !== b.tag)) { out.struct.push({ path: path.slice(0, -1) }); return out; }
-  if (a.children && a.children.length !== b.children.length) { out.struct.push({ path }); return out; }
+  if (a.type !== b.type || (a.type === 'el' && a.tag !== b.tag)) { out.struct.push({ path: path.slice(0, -1), why: 'structure' }); return out; }
+  if (a.children && a.children.length !== b.children.length) { out.struct.push({ path, why: 'structure' }); return out; }
   if (a.type === 'text') {
     if (a.value !== b.value) {
       const pa = tokenize(a.value), pb = tokenize(b.value);
-      if (skeleton(pa) !== skeleton(pb)) out.struct.push({ path: path.slice(0, -1) });
-      else pa.forEach((x, i) => { if (typeof x === 'number' && x !== pb[i]) out.num.push({ path, where: 'text', index: i, a: x, b: pb[i] }); });
+      // CSS counters do not apply inside SVG: a number in SVG text cannot be bound
+      if (ctx.svg) out.struct.push({ path: path.slice(0, -1), why: 'svg-text' });
+      else if (skeleton(pa) !== skeleton(pb)) out.struct.push({ path: path.slice(0, -1), why: 'text' });
+      else pa.forEach((x, i) => { if (isNum(x) && x.v !== pb[i].v) out.num.push({ path, where: 'text', index: i, a: x.v, b: pb[i].v }); });
     }
     return out;
   }
   if (a.type === 'el') {
     const names = a.attrs.map(([k]) => k).join(' ');
-    if (names !== b.attrs.map(([k]) => k).join(' ')) { out.struct.push({ path }); return out; }
+    if (names !== b.attrs.map(([k]) => k).join(' ')) { out.struct.push({ path, why: 'attributes' }); return out; }
     a.attrs.forEach(([k, va], i) => {
       const vb = b.attrs[i][1];
       if (va === vb) return;
-      if (NON_VISUAL(k)) { out.ignored.push({ path, attr: k }); return; }
+      if (QUIET(k) && !ctx.visual(k)) { out.ignored.push({ path, attr: k }); return; }
       const pa = tokenize(va), pb = tokenize(vb);
-      if (k !== 'style' || skeleton(pa) !== skeleton(pb)) { out.struct.push({ path }); return; }
-      pa.forEach((x, j) => { if (typeof x === 'number' && x !== pb[j]) out.num.push({ path, where: `attr:${k}`, index: j, a: x, b: pb[j] }); });
+      if (k !== 'style' || skeleton(pa) !== skeleton(pb)) {
+        const why = k === 'style' && unitlessZero(va, vb) ? 'unit-zero' : ctx.svg && skeleton(pa) === skeleton(pb) ? `svg-attr:${k}` : `attr:${k}`;
+        out.struct.push({ path, why });
+        return;
+      }
+      pa.forEach((x, j) => { if (isNum(x) && x.v !== pb[j].v) out.num.push({ path, where: `attr:${k}`, index: j, a: x.v, b: pb[j].v }); });
     });
   }
-  a.children.forEach((c, i) => compare(c, b.children[i], [...path, i], out));
+  const inner = { ...ctx, svg: ctx.svg || isSvg(a) };
+  a.children?.forEach((c, i) => compare(c, b.children[i], inner, [...path, i], out));
   return out;
+}
+
+// React writes a 0 length without its unit ("left:0" next to "left:4px")
+function unitlessZero(a, b) {
+  const norm = (s) => s.replace(/(^|[:\s(,])0(?=[;\s,)]|$)/g, '$10px');
+  return skeleton(tokenize(norm(a))) === skeleton(tokenize(norm(b))) || skeleton(tokenize(norm(a))) === skeleton(tokenize(b)) || skeleton(tokenize(a)) === skeleton(tokenize(norm(b)));
+}
+
+// Why an element had to become variants, in words, for UI_NONLINEAR.
+function because(why) {
+  if (why === 'svg-text') return 'a number in SVG text changes, and CSS counters do not work inside SVG: show it in an HTML element, or use a view with at most 64 values';
+  if (why === 'unit-zero') return 'React writes 0 without a unit (e.g. "left:0" but "left:4px"), so the style changes form at 0: avoid exactly 0 (e.g. start at 1) or put the value in a transform';
+  if (why?.startsWith('svg-attr:')) return `a number in the SVG attribute "${why.slice(9)}" changes; only numbers in style and HTML text can be bound: move it to style (e.g. a transform)`;
+  if (why === 'text') return 'a text changes form, not only a number in it (zero padding, decimals, separators or words)';
+  if (why?.startsWith('attr:')) return `the attribute "${why.slice(5)}" changes`;
+  return 'it changes in a way that is not affine';
 }
 
 const siteKey = (s) => `${pathKey(s.path)}|${s.where}|${s.index}`;
 
-function render(bundle, props, cache) {
+function render(bundle, props, cache, classes) {
   const key = JSON.stringify(props);
   let t = cache.get(key);
-  if (!t) { t = parseHtml(renderWith(bundle, props)); cache.set(key, t); }
+  if (!t) {
+    const html = renderWith(bundle, props);
+    for (const m of html.matchAll(/\sclass="([^"]*)"/g)) for (const c of m[1].split(/\s+/)) if (c) classes.add(c);
+    t = parseHtml(html);
+    cache.set(key, t);
+  }
   return t;
 }
 
@@ -102,10 +142,24 @@ function probes(base, range) {
 }
 
 // views: [{ name, range: { lo, hi } }]; base: { name: value } (the run's first view values);
-// samples: view-value objects that must reproduce exactly (the verified run).
-export function inferTemplate(bundle, views, { base, samples = [] }) {
+// samples: view-value objects that must reproduce exactly (the verified run); cssAttrs:
+// attribute names the stylesheets select on.
+export function inferTemplate(bundle, views, { base, samples = [], cssAttrs = new Set() }) {
   const cache = new Map();
-  const R0 = render(bundle, base, cache);
+  const classes = new Set();
+  const draw = (props) => render(bundle, props, cache, classes);
+  // a quiet attribute is visual when a stylesheet or a (Tailwind variant) class names it
+  const seenVisual = new Map();
+  const visual = (name) => {
+    const key = `${name}|${classes.size}`;
+    if (!seenVisual.has(key)) seenVisual.set(key, cssAttrs.has(name) || [...classes].some((c) => c.includes(name) || (/^(data|aria)-/.test(name) && c.includes(`${name.slice(0, 5)}[${name.slice(5)}`))));
+    return seenVisual.get(key);
+  };
+  const ctx = { visual, svg: false };
+  const cmp = (a, b) => compare(a, b, ctx);
+  const R0 = draw(base);
+  // a region inside inline SVG is lifted to the <svg> element: variant wrappers are HTML
+  const lift = (p) => { for (let k = 0; k < p.length; k++) if (isSvg(nodeAt(R0, p.slice(0, k + 1)))) return p.slice(0, k + 1); return p; };
   const numeric = new Map(); // view -> Map(siteKey -> { site, points })
   const regions = new Map(); // view -> [paths]
   const ignored = [];
@@ -114,8 +168,8 @@ export function inferTemplate(bundle, views, { base, samples = [] }) {
     const structs = [];
     const vals = probes(base[v.name], v.range);
     for (const x of vals) {
-      const d = compare(R0, render(bundle, { ...base, [v.name]: x }, cache));
-      structs.push(...d.struct.map((s) => s.path));
+      const d = cmp(R0, draw({ ...base, [v.name]: x }));
+      structs.push(...d.struct);
       ignored.push(...d.ignored.map((s) => ({ ...s, view: v.name })));
       for (const s of d.num) {
         const k = siteKey(s);
@@ -125,22 +179,23 @@ export function inferTemplate(bundle, views, { base, samples = [] }) {
     }
     // a site whose number is not affine in the view turns its element into a variant region
     for (const [k, { site, points }] of [...sites]) {
-      if (points.length < 3 || !fitAffine(points)) { structs.push(site.path); sites.delete(k); }
+      if (points.length < 3 || !fitAffine(points)) { structs.push({ path: site.path, why: 'nonaffine' }); sites.delete(k); }
     }
     if (structs.length) {
       const size = v.range.hi - v.range.lo + 1;
       if (size > MAX_DISCRETE) {
         const seen = samples.map((s) => s[v.name]);
-        const run = seen.length ? ` The run itself shows only ${Math.min(...seen)}..${Math.max(...seen)}, but` : '';
-        throw new UiError('UI_NONLINEAR', `the UI depends on view "${v.name}" in a way that is not affine (element ${pathKey(structs[0])}), and "${v.name}" can take ${size} values (${v.range.lo}..${v.range.hi}; more than ${MAX_DISCRETE}).${run} view ranges are derived from the Wasm code for every possible state (an edited init can reach any of them), so the view function itself must bound the value (e.g. a comparison chain or x % n). Or make the markup depend on it linearly (numbers in style/text).`, { view: v.name, path: structs[0], range: v.range });
+        const run = seen.length ? ` The run itself shows only ${Math.min(...seen)}..${Math.max(...seen)}, but view ranges are derived from the Wasm code for every possible state (an edited init can reach any of them), so the view function itself must bound the value (e.g. a comparison chain or x % n).` : '';
+        throw new UiError('UI_NONLINEAR', `the UI depends on view "${v.name}" in a way that cannot be bound (element ${pathKey(structs[0].path)}: ${because(structs[0].why)}), and "${v.name}" can take ${size} values (${v.range.lo}..${v.range.hi}; more than ${MAX_DISCRETE}).${run}`, { view: v.name, path: structs[0].path, range: v.range, why: structs[0].why });
       }
       // a discrete view: every value of its range is rendered, so no changed element is missed
       for (let x = v.range.lo; x <= v.range.hi; x++) {
         if (x === base[v.name] || vals.includes(x)) continue;
-        const d = compare(R0, render(bundle, { ...base, [v.name]: x }, cache));
-        structs.push(...d.struct.map((s) => s.path), ...d.num.map((s) => s.path));
+        const d = cmp(R0, draw({ ...base, [v.name]: x }));
+        structs.push(...d.struct, ...d.num);
+        ignored.push(...d.ignored.map((s) => ({ ...s, view: v.name })));
       }
-      regions.set(v.name, minimalRegions(structs));
+      regions.set(v.name, minimalRegions(structs.map((s) => lift(s.path))));
     }
     numeric.set(v.name, sites);
   }
@@ -168,7 +223,7 @@ export function inferTemplate(bundle, views, { base, samples = [] }) {
     }
     return combos;
   };
-  const regionOf = (props, p) => nodeAt(render(bundle, props, cache), p);
+  const regionOf = (props, p) => nodeAt(draw(props), p);
   const bind = (node, site, view, fit) => {
     node.binds ??= [];
     node.binds.push({ where: site.where, index: site.index, view, ...fit });
@@ -181,17 +236,19 @@ export function inferTemplate(bundle, views, { base, samples = [] }) {
   // joins the switch and is enumerated with it. Returns that view, or null when done.
   function bindVariants(sw) {
     const found = [];
+    const inside = (variantNode, other) => compare(variantNode, other, { ...ctx, svg: sw.svg });
     for (const variant of sw.variants) {
       for (const v of views) {
         if (sw.views.includes(v.name)) continue;
         const b0 = variant.props[v.name];
         const ends = [v.range.lo, v.range.hi].filter((x) => x !== b0);
-        const differs = (x) => { const d = compare(variant.node, regionOf({ ...variant.props, [v.name]: x }, sw.path)); return d.struct.length || d.num.length; };
+        const differs = (x) => { const d = inside(variant.node, regionOf({ ...variant.props, [v.name]: x }, sw.path)); ignored.push(...d.ignored.map((s) => ({ ...s, view: v.name }))); return d.struct.length || d.num.length; };
         if (!ends.some(differs)) continue;
         const pts = new Map();
         for (const x of probes(b0, v.range)) {
-          const d = compare(variant.node, regionOf({ ...variant.props, [v.name]: x }, sw.path));
-          if (d.struct.length) return v.name;
+          const d = inside(variant.node, regionOf({ ...variant.props, [v.name]: x }, sw.path));
+          ignored.push(...d.ignored.map((s) => ({ ...s, view: v.name })));
+          if (d.struct.length) return { view: v.name, why: d.struct[0].why };
           for (const s of d.num) {
             const k = siteKey(s);
             if (!pts.has(k)) pts.set(k, { site: s, points: [{ v: b0, y: s.a }] });
@@ -200,7 +257,7 @@ export function inferTemplate(bundle, views, { base, samples = [] }) {
         }
         for (const { site, points } of pts.values()) {
           const fit = points.length >= 3 && fitAffine(points);
-          if (!fit) return v.name;
+          if (!fit) return { view: v.name, why: 'nonaffine' };
           found.push([variant, site, v.name, fit]);
         }
       }
@@ -214,6 +271,8 @@ export function inferTemplate(bundle, views, { base, samples = [] }) {
     for (const p of minimalRegions(members.flatMap((v) => regions.get(v)))) {
       // only the views that actually change this element are enumerated for it
       const sw = { views: members.filter((v) => regions.get(v).some((q) => isPrefix(q, p) || isPrefix(p, q))), path: p };
+      // whether the region lies inside inline SVG (only the <svg> element itself can, after lifting)
+      sw.svg = p.some((_, k) => k < p.length - 1 && isSvg(nodeAt(R0, p.slice(0, k + 1))));
       for (;;) {
         sw.variants = combosOf(sw.views).map((combo) => {
           const props = { ...base, ...combo };
@@ -223,10 +282,10 @@ export function inferTemplate(bundle, views, { base, samples = [] }) {
         });
         const more = bindVariants(sw);
         if (!more) break;
-        if (size(more) > MAX_DISCRETE) {
-          throw new UiError('UI_NONLINEAR', `view "${more}" changes element ${pathKey(p)} in a way that is not affine when ${sw.views.join(', ')} take other values (e.g. it is shown only for some of them), and "${more}" can take ${size(more)} values (more than ${MAX_DISCRETE}). Make that part depend on "${more}" linearly in every case (e.g. keep the element and hide it with a style), or narrow "${more}" in its Wasm view function.`, { view: more, path: p });
+        if (size(more.view) > MAX_DISCRETE) {
+          throw new UiError('UI_NONLINEAR', `view "${more.view}" changes element ${pathKey(p)} when ${sw.views.join(', ')} take other values (${because(more.why)}), and "${more.view}" can take ${size(more.view)} values (more than ${MAX_DISCRETE}). Make that part depend on "${more.view}" linearly in every case (e.g. keep the element and hide it with a style), or narrow "${more.view}" in its Wasm view function.`, { view: more.view, path: p, why: more.why });
         }
-        sw.views = [...sw.views, more];
+        sw.views = [...sw.views, more.view];
       }
       switches.push(sw);
     }
@@ -246,10 +305,15 @@ export function inferTemplate(bundle, views, { base, samples = [] }) {
   const ordered = [...switches].sort((a, b) => b.path.length - a.path.length);
   ordered.forEach((sw, i) => { sw.id = i; });
   for (const sw of ordered) {
-    const node = { type: 'switch', id: sw.id, views: sw.views, variants: sw.variants.map((x) => ({ combo: x.combo, node: x.node })) };
+    const baseIndex = sw.variants.findIndex((x) => Object.entries(x.combo).every(([k, v]) => base[k] === v));
+    const node = { type: 'switch', id: sw.id, views: sw.views, base: baseIndex, variants: sw.variants.map((x) => ({ combo: x.combo, node: x.node })) };
     if (!sw.path.length) Object.assign(template, { type: 'root', children: [node] });
     else nodeAt(template, sw.path.slice(0, -1)).children[sw.path.at(-1)] = node;
   }
+  // attributes whose changes were ignored keep their base value in the card; the
+  // verification below therefore compares without them (they are not visual)
+  const ignoredNames = new Set(ignored.map((x) => x.attr));
+  template.ignore = [...ignoredNames];
   const info = {
     numeric: views.map((v) => ({ view: v.name, sites: [...numeric.get(v.name).values()].length })),
     discrete: switches.map((s) => ({ views: s.views, path: pathKey(s.path), variants: s.variants.length })),
@@ -258,8 +322,9 @@ export function inferTemplate(bundle, views, { base, samples = [] }) {
   };
   // The template must reproduce every state of the verified run exactly, and also view
   // values the run does not show (states an edited initial value could reach): random
-  // combinations, both ends of every range, and every variant of every switch with random
-  // values for the other views. So the bindings are checked beyond the probes they came from.
+  // combinations, both ends of every range, every variant of every switch with random
+  // values for the other views, and every value of each wide view (within a budget) with
+  // random values for the others. Combinations of wide views remain sampled.
   let seed = 0x9e3779b9;
   const rnd = () => { seed ^= seed << 13; seed >>>= 0; seed ^= seed >>> 17; seed ^= seed << 5; seed >>>= 0; return seed / 4294967296; };
   const random = () => Object.fromEntries(views.map((v) => [v.name, v.range.lo + Math.floor(rnd() * (v.range.hi - v.range.lo + 1))]));
@@ -267,34 +332,44 @@ export function inferTemplate(bundle, views, { base, samples = [] }) {
   for (let i = 0; i < 64; i++) extra.push(random());
   extra.push(Object.fromEntries(views.map((v) => [v.name, v.range.lo])), Object.fromEntries(views.map((v) => [v.name, v.range.hi])));
   for (const sw of switches) for (const x of sw.variants) extra.push({ ...random(), ...x.combo });
+  const wide = views.filter((v) => !regions.has(v.name)).sort((a, b) => (a.range.hi - a.range.lo) - (b.range.hi - b.range.lo));
+  let budget = EXHAUSTIVE_BUDGET;
+  info.verifiedEachValue = [];
+  info.sampledViews = [];
+  for (const v of wide) {
+    const n = v.range.hi - v.range.lo + 1;
+    if (n > budget) { info.sampledViews.push(v.name); continue; }
+    budget -= n;
+    info.verifiedEachValue.push(v.name);
+    for (let x = v.range.lo; x <= v.range.hi; x++) extra.push({ ...random(), [v.name]: x });
+  }
+  const strip = (n) => n.attrs.filter(([k]) => !ignoredNames.has(k));
   for (const s of [...samples, ...extra]) {
-    const want = toXhtml(render(bundle, s, cache), { hooks: { attrs: stripIgnored } });
-    const got = instantiate(template, s);
+    const want = toXhtml(draw(s), { hooks: { attrs: strip } });
+    const got = instantiate(template, s, { ignore: ignoredNames });
     if (want !== got) {
       let at = 0;
       while (want[at] === got[at]) at++;
       const near = (t) => JSON.stringify(t.slice(Math.max(0, at - 50), at + 50));
       throw new UiError('UI_VERIFY', `the inferred template differs from a direct render for view values ${JSON.stringify(s)}: the component renders ${near(want)} but the template gives ${near(got)}`, { views: s });
     }
+    if (cache.size > 4 * EXHAUSTIVE_BUDGET) cache.clear(); // keep memory bounded on long checks
   }
   info.verifiedStates = samples.length;
   info.verifiedRandomStates = extra.length;
   return { template, info };
 }
 
-function stripIgnored(n) {
-  return n.attrs.filter(([k]) => !NON_VISUAL(k) || k === 'role');
-}
-
 // Evaluate a template for concrete view values (JS), the reference the CSS must match.
-export function instantiate(template, values) {
+// ignore: attribute names left out of the output (ignored, non-visual changes).
+export function instantiate(template, values, { ignore = new Set(template.ignore ?? []) } = {}) {
   const pick = (sw) => sw.variants.find((x) => Object.entries(x.combo).every(([k, v]) => values[k] === v));
   const fill = (node) => {
     if (node.type === 'switch') { const x = pick(node); return x ? fill(x.node) : null; }
     const copy = { ...node, children: node.children?.map(fill).filter(Boolean) };
     if (node.binds) {
       for (const b of node.binds) {
-        const val = Number((b.alpha * values[b.view] + b.beta).toFixed(9));
+        const val = String(Number((b.alpha * values[b.view] + b.beta).toFixed(9)));
         if (b.where === 'text') { const p = tokenize(copy.value); p[b.index] = val; copy.value = p.join(''); }
         else {
           const name = b.where.slice(5);
@@ -304,7 +379,34 @@ export function instantiate(template, values) {
     }
     return copy;
   };
-  return toXhtml(fill(template), { hooks: { attrs: stripIgnored } });
+  return toXhtml(fill(template), { hooks: { attrs: (n) => n.attrs.filter(([k]) => !ignore.has(k)) } });
+}
+
+// SVG definitions (markers, gradients, clip paths...) referenced by url(#id) or href="#id":
+// every variant carries its own copy, so each gets its own ids (the first element with an id
+// in the document would otherwise win, possibly inside a hidden variant).
+const DEFS = new Set(['marker', 'lineargradient', 'radialgradient', 'clippath', 'mask', 'pattern', 'filter', 'symbol']);
+function ownDefs(node, suffix) {
+  const ids = new Map();
+  const collect = (n) => {
+    if (n.type !== 'el') return;
+    const id = n.attrs.find(([k]) => k === 'id')?.[1];
+    if (id && DEFS.has(n.tag.toLowerCase())) ids.set(id, `${id}${suffix}`);
+    n.children.forEach(collect);
+  };
+  collect(node);
+  if (!ids.size) return node;
+  const ref = (v) => v.replace(/url\(\s*(['"]?)#([^)'"]+)\1\s*\)/g, (m, q, id) => (ids.has(id) ? `url(${q}#${ids.get(id)}${q})` : m));
+  const fix = (n) => {
+    if (n.type !== 'el') return n;
+    const attrs = n.attrs.map(([k, v]) => {
+      if (k === 'id' && ids.has(v) && DEFS.has(n.tag.toLowerCase())) return [k, ids.get(v)];
+      if ((k === 'href' || k === 'xlink:href') && v.startsWith('#') && ids.has(v.slice(1))) return [k, `#${ids.get(v.slice(1))}`];
+      return [k, ref(v)];
+    });
+    return { ...n, attrs, children: n.children.map(fix) };
+  };
+  return fix(node);
 }
 
 // Serialize the template with CSS bindings. viewVar(name) -> CSS custom property name.
@@ -315,10 +417,11 @@ export function templateToXhtml(template, viewVar) {
     return b.beta === 0 ? a : `${a} + ${b.beta}`;
   };
   const rules = [];
+  let variantBytes = 0;
   const hooks = {
     attrs(n) {
       // all bindings of one attribute index into the tokens of its original value
-      return stripIgnored(n).map(([k, v]) => {
+      return n.attrs.map(([k, v]) => {
         const binds = (n.binds ?? []).filter((b) => b.where === `attr:${k}`);
         if (!binds.length) return [k, v];
         const p = tokenize(v);
@@ -340,18 +443,22 @@ export function templateToXhtml(template, viewVar) {
         const b = textBinds.find((t) => t.index === i);
         if (!b) return esc(String(x));
         if (!Number.isInteger(b.alpha) || !Number.isInteger(b.beta)) throw new UiError('UI_NONINTEGER_TEXT', `a number in the text "${n.value}" is not an integer function of view "${b.view}"; text numbers are shown with CSS counters, which need integers`);
-        return `<span class="rr-n" style="counter-reset:rr-n ${b.alpha === 1 && b.beta === 0 ? `var(--${viewVar(b.view)})` : `calc(${expr(b)})`}"></span>`;
+        return `<rr-n style="counter-reset:rr-n ${b.alpha === 1 && b.beta === 0 ? `var(--${viewVar(b.view)})` : `calc(${expr(b)})`}"></rr-n>`;
       }).join('');
     },
     switch(sw, inner) {
+      const b = Math.max(0, sw.base ?? 0);
       return sw.variants.map((x, i) => {
         const cls = `rr-s${sw.id}-${i}`;
-        rules.push(`@container ${Object.entries(x.combo).map(([k, v]) => `style(--${viewVar(k)}: ${v})`).join(' and ')} { .${cls} { display: contents; } }`);
-        return `<rr-case class="rr-c ${cls}">${inner(x.node)}</rr-case>`;
+        const query = Object.entries(x.combo).map(([k, v]) => `style(--${viewVar(k)}: ${v})`).join(' and ');
+        if (i !== b) rules.push(`@container ${query} { .${cls} { display: contents; } .rr-c.rr-s${sw.id}-${b} { display: none; } }`);
+        const html = inner(ownDefs(x.node, `-rr${sw.id}-${i}`));
+        variantBytes += html.length;
+        return `<rr-case class="rr-c ${cls}${i === b ? ' rr-d' : ''}">${html}</rr-case>`;
       }).join('');
     },
   };
   const markup = toXhtml(template, { hooks });
-  const css = `.rr-c { display: none; }\n.rr-n::after { content: counter(rr-n); }\n${rules.join('\n')}\n`;
-  return { markup, css };
+  const css = `.rr-c { display: none; }\n.rr-c.rr-d { display: contents; }\nrr-n::after { content: counter(rr-n); }\n${rules.join('\n')}\n`;
+  return { markup, css, variantBytes };
 }

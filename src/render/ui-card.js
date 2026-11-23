@@ -55,9 +55,10 @@ svg{--rr-bg:#0d1117;--rr-line:#30363d;--rr-fg:#e6edf3;--rr-mut:#7d8590;--rr-acc:
   disp += `<foreignObject x="${L.uiX}" y="${L.uiY}" width="${ui.width}" height="${ui.height}">`;
   // Firefox re-matches @container style() rules (the variant switches) only when the change
   // does not come from an animation alone; a size container whose width follows the step
-  // makes it re-evaluate them on every step. The UI keeps its own px size inside, so the
-  // wrapper's extra 0..15.75px of width is invisible.
-  disp += `<div xmlns="http://www.w3.org/1999/xhtml" class="rr-ui" style="position:relative;width:calc(${ui.width}px + mod(var(--rsx), 64) * .25px);height:${ui.height}px;container-type:inline-size">${ui.markup}</div>`;
+  // makes it re-evaluate them on every step. It is an extra outer element: the UI wrapper
+  // (which receives the project's html/body rules) keeps its fixed px size.
+  disp += `<div xmlns="http://www.w3.org/1999/xhtml" class="rr-q" style="width:calc(${ui.width}px + mod(var(--rsx), 64) * .25px);height:${ui.height}px;container-type:inline-size">`;
+  disp += `<div class="rr-ui" style="position:relative;width:${ui.width}px;height:${ui.height}px">${ui.markup}</div></div>`;
   disp += '</foreignObject>';
   disp += `<text x="24" y="${sy + 14}" class="rr-l">STEP</text>`;
   for (let d = 0; d < 3; d++) disp += `<g class="rr-sd s${d}" transform="translate(${64 + (2 - d) * 9} ${sy})" clip-path="url(#rrcs)"><use href="#rrds"/></g>`;

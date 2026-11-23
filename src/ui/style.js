@@ -40,6 +40,28 @@ async function tailwind3(css, abs, f, candidates, { cwd, deps }) {
   }
 }
 
+// Properties a page hands down to its content; everything else in an html/body rule lays out
+// the page itself and is dropped.
+const PASSED_ON = /^(--|font|color$|line-height|letter-spacing|word-spacing|text-|-webkit-text|-webkit-font|-moz-osx|tab-size|white-space|direction|writing-mode|hyphens|quotes|color-scheme|accent-color|caret-color|-webkit-tap-highlight-color|background)/;
+
+function pageRules(css) {
+  // (a lookbehind: consecutive rules share the brace between them)
+  return css.replace(/(?<=^|[{};])(\s*)([^{};@]+)\{([^{}]*)\}/g, (m, ws, sel, body) => {
+    const sels = sel.split(',').map((s) => s.trim());
+    const page = sels.filter((s) => s === 'html' || s === 'body');
+    if (!page.length) return m;
+    const others = sels.filter((s) => s !== 'html' && s !== 'body');
+    const decls = body.split(';').map((d) => d.trim()).filter(Boolean);
+    const prop = (d) => d.slice(0, d.indexOf(':')).trim().toLowerCase();
+    let out = others.length ? `${others.join(', ')} {${body}}` : '';
+    const kept = decls.filter((d) => PASSED_ON.test(prop(d)));
+    if (kept.length) out += `${out ? '\n' : ''}.rr-ui { ${kept.join('; ')}; }`;
+    const size = page.includes('html') && decls.find((d) => prop(d) === 'font-size');
+    if (size) out += `${out ? '\n' : ''}svg:root { ${size}; }`;
+    return `${ws}${out}`;
+  });
+}
+
 export async function compileUiCss(files, candidates, { cwd = process.cwd() } = {}) {
   const parts = [];
   const deps = new Set();
@@ -76,7 +98,7 @@ export async function compileUiCss(files, candidates, { cwd = process.cwd() } = 
   // The component expects to live in the project's page: rules written for html/body (base
   // font, text colour, line height) are applied to the wrapper that hosts it instead.
   // (CRLF from a Windows checkout would make the card differ from a build on Linux)
-  let css = parts.join('\n').replace(/\r\n?/g, '\n').replace(/(^|[\s,}(])(html|body)(?=\s*[,{:])/g, '$1.rr-ui');
+  let css = pageRules(parts.join('\n').replace(/\r\n?/g, '\n')).replace(/(^|[\s,}(])(html|body)(?=\s*[,{:])/g, '$1.rr-ui');
   // Framework-provided font variables (next/font and the like) do not exist in an image:
   // map each undefined --font-* to a system stack instead of letting the declaration fail.
   const used = new Set([...css.matchAll(/var\(--(font-[\w-]+)\)/g)].map((m) => m[1]));

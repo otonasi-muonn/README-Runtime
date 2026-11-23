@@ -205,7 +205,7 @@ test('check passes when everything is up to date and writes nothing', async (t) 
 
 const STALE = [
   ['the source changed without a rebuild', (p) => p.write('src/step.c', '2\n'), /sources changed since the last build \(src\/step\.c\)/],
-  ['the card was edited by hand', (p) => p.write(CARD, `${p.text(CARD)}<!-- edited -->\n`), /readme-runtime\/inc\.svg is out of date or was edited by hand/],
+  ['the card was edited by hand', (p) => p.write(CARD, `${p.text(CARD)}<!-- edited -->\n`), /readme-runtime\/inc\.svg is out of date or was edited by hand.*first difference at character \d+: committed ".*<!-- edited/],
   ['the card is missing', (p) => fs.rmSync(p.file(CARD)), /readme-runtime\/inc\.svg is missing/],
   ['the .wasm differs from the one the card was built from', (p) => p.write(WASM, addModule(5)), /out\/step\.wasm differs from the one the card was built from/],
   ['the .wasm is missing', (p) => fs.rmSync(p.file(WASM)), /out\/step\.wasm is missing/],

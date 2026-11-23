@@ -34,15 +34,15 @@ const bundle = await bundleEntry(card.ui.entry, { cwd: root });
 const times = [20, 150];
 const resources = new Map();
 const states = [];
-const strip = node => node.attrs.filter(([k]) => !/^(data-|aria-)/.test(k) && !['id', 'title', 'tabindex', 'key', 'name', 'for', 'type'].includes(k));
-const UI_OPEN = /(<div xmlns="http:\/\/www\.w3\.org\/1999\/xhtml" class="rr-ui" style="[^"]*">)[\s\S]*?(<\/div><\/foreignObject>)/;
+// the reference is the component's own markup, every attribute included
+const UI_OPEN = /(<div class="rr-ui" style="[^"]*">)[\s\S]*?(<\/div><\/div><\/foreignObject>)/;
 for (const t of times) {
   const pinned = svg.replace(/animation:rrclk [^}]*\}/, `--rt:${t}}`).replace(/@media \(prefers-reduced-motion:reduce\)\{[^\n]*\n/, '');
   assert.notEqual(pinned, svg, 'clock replacement must take effect');
   assert.ok(!pinned.includes('rrclk '), 'clock must be pinned');
   const state = trace.values[t];
   const views = Object.fromEntries(Object.entries(card.ui.views).map(([name, exp]) => [name, ex[exp](state) | 0]));
-  const direct = toXhtml(parseHtml(renderWith(bundle, views)), { hooks: { attrs: strip } });
+  const direct = toXhtml(parseHtml(renderWith(bundle, views)));
   const reference = pinned.replace(UI_OPEN, (_, a, b) => `${a}${direct}${b}`);
   assert.notEqual(reference, pinned, 'direct-reference markup replacement must take effect');
   resources.set(`t${t}`, pinned);

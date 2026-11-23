@@ -115,6 +115,54 @@ test('renders do not depend on the host time zone or locale; missing dependencie
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
+test('attributes stay: type, ids, CSS-selected data-*; SVG defs get per-variant ids; number text is kept', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rr-ui-'));
+  try {
+    fs.writeFileSync(path.join(dir, 'a.jsx'), `export default function A({ on, x }) {
+  return <div style={{ width: 300, height: 100 }}>
+    <input type="checkbox" readOnly checked={false} />
+    <b data-state={on ? 'on' : 'off'} data-debug={on ? 'yes' : 'no'}>pill</b>
+    <i style={{ left: 10 + x, background: '#0a0', opacity: '0.50' }} />
+    <svg width="50" height="20"><defs><marker id="arrow"><path d="M0 0L5 5" /></marker></defs><path d="M0 0L40 0" stroke={on ? 'red' : 'blue'} markerEnd="url(#arrow)" /></svg>
+  </div>;
+}
+`);
+    const b = await bundleEntry('a.jsx', { cwd: dir });
+    const views = [{ name: 'on', range: { lo: 0, hi: 1 } }, { name: 'x', range: { lo: 0, hi: 200 } }];
+    const { template, info } = inferTemplate(b, views, { base: { on: 0, x: 0 }, samples: [{ on: 0, x: 0 }], cssAttrs: new Set(['data-state']) });
+    const { markup } = templateToXhtml(template, (v) => `rview_${v}`);
+    assert.match(markup, /<input type="checkbox"/, 'type is kept');
+    assert.ok(info.discrete.some((d) => d.views.includes('on') && /^0\.1$/.test(d.path)), 'a data-state change that CSS selects on makes variants');
+    assert.deepEqual(info.ignoredAttributes, ['data-debug (on)'], 'a data-* change nobody selects on is ignored');
+    assert.match(markup, /data-debug="no"/, '...and keeps its base value instead of disappearing');
+    assert.match(markup, /background:#0a0;opacity:0\.50/, 'number-like text that is not bound stays as written');
+    assert.match(markup, /<marker id="arrow-rr\d+-0">[\s\S]*url\(#arrow-rr\d+-0\)/, 'each variant references its own marker');
+    assert.match(markup, /<marker id="arrow-rr\d+-1">[\s\S]*url\(#arrow-rr\d+-1\)/);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('an exact-value condition on a wide view fails loudly instead of rendering wrong', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rr-ui-'));
+  try {
+    fs.writeFileSync(path.join(dir, 'h.jsx'), 'export default function H({ x }) { return <div style={{ width: 300, height: 50 }}><i className={x === 150 ? "hit" : "miss"} style={{ left: x }} /></div>; }\n');
+    const b = await bundleEntry('h.jsx', { cwd: dir });
+    assert.throws(() => inferTemplate(b, [{ name: 'x', range: { lo: 1, hi: 255 } }], { base: { x: 1 }, samples: [{ x: 1 }] }), (e) => e.code === 'UI_VERIFY' && /"x":150/.test(e.message));
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('numbers inside SVG text become variants of the <svg> element', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rr-ui-'));
+  try {
+    fs.writeFileSync(path.join(dir, 's.jsx'), 'export default function S({ n }) { return <div style={{ width: 200, height: 60 }}><svg width="100" height="40"><text x="5" y="20">{`score ${n}`}</text></svg><p>{n}</p></div>; }\n');
+    const b = await bundleEntry('s.jsx', { cwd: dir });
+    const { template, info } = inferTemplate(b, [{ name: 'n', range: { lo: 0, hi: 9 } }], { base: { n: 0 }, samples: [{ n: 0 }] });
+    const paths = info.discrete.map((d) => d.path);
+    assert.ok(paths.includes('0.0') && !paths.some((p) => p.startsWith('0.0.')), 'the region is the <svg> element, not its text');
+    for (const n of [0, 7]) assert.equal(instantiate(template, { n }), parseAndSerialize(renderWith(b, { n })));
+    assert.ok(!/<svg[^>]*>(?:(?!<\/svg>)[\s\S])*<rr-/.test(templateToXhtml(template, (v) => `rview_${v}`).markup), 'no HTML-only element inside an <svg>');
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
 test('inference refuses a non-affine dependence on a wide view', async () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rr-ui-'));
   try {

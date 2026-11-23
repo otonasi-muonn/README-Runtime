@@ -50,8 +50,8 @@ const pin = (svg, t) => svg.replace(/animation:rrclk [^}]*\}/, `--rt:${t}}`).rep
 // (Firefox re-evaluates container queries differently for animated and for static values).
 const [, clockMs, clockSteps] = gen.svg.match(/animation:rrclk (\d+)ms steps\((\d+)/).map(Number);
 const pause = (svg, t) => svg.replace(/(animation:rrclk [^}]*)\}/, `$1;animation-delay:-${((t + 0.5) * clockMs) / clockSteps}ms;animation-play-state:paused}`).replace(/@media \(prefers-reduced-motion:reduce\)\{[^\n]*\n/, '');
-const strip = (n) => n.attrs.filter(([k]) => !/^(data-|aria-)/.test(k) && !['id', 'title', 'tabindex', 'key', 'name', 'for', 'type'].includes(k));
-const UI_OPEN = /(<div xmlns="http:\/\/www\.w3\.org\/1999\/xhtml" class="rr-ui" style="[^"]*">)[\s\S]*?(<\/div><\/foreignObject>)/;
+// the reference is the component's own markup, every attribute included
+const UI_OPEN = /(<div class="rr-ui" style="[^"]*">)[\s\S]*?(<\/div><\/div><\/foreignObject>)/;
 
 async function expected(init, t) {
   const tr = await referenceTrace(wasm, { exportName: card.options.export, init, steps: card.options.steps });
@@ -70,7 +70,7 @@ const svgs = new Map();
 for (const [label, init, t] of cases) {
   const live = (label.endsWith('-anim') ? pause : pin)(gen.svg.replace(initAttr, `style="--${gen.machine.initProp}:${init}"`), t);
   const e = await expected(init, t);
-  const direct = toXhtml(parseHtml(renderWith(bundle, e.views)), { hooks: { attrs: strip } });
+  const direct = toXhtml(parseHtml(renderWith(bundle, e.views)));
   const ref = live.replace(UI_OPEN, (_, a, b) => `${a}${direct}${b}`);
   if (ref === live) throw new Error('could not build the reference card');
   svgs.set(`${label}-t${t}-live`, { svg: live, e });
