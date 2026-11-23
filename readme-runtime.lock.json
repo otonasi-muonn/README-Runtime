@@ -1,19 +1,19 @@
 {
   "version": 1,
   "tool": "0.1.0",
-  "generator": "27a647af840b38dfb6b9696c2a967ff64a25f0014ef44f018cfd3fa333d7b086",
+  "generator": "907922e845c35add5e7123b3596bfa6187974a6234b2a803d09ebb0352f0fd7e",
   "cards": {
     "collatz": {
       "inputs": "5a1e2f80a8418a91d76ca55f53442bf4af1948e61477b5ed9ac9ce0a83c3bff2",
       "wasm": "dd40a4b6513c1fe94042a3e636d706a1cf4400f255b9634abea9ccba907e787a",
       "out": "5de82f7acc2110d3a0c3261f7e03dc58915e716ad43679663b8183d817b79f5d",
-      "render": "0f21293569fe7f386516bdc9814fe1f9798680cbb041fe44ac517c2b13dc6958"
+      "render": "355d936c2c63ee1a43f9d9cd016897c8a9c712df3661af88e3a5a147a4e69ea9"
     },
     "lfsr-rust": {
       "inputs": "b79cf255e75a24be61c4ef512c66b76e880d5e0091c93a85e33c43660017a835",
       "wasm": "bac5ae0dce92bcae0ec8cf01117b79300f39bcb543f7c729f54fcb30bee41a73",
       "out": "2552d692e81f0a393b19bb6198fdf2c29edd2f7bb0cd5dd7f71850a55149e8f9",
-      "render": "93e1901b20b45c84ea12ed332460a9991ec3eb8bc4ff95d9d29718900ffa0858"
+      "render": "626b2cc3ac3ecf50b79f2f698bbc4dd6ad82f08fc6aa5575639c7c525a83f9b8"
     },
     "mockcraft": {
       "inputs": "52e441ddcb27cd1f387a7661a40e4aba35ba4a2189e8001f1cb794cdcc1c9ac7",
@@ -30,7 +30,7 @@
         "examples/mockcraft/upstream/src/lib/icons.tsx": "288d28df6b9683782cad221a2c1499dda7dbe8c42aac8a7e225cfc39259219a9",
         "examples/mockcraft/upstream/src/lib/templates.ts": "cced791479232b822d801fa922894a9dca39c2d08693653507f23b96b5f773f4"
       },
-      "render": "4b37178e8ee58d319ea1cb066ab1eb455524a4bf7707b9ff2458160aae5e8a8e"
+      "render": "fd828a3b99aa0aac58d959edd87eb5866e56f07439b69a89f986a7172cf8c26e"
     }
   }
 }

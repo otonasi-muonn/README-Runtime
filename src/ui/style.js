@@ -3,6 +3,7 @@
 // plain CSS passes through unchanged.
 import fs from 'node:fs';
 import path from 'node:path';
+import { createRequire } from 'node:module';
 import { UiError } from './bundle.js';
 
 export function classCandidates(markups) {
@@ -24,8 +25,18 @@ export async function compileUiCss(files, candidates, { cwd = process.cwd() } = 
     if (/@import\s+["']tailwindcss|@tailwind\b|@theme\b/.test(css)) {
       const { compile } = await import('@tailwindcss/node');
       let compiler;
+      // `@import "tailwindcss"` resolves from the project when it has Tailwind installed,
+      // otherwise from README Runtime's own copy.
+      const customCssResolver = async (id, base) => {
+        if (id !== 'tailwindcss' && !id.startsWith('tailwindcss/')) return undefined;
+        const spec = id === 'tailwindcss' ? 'tailwindcss/index.css' : id;
+        for (const from of [path.join(base, 'noop.js'), import.meta.url]) {
+          try { return createRequire(from).resolve(spec); } catch { /* try the next location */ }
+        }
+        return undefined;
+      };
       try {
-        compiler = await compile(css, { base: path.dirname(abs), onDependency: (p) => deps.add(p) });
+        compiler = await compile(css, { base: path.dirname(abs), onDependency: (p) => deps.add(p), customCssResolver });
       } catch (e) {
         throw new UiError('UI_CSS', `Tailwind could not compile ${f}: ${e.message}`);
       }

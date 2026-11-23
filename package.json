@@ -12,7 +12,8 @@
   },
   "scripts": {
     "test": "node --test \"test/**/*.test.js\"",
-    "test:browser": "node test/browser/run.js"
+    "test:browser": "node test/browser/run.js",
+    "test:browser:ui": "node test/browser/ui.js"
   },
   "devDependencies": {
     "@yowasp/clang": "21.1.4-3",
