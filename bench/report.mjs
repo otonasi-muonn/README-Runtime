@@ -1,0 +1,115 @@
+// Turn bench/results/*.json into the tables of bench/README.md (between the markers).
+// Run: node bench/report.mjs
+import fs from 'node:fs';
+import path from 'node:path';
+import { RESULTS, ROOT } from './common.mjs';
+
+const load = (f) => { try { return JSON.parse(fs.readFileSync(path.join(RESULTS, f), 'utf8')); } catch { return null; } };
+const kb = (b) => (b == null ? '–' : b >= 1024 * 1024 ? `${(b / 2 ** 20).toFixed(2)} MB` : `${(b / 1024).toFixed(1)} KB`);
+const s = (ms) => (ms == null ? '–' : ms >= 1000 ? `${(ms / 1000).toFixed(1)} s` : `${Math.round(ms)} ms`);
+const table = (head, rows) => [`| ${head.join(' | ')} |`, `|${head.map(() => '---').join('|')}|`, ...rows.map((r) => `| ${r.join(' | ')} |`)].join('\n');
+const label = (name) => name.replace(/^card-n(\d+)\.svg$/, 'SVG').replace(/^n\d+\.(.+)\.\w+$/, '$1');
+const stepsOf = (name) => Number(/n(\d+)/.exec(name)[1]);
+const out = [];
+
+const p = load('pipeline.json');
+const env = p?.environment;
+if (env) out.push(`測定環境: ${env.cpu}、メモリ ${env.ramGB} GB、${env.os}、Node ${env.node}、${env.ffmpeg?.split(' Copyright')[0]}。ブラウザはヘッドレス（Playwright の Chromium・Firefox・WebKit と、インストール済みの Chrome・Edge）。`, '');
+
+if (p) {
+  const Ns = Object.keys(p.n).map(Number);
+  const enc = (n, f) => p.n[n].rec.encode[f];
+  out.push('### サイズ（閲覧者がダウンロードするバイト数）', '',
+    'GitHub は SVG を gzip で配信し、WebP と MP4 は圧縮せずに配信します（実測: [`github.json`](results/github.json)）。太字が実際の転送量です。', '',
+    table(['ステップ（フレーム数、再生時間）', 'SVG', 'WebP lossless', 'WebP q80', 'MP4 H.264 CRF18', 'MP4 H.264 CRF28', 'MP4 AV1'], Ns.map((n) => [
+      `${n}（${p.n[n].frames}、${(p.n[n].durationMs / 1000).toFixed(1)} 秒）`, `**${kb(p.n[n].rr.size.gzip)}**（非圧縮 ${kb(p.n[n].rr.size.raw)}）`,
+      ...['webp-lossless', 'webp-q80', 'mp4-h264-crf18', 'mp4-h264-crf28', 'mp4-av1-crf35'].map((f) => `**${kb(enc(n, f).size.raw)}**`),
+    ])), '');
+  const n0 = Ns[Ns.length - 1];
+  out.push(`画質（ソースのフレームに対する SSIM / PSNR、${n0} ステップ、等倍）: SVG はベクターでどの倍率でも正確。` +
+    ['webp-lossless', 'webp-q80', 'mp4-h264-crf18', 'mp4-h264-crf28', 'mp4-av1-crf35'].map((f) => `${f} ${enc(n0, f).ssim} / ${enc(n0, f).psnr === 'inf' ? '∞' : `${enc(n0, f).psnr.toFixed(1)} dB`}`).join('、') +
+    '。H.264 は yuv420p の色の間引きで、文字の色の縁が PSNR 35 dB 付近で頭打ちになります。', '');
+  if (p.hidpi) {
+    const h = p.hidpi;
+    out.push(`2倍の画面: SVG はそのまま鮮明です。録画を同じ鮮明さにするには2倍の解像度が要ります（${h.n} ステップ）: ` +
+      Object.entries(h.encode).map(([f, e]) => `${f} ${kb(e.size.raw)}（等倍 ${kb(enc(h.n, f).size.raw)}）`).join('、') + '。', '');
+  }
+  out.push('### ビルド時間（3回の中央値）', '',
+    'README Runtime（RR）は `readme-runtime build`（CLI の起動、AssemblyScript のコンパイル、バンドル、UIの推定、Wasm との照合を含む）。録画（Rec）は全フレームの描画（ブラウザの起動を含む）とエンコード。ロジックの変更では両方とも同じ AssemblyScript を再コンパイルします。録画のフレームキャッシュは、表示内容が同じフレームを前の版から再利用します。', '',
+    table(['ステップ', 'RR 初回', 'RR 変更なし（キャッシュ）', 'RR 変更なし（キャッシュなし）', 'RR スタイル変更', 'RR ロジック変更', 'RR check（CI）', 'Rec 初回（MP4 〜 WebP lossless）', 'Rec 変更なし（キャッシュ）', 'Rec スタイル変更', 'Rec ロジック変更（フレームキャッシュあり / なし）'], Ns.map((n) => {
+      const rr = p.n[n].rr, rec = p.n[n].rec;
+      const w = enc(n, 'webp-lossless').ms, m = enc(n, 'mp4-h264-crf18').ms;
+      return [n, s(rr.coldMs), s(rr.noopCachedMs), s(rr.noopForcedMs), s(rr.styleEditMs), s(rr.logicEditMs), s(rr.checkMs),
+        `${s(rec.framesColdMs + m)} 〜 ${s(rec.framesColdMs + w)}`, s(rec.noopCachedMs), `${s(rec.styleFramesMs + m)} 〜 ${s(rec.styleFramesMs + w)}`,
+        `${s(rec.ascMs + rec.logicFramesCachedMs + m)}（${rec.logicFramesReused} フレーム再利用） / ${s(rec.ascMs + rec.logicFramesUncachedMs + m)}`];
+    })), '',
+    '録画の時間は MP4（エンコードが最速）〜 WebP lossless（最遅）の幅です。録画には CI で「生成物がソースと一致するか」を確かめる手段がなく、RR の `check` に当たる列はありません。', '');
+}
+
+const g = load('git.json');
+if (g) {
+  out.push(`### リポジトリの増え方（デザインを ${g.revisions} 回変更してコミット、git gc 後の pack サイズ）`, '',
+    table(['ステップ', 'README Runtime（SVG＋ロック＋wasm）', 'WebP lossless', 'WebP q80', 'MP4 H.264 CRF18'], Object.entries(g.n).map(([n, r]) => [n,
+      ...['svg', 'webp-lossless', 'webp-q80', 'mp4-h264-crf18'].map((k) => `${r[k].afterKiB} KiB（1回あたり +${r[k].perRevisionKiB} KiB）`)])), '');
+}
+
+const pb = load('playback.json');
+if (pb) {
+  const rows = [];
+  for (const [engine, e] of Object.entries(pb.engines)) {
+    if (e.error && !Object.keys(e.artifacts ?? {}).length) { rows.push([engine, '–', '–', `起動できず: ${e.error}`, '', '', '']); continue; }
+    for (const [name, a] of Object.entries(e.artifacts)) {
+      const tr = a.trace;
+      const ok = a.plays ? (a.match.rate > 0.85 && a.match.maxDistance < 6 ? '○' : `△（速度 ${a.match.rate}）`) : '× 再生されない';
+      rows.push([`${engine} ${e.version}`, stepsOf(name), label(name), ok,
+        a.cpu ? `${Math.max(0, a.cpu.cpuPercent - a.baseline.cpuPercent).toFixed(1)} %` : '–', a.cpu ? `+${a.cpu.workingSetMB - a.baseline.workingSetMB} MB` : '–',
+        tr ? `style ${tr.msPerSecond.style}${tr.styleUpdates?.perSecond ? `（${tr.styleUpdates.perSecond} 回/秒 × ${tr.styleUpdates.meanMs} ms）` : ''}、paint ${tr.msPerSecond.paint}、raster ${tr.msPerSecond.raster}、video ${tr.msPerSecond.videoDecode}` : '–']);
+    }
+  }
+  out.push(`### 再生（ヘッドレス、表示中の ${pb.windowMs / 1000} 秒間、空ページとの差）`, '',
+    'CPU はブラウザのプロセス全体の CPU 時間（1コア＝100%）、メモリはワーキングセットの増分です。正しさは、表示中のフレームがソースのどれかと一致し、150 ms ごとに1ステップ進むことで判定します。Chromium の列は、トレースから求めた1秒あたりの処理時間（ms）です。', '',
+    table(['ブラウザ', 'ステップ', '形式', '正しく再生', 'CPU', 'メモリ', 'Chromium のトレース（ms/秒）'], rows), '');
+}
+
+const off = load('offscreen.json');
+if (off) {
+  const cases = [...new Set(Object.values(off.engines).flatMap((e) => Object.keys(e.cases)))];
+  out.push(`### 見ていないときの負荷（${off.steps} ステップ、CPU の空ページとの差）`, '',
+    table(['', ...Object.entries(off.engines).map(([k, e]) => `${k} ${e.version}`)], cases.map((c) => [c, ...Object.values(off.engines).map((e) => {
+      const v = e.cases[c];
+      return v == null ? '–' : `${Math.max(0, v.cpuPercent).toFixed(1)} %${v.moving == null ? '' : v.moving ? '（動く）' : '（静止）'}`;
+    })])), '');
+}
+
+const ne = load('nesting.json');
+if (ne) {
+  const Ns = Object.keys(ne.cards).map(Number);
+  const cell = (d) => {
+    if (!d) return ['–', '–', '–'];
+    if (d.crashed) return [`クラッシュ（${d.crashed.slice(0, 40)}）`, '–', '–'];
+    const deep = d.correct.deepest;
+    return [deep.ok ? '正しい' : `誤り（${deep.differingPx} px）`, s(deep.firstRenderMs),
+      `${d.animation.cpuPercent} %${d.animation.style ? `（style ${d.animation.style.updatesPerS} 回/秒 × ${d.animation.style.meanMs} ms）` : ''}`];
+  };
+  out.push(`### 深いネスト（1ステップ＝入れ子1段。製品は ${ne.maxSteps} ステップで打ち切り）`, '',
+    table(['ステップ', 'カード', '生成', ...Object.keys(ne.engines).flatMap((e) => [`${e}: 最深の状態`, `${e}: 初回描画`, `${e}: 再生中の CPU`])],
+      Ns.map((n) => [n, `${(ne.cards[n].bytes / 1024).toFixed(0)} KB`, s(ne.cards[n].generateMs), ...Object.values(ne.engines).flatMap((e) => cell(e.depths[n]))])), '');
+}
+
+const gh = load('github.json');
+if (gh) {
+  const kept = (re) => (re.test(gh.markdown.html) ? '残る' : '除去される');
+  out.push('### GitHub の README での扱い（実測）', '',
+    table(['', 'SVG（README Runtime）', 'アニメーション WebP', 'MP4（コミットしたファイル）'], [
+      ['Markdown の変換', `\`<img>\`（${kept(/<img src="demo\.svg"/)}）`, `\`<img>\`（${kept(/<img src="demo\.webp"/)}）`, `\`<video>\` は${kept(/<video/)}。\`![](x.mp4)\` は \`<img>\` になり再生できない`],
+      ['配信（raw.githubusercontent.com）', `${gh.contentTypes.svg.contentType}、${gh.contentTypes.svg.contentEncoding ?? '圧縮なし'}`, `${gh.contentTypes.webp.contentType}、${gh.contentTypes.webp.contentEncoding ?? '圧縮なし'}`, `${gh.contentTypes.mp4.contentType}、${gh.contentTypes.mp4.contentEncoding ?? '圧縮なし'}`],
+      ['ページの CSP', 'img-src で許可', 'img-src で許可', `media-src は ${gh.csp['media-src'].length} 個のホストのみで、raw.githubusercontent.com を含まない`],
+      ['README で自動再生・ループ', 'できる', 'できる', 'できない（web UI でアップロードした user-attachments の動画は再生ボタンつきで表示されると説明されているが、本実験では未検証）'],
+    ]), '');
+}
+
+const file = path.join(ROOT, 'bench/README.md');
+const doc = fs.readFileSync(file, 'utf8');
+const [a, b] = ['<!-- results:begin -->', '<!-- results:end -->'];
+fs.writeFileSync(file, `${doc.slice(0, doc.indexOf(a) + a.length)}\n\n${out.join('\n')}\n${doc.slice(doc.indexOf(b))}`);
+console.log(out.join('\n'));
