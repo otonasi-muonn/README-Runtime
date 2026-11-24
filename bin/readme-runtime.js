@@ -10,6 +10,7 @@ import { listExports, compileStep } from '../src/compiler/program.js';
 import { TOOL_VERSION } from '../src/version.js';
 import { MAX_STEPS } from '../src/runtime/machine.js';
 import { initProject, initUiCard } from '../src/init.js';
+import { detectTsconfig } from '../src/analyze.js';
 import { describeError } from '../src/errors.js';
 
 const HELP = `README Runtime ${TOOL_VERSION} - run your WebAssembly inside your README
@@ -102,16 +103,17 @@ async function run(cmd, pos, flags, log) {
     case 'init': {
       if (flags.ui) {
         const css = flags.css ? flags.css.split(',') : detectStyles(process.cwd());
-        const tsconfig = flags.tsconfig ?? (fs.existsSync('tsconfig.json') ? 'tsconfig.json' : null);
+        const tsconfig = flags.tsconfig ?? detectTsconfig(process.cwd());
         const r = initUiCard(process.cwd(), { component: flags.ui, name: flags.name ?? 'demo', configPath, css, tsconfig });
         for (const c of r.created) log(`${c.status.padEnd(12)} ${c.file}`);
+        for (const w of r.warnings ?? []) log(`warning ${w.code}: ${w.message}`);
         log(`next: ${r.next.join('  ->  ')}`);
         return { ok: true, ...r };
       }
-      const { lines, tool } = initProject(process.cwd(), { wasm: flags.wasm, exportName: flags.export, init: int(flags, 'init'), configPath });
+      const { lines, tool, warning } = initProject(process.cwd(), { wasm: flags.wasm, exportName: flags.export, init: int(flags, 'init'), configPath });
       for (const line of lines) log(line);
-      // tool: the npx spec to run from now on (pinned to this commit when known), as in the workflow
-      return { ok: true, created: lines.filter((l) => /^(created|kept)/.test(l)), tool: `npx --yes ${tool.spec}`, pinned: tool.pinned };
+      // tool: the npx spec to run from now on, the one the CI workflow runs (pinned to a commit when known)
+      return { ok: true, created: lines.filter((l) => /^(created|kept)/.test(l)), tool: `npx --yes ${tool.spec}`, pinned: tool.pinned, ...(warning ? { warnings: [warning] } : {}) };
     }
     case 'build': {
       const results = await build(configPath, { only: pos, force: !!flags.force, log, quiet: !!flags.json });

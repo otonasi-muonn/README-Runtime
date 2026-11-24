@@ -1,6 +1,7 @@
 // SVG card whose body is the project's own UI (static markup + CSS bindings), driven by
 // the CSS machine. The machine is the same as for trace cards; only the display differs.
 import { altInitAnchors, altInitCss, clockAnimation, declarations, levelStyle } from '../runtime/machine.js';
+import { fitText, textWidth } from './text.js';
 import { toCss, V, absV } from '../compiler/css.js';
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -80,8 +81,12 @@ svg{--rr-bg:#0d1117;--rr-line:#30363d;--rr-fg:#e6edf3;--rr-mut:#7d8590;--rr-acc:
   defs += '</g>';
 
   let body = `<rect class="rr-bg" x=".5" y=".5" width="${W - 1}" height="${H - 1}" rx="10"/>`;
-  body += `<text x="20" y="29" class="rr-t" font-size="15" font-weight="600">${esc(meta.title)}</text>`;
-  body += `<text x="${Math.round(20 + Math.min(300, meta.title.length * 8.6) + 14)}" y="29" class="rr-m" font-size="12">${esc(meta.wasmName)} · ${esc(meta.exportName)}() + ${machine.display.length ? Object.keys(machine.viewProps).length : 0} views</text>`;
+  // the header line: title, then the module and views, before the LIVE badge
+  const shownTitle = fitText(meta.title, 300, 15);
+  const metaX = Math.round(20 + Math.min(300, textWidth(shownTitle, 15)) + 14);
+  const metaText = fitText(`${meta.wasmName} · ${meta.exportName}() + ${machine.display.length ? Object.keys(machine.viewProps).length : 0} views`, W - 142 - metaX, 12, { mono: true });
+  body += `<text x="20" y="29" class="rr-t" font-size="15" font-weight="600">${esc(shownTitle)}</text>`;
+  body += `<text x="${metaX}" y="29" class="rr-m" font-size="12">${esc(metaText)}</text>`;
   body += `<circle class="rr-pulse" cx="${W - 132}" cy="25" r="4" style="fill:var(--rr-acc)"/><text x="${W - 122}" y="29" class="rr-l">LIVE · CSS RUNTIME</text>`;
   body += `<line x1="0" y1="44" x2="${W}" y2="44" stroke="var(--rr-line)"/><line x1="0" y1="${H - L.foot}" x2="${W}" y2="${H - L.foot}" stroke="var(--rr-line)"/>`;
 

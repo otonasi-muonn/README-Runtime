@@ -1,6 +1,7 @@
 // `readme-runtime init`: scaffold a config and a check-only CI workflow. Never overwrites.
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import url from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { CONFIG_FILE } from './project.js';
@@ -41,9 +42,32 @@ export function toolSpec(root = pkgRoot) {
   return { spec: archiveSpec(sha ?? 'HEAD'), pinned: !!sha };
 }
 
-export const workflow = (spec) => `# README Runtime: verify that the committed cards match a fresh, Wasm-verified build.
+// The project's dependency install for CI, from the lockfile nearest to the card's folder
+// (a workspace keeps it at its root). UI cards bundle the project's own components during
+// check, so they need them; a project without package.json needs nothing.
+const INSTALLS = [
+  ['package-lock.json', '      - run: npm ci --ignore-scripts\n'],
+  ['pnpm-lock.yaml', '      - run: corepack enable && pnpm install --frozen-lockfile --ignore-scripts\n'],
+  ['yarn.lock', '      - run: corepack enable && yarn install --immutable\n'],
+  ['bun.lock', '      - uses: oven-sh/setup-bun@v2\n      - run: bun install --frozen-lockfile --ignore-scripts\n'],
+  ['bun.lockb', '      - uses: oven-sh/setup-bun@v2\n      - run: bun install --frozen-lockfile --ignore-scripts\n'],
+];
+function installSteps(root, dir) {
+  const rel = (d) => path.relative(root, d).split(path.sep).join('/');
+  for (let d = dir; ; d = path.dirname(d)) {
+    const hit = INSTALLS.find(([lock]) => fs.existsSync(path.join(d, lock)));
+    if (hit) return rel(d) ? hit[1].replace(/\n$/, `\n        working-directory: ${rel(d)}\n`) : hit[1];
+    if (path.resolve(d) === path.resolve(root) || path.dirname(d) === d) break;
+  }
+  if (!fs.existsSync(path.join(dir, 'package.json'))) return '';
+  return `      - run: npm install --ignore-scripts --no-audit --no-fund\n${rel(dir) ? `        working-directory: ${rel(dir)}\n` : ''}`;
+}
+
+// The check-only workflow, at the repository root (GitHub reads .github/ only there); a card
+// project in a sub-folder runs its check in that folder.
+export const workflow = (spec, { install = '', folder = '' } = {}) => `# README Runtime: verify that the committed cards match a fresh, Wasm-verified build.
 # Check only: this workflow never commits or pushes. If it fails, run
-# "npx --yes ${spec} build" locally and commit the updated files.
+# "npx --yes ${spec} build"${folder ? ` in ${folder}` : ''} locally and commit the updated files.
 name: README Runtime
 on:
   push:
@@ -58,19 +82,10 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 22
-      # UI cards bundle the project's own components during check: install its dependencies.
-      - if: hashFiles('package-lock.json') != ''
-        run: npm ci --ignore-scripts
-      - if: hashFiles('pnpm-lock.yaml') != ''
-        run: corepack enable && pnpm install --frozen-lockfile --ignore-scripts
-      - if: hashFiles('yarn.lock') != ''
-        run: corepack enable && yarn install --immutable
-      - if: hashFiles('package.json') != '' && hashFiles('package-lock.json', 'pnpm-lock.yaml', 'yarn.lock') == ''
-        run: npm install --ignore-scripts --no-audit --no-fund
-      # Pinned to the README Runtime commit that generated the cards: a newer generator can
+${install ? `      # UI cards bundle the project's own components during check: install its dependencies.\n${install}` : ''}      # Pinned to the README Runtime commit that generated the cards: a newer generator can
       # produce different (equally valid) SVG, so update this together with a rebuild.
       - run: npx --yes ${spec} check
-`;
+${folder ? `        working-directory: ${folder}\n` : ''}`;
 
 export const ASC = 'assemblyscript@0.28.20';
 
@@ -142,25 +157,54 @@ export function view_t(s: i32): i32 { return s; }
   }
   // the check-only CI workflow (installs the project's dependencies first), unless one exists
   const wf = ensureWorkflow(cwd);
-  created.push({ file: WORKFLOW_FILE, status: wf.status });
+  created.push({ file: wf.file, status: wf.status });
   return {
     created,
     card: name,
     tool: `npx --yes ${wf.tool.spec}`,
     pinned: wf.tool.pinned,
+    ...(wf.warning ? { warnings: [wf.warning] } : {}),
     next: ['readme-runtime build --json', `edit ${dir}/logic.ts and ${dir}/demo.tsx`, 'readme-runtime build --json', 'readme-runtime check --json',
-      `commit readme-runtime/${name}.svg, ${dir}/ (including logic.wasm: CI checks against it and never builds it), ${configPath}, readme-runtime.lock.json and ${WORKFLOW_FILE}`],
+      `commit readme-runtime/${name}.svg, ${dir}/ (including logic.wasm: CI checks against it and never builds it), ${configPath}, readme-runtime.lock.json and ${wf.file}`],
   };
 }
 
 export const WORKFLOW_FILE = '.github/workflows/readme-runtime.yml';
+// The repository root: GitHub only reads workflows from <root>/.github/workflows. Never the
+// home folder (a dotfiles repository is not the project's).
+function repoRoot(dir) {
+  for (let d = path.resolve(dir); ; d = path.dirname(d)) {
+    if (path.resolve(d) === path.resolve(os.homedir())) return path.resolve(dir);
+    if (fs.existsSync(path.join(d, '.git'))) return d;
+    if (path.dirname(d) === d) return path.resolve(dir);
+  }
+}
+// Writes the workflow unless one exists. An existing one keeps its pinned README Runtime: the
+// returned tool is the command CI runs, so that local builds make the cards CI expects, and a
+// warning says when that is not the version running now.
 function ensureWorkflow(cwd) {
-  const tool = toolSpec();
-  const wf = path.join(cwd, WORKFLOW_FILE);
-  if (fs.existsSync(wf)) return { tool, status: 'kept' };
-  fs.mkdirSync(path.dirname(wf), { recursive: true });
-  fs.writeFileSync(wf, workflow(tool.spec));
-  return { tool, status: `created (check only, no commits; runs ${tool.spec})` };
+  const current = toolSpec();
+  const root = repoRoot(cwd);
+  const folder = path.relative(root, path.resolve(cwd)).split(path.sep).join('/');
+  const file = path.join(root, WORKFLOW_FILE);
+  const shown = path.relative(path.resolve(cwd), file).split(path.sep).join('/');
+  if (!fs.existsSync(file)) {
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, workflow(current.spec, { install: installSteps(root, path.resolve(cwd)), folder }));
+    return { tool: current, file: shown, status: `created (check only, no commits; runs ${current.spec})` };
+  }
+  const pinned = /npx --yes (\S+) check/.exec(fs.readFileSync(file, 'utf8'))?.[1];
+  if (pinned === current.spec) return { tool: current, file: shown, status: 'kept' };
+  if (pinned) {
+    return {
+      tool: { spec: pinned, pinned: !/\/HEAD\.tar\.gz$/.test(pinned) }, file: shown, status: 'kept',
+      warning: { code: 'WORKFLOW_PINNED_ELSEWHERE', message: `${shown} runs ${pinned}, not this README Runtime (${current.spec}); "tool" is the workflow's command, so cards built with it pass check. To move to this version, replace the command in the workflow and rebuild the cards with it`, fix: { workflow: { file: shown, replace: pinned, with: current.spec } } },
+    };
+  }
+  return {
+    tool: current, file: shown, status: 'kept',
+    warning: { code: 'WORKFLOW_NO_CHECK', message: `${shown} exists but has no "npx --yes <README Runtime> check" step; make CI run "npx --yes ${current.spec} check" in the card's folder` },
+  };
 }
 
 export function initProject(cwd, { wasm, exportName, init, configPath = CONFIG_FILE }) {
@@ -192,10 +236,11 @@ export function initProject(cwd, { wasm, exportName, init, configPath = CONFIG_F
     fs.writeFileSync(cfgPath, `${JSON.stringify({ cards: [card] }, null, 2)}\n`);
     lines.push(`created ${configPath}`);
   }
-  const { tool, status } = ensureWorkflow(cwd);
-  lines.push(`${status === 'kept' ? 'kept existing' : 'created'} ${WORKFLOW_FILE}${status === 'kept' ? '' : status.slice('created'.length)}`);
+  const { tool, status, file, warning } = ensureWorkflow(cwd);
+  lines.push(`${status === 'kept' ? 'kept existing' : 'created'} ${file}${status === 'kept' ? '' : status.slice('created'.length)}`);
+  if (warning) lines.push(`warning ${warning.code}: ${warning.message}`);
   if (!tool.pinned) lines.push(`warning: could not tell which commit this README Runtime comes from, so the workflow runs the repository's default branch; pin it (${archiveSpec('<commit>')}) to the version you build with`);
   lines.push('', 'Next (use this exact version locally too, so CI regenerates the same cards):', '  1. edit readme-runtime.json (wasm path, export, init; optional "build": {"command", "inputs"})',
     `  2. npx --yes ${tool.spec} build`, '  3. add ![demo](readme-runtime/<name>.svg) to README.md and commit');
-  return { lines, tool };
+  return { lines, tool, warning };
 }

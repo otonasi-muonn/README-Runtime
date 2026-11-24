@@ -64,6 +64,56 @@ test('init pins the CI workflow to the commit README Runtime was installed from'
   assert.equal(installedCommit(path.join(dir, 'nowhere'), '$Format' + ':%H$'), null);
 });
 
+test('init in a sub-folder: the workflow goes to the repository root and installs where the lockfile is', (t) => {
+  // onboarding runs: init in frontend/ wrote frontend/.github (GitHub never reads it) and
+  // ignored bun.lock; in a pnpm workspace the lockfile is at the root
+  const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'rr-mono-'));
+  t.after(() => fs.rmSync(repo, { recursive: true, force: true, maxRetries: 5 }));
+  fs.mkdirSync(path.join(repo, '.git'));
+  const wasm = path.join(root, 'examples/collatz/collatz.wasm');
+  const wfFile = path.join(repo, '.github/workflows/readme-runtime.yml');
+  // bun, lockfile beside the card's package
+  fs.mkdirSync(path.join(repo, 'frontend'));
+  fs.writeFileSync(path.join(repo, 'frontend/package.json'), '{"name":"f"}');
+  fs.writeFileSync(path.join(repo, 'frontend/bun.lock'), '{}');
+  fs.copyFileSync(wasm, path.join(repo, 'frontend/c.wasm'));
+  const a = run(['init', '--wasm', 'c.wasm', '--init', '27'], path.join(repo, 'frontend'));
+  assert.equal(a.status, 0);
+  assert.ok(!fs.existsSync(path.join(repo, 'frontend/.github')));
+  let wf = fs.readFileSync(wfFile, 'utf8');
+  assert.match(wf, /- uses: oven-sh\/setup-bun@v2\n {6}- run: bun install --frozen-lockfile --ignore-scripts\n {8}working-directory: frontend\n/);
+  assert.match(wf, new RegExp(`- run: ${a.json.tool.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')} check\\n {8}working-directory: frontend\\n`));
+  // pnpm workspace: install at the root, check in the package
+  fs.rmSync(path.join(repo, '.github'), { recursive: true });
+  fs.writeFileSync(path.join(repo, 'pnpm-lock.yaml'), 'lockfileVersion: 9\n');
+  fs.mkdirSync(path.join(repo, 'apps/web'), { recursive: true });
+  fs.writeFileSync(path.join(repo, 'apps/web/package.json'), '{"name":"w"}');
+  fs.copyFileSync(wasm, path.join(repo, 'apps/web/c.wasm'));
+  assert.equal(run(['init', '--wasm', 'c.wasm', '--init', '27'], path.join(repo, 'apps/web')).status, 0);
+  wf = fs.readFileSync(wfFile, 'utf8');
+  assert.match(wf, /- run: corepack enable && pnpm install --frozen-lockfile --ignore-scripts\n {6}#/);
+  assert.match(wf, /check\n {8}working-directory: apps\/web\n$/);
+  // an existing workflow keeps its pinned version, and tool says which one CI runs
+  const old = 'https://github.com/otonasi-muonn/README-Runtime/archive/dfafe10225cf3fd9a5b0011487af15b5ab1f26a3.tar.gz';
+  fs.writeFileSync(wfFile, wf.replace(/npx --yes \S+ check/, `npx --yes ${old} check`));
+  const kept = run(['init', '--wasm', 'c.wasm', '--init', '27'], path.join(repo, 'apps/web'));
+  assert.equal(kept.json.tool, `npx --yes ${old}`);
+  if (kept.json.pinned) assert.equal(kept.json.warnings?.[0]?.code, 'WORKFLOW_PINNED_ELSEWHERE');
+});
+
+test('the app tsconfig of a solution-style tsconfig.json is detected', async (t) => {
+  const { detectTsconfig } = await import('../src/analyze.js');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rr-ts-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true, maxRetries: 5 }));
+  assert.equal(detectTsconfig(dir), null);
+  fs.writeFileSync(path.join(dir, 'tsconfig.json'), '{ "files": [], // Vite\n "references": [{ "path": "./tsconfig.app.json" }] }');
+  assert.equal(detectTsconfig(dir), 'tsconfig.json');
+  fs.writeFileSync(path.join(dir, 'tsconfig.app.json'), '{ "compilerOptions": { "paths": { "@/*": ["./src/*"] } } }');
+  assert.equal(detectTsconfig(dir), 'tsconfig.app.json');
+  fs.writeFileSync(path.join(dir, 'tsconfig.json'), '{ "compilerOptions": { "paths": { "@/*": ["./src/*"] } }, "references": [] }');
+  assert.equal(detectTsconfig(dir), 'tsconfig.json');
+});
+
 test('check --json reports structured problems and never writes', () => {
   const { status, json } = run(['check']);
   assert.equal(status, 0);

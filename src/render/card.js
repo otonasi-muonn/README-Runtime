@@ -3,6 +3,7 @@
 // the browser computes at view time; the markup only holds layout.
 import { N, V, toCss, signBit, absV, STORED_LIMIT } from '../compiler/css.js';
 import { altInitAnchors, altInitCss, clockAnimation, declarations, levelStyle } from '../runtime/machine.js';
+import { fitText, textWidth } from './text.js';
 
 export const TEMPLATE_VERSION = 1;
 
@@ -142,11 +143,14 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
 
   // ---------------------------------------------------------------- static chrome
   const title = esc(meta.title);
-  const sig = `${esc(meta.exportName)}(i32) → i32`;
+  // the header line: title, then the module and signature, before the LIVE badge
+  const shownTitle = fitText(meta.title, 320, 15);
+  const metaX = Math.round(20 + Math.min(320, textWidth(shownTitle, 15)) + 14);
+  const metaText = fitText(`${meta.wasmName} · ${meta.exportName}(i32) → i32`, W - 142 - metaX, 12, { mono: true });
   let body = '';
   body += `<rect class="bg" x=".5" y=".5" width="${W - 1}" height="${H - 1}" rx="10"/>`;
-  body += `<text x="20" y="29" font-size="15" font-weight="600">${title}</text>`;
-  body += `<text x="${Math.round(20 + Math.min(320, meta.title.length * 8.6) + 14)}" y="29" class="mono mut" font-size="12">${esc(meta.wasmName)} · ${sig}</text>`;
+  body += `<text x="20" y="29" font-size="15" font-weight="600">${esc(shownTitle)}</text>`;
+  body += `<text x="${metaX}" y="29" class="mono mut" font-size="12">${esc(metaText)}</text>`;
   body += `<circle class="live pulse" cx="${W - 132}" cy="25" r="4"/><text x="${W - 122}" y="29" class="lbl" font-size="11">LIVE · CSS RUNTIME</text>`;
   body += `<line x1="0" y1="44" x2="${W}" y2="44" stroke="var(--line)"/>`;
   body += `<text x="40" y="70" class="lbl">STATE</text>`;

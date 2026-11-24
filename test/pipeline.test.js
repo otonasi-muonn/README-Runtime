@@ -109,6 +109,30 @@ test('altInits: the same file starts from another verified initial value for #x<
   }
 });
 
+test('a wide (Japanese) title does not run into the header info; a long one is shortened', async () => {
+  // onboarding run: a Japanese card title overlapped the module name next to it
+  const { textWidth } = await import('../src/render/text.js');
+  assert.ok(Math.abs(textWidth('abc', 15) - 25.8) < 1e-9, 'ASCII keeps the 8.6 px per character the cards always used');
+  assert.equal(textWidth('日本', 15), 30);
+  const title = '小さなステップで達成を見える化';
+  const r = await generate(collatz, { ...opts, title });
+  const metaX = Number(/<text x="(\d+)" y="29" class="mono mut"/.exec(r.svg)[1]);
+  assert.ok(metaX >= 20 + textWidth(title, 15), `${metaX}`);
+  const long = await generate(collatz, { ...opts, title: 'あ'.repeat(40) });
+  assert.match(long.svg, /<text x="20" y="29" font-size="15" font-weight="600">あ{20}…<\/text>/);
+  assert.ok(long.svg.includes(`<title id="rrt">${'あ'.repeat(40)} — README Runtime</title>`), 'the accessible title stays whole');
+});
+
+test('the build-time check covers the status the display shows', async () => {
+  // critic: a display that never shows HALTED passed verifyRun. step(x) = x + 1, halt at 2
+  const { verifyRun } = await import('../src/verify.js');
+  const { N } = await import('../src/compiler/css.js');
+  const wasm = unary([get(0), c(1), op.add]);
+  const r = await generate(wasm, { export: 'f', init: 0, steps: 5, haltValue: 2 });
+  r.machine.select.find((d) => d.name === 'rfs').ast = N(0);
+  await assert.rejects(verifyRun(wasm, r.program, r.machine), (e) => e instanceof VerifyError && /status flags 0 for a run that halts at step 2/.test(e.message));
+});
+
 test('values beyond the CSS-exact range are refused with an explanation', async () => {
   await assert.rejects(generate(collatz, { ...opts, init: 77671 }), (e) => e instanceof VerifyError && /outside the CSS-exact range/.test(e.message) && /step 14/.test(e.message));
 });

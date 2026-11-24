@@ -98,6 +98,13 @@ export async function verifyRun(wasmBytes, program, machine, { init = machine.in
       const want = end.kind === 'trap' && shownStep === endAt ? null : values[shownStep];
       if (inner.get(out.s) !== shownStep) throw new VerifyError(`${name}: at t=${t} the display shows step ${inner.get(out.s)}, expected ${shownStep}`, 'INTERNAL');
       if (want !== null && inner.get(out.c) !== want) throw new VerifyError(`${name}: at t=${t} the display shows ${inner.get(out.c)}, expected ${want}`, 'INTERNAL');
+      // the status it shows: halted + 2*out-of-range + 4*trap, only on the step where the run
+      // stops (a trap may also raise the conservative range flag, and the halt predicate of its
+      // meaningless value)
+      const flags = inner.get(out.f);
+      const stopped = shownStep === endAt && end.kind !== 'steps';
+      const flagsOk = !stopped ? flags === 0 : end.kind === 'halt' ? flags === 1 : end.kind === 'trap' ? (flags & 4) === 4 : false;
+      if (!flagsOk) throw new VerifyError(`${name}: at t=${t} the display shows status flags ${flags} for a run that ${stopped ? `${end.kind}s at step ${endAt}` : `has not stopped by step ${shownStep}`}`, 'INTERNAL');
     }
     models[name] = { maxInline: stats.maxInline, maxStored: stats.maxStored };
   }

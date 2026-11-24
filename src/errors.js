@@ -13,7 +13,7 @@ export const HINTS = {
   VIEW_RANGE: 'A view function returns a value beyond ±999,999; return smaller numbers (pixels, indices).',
   VIEW_MISMATCH: 'Internal mismatch in a view function translation; report it with the .wasm.',
   INTERNAL: 'Internal error; please report it with the .wasm and the config.',
-  UI_BUNDLE: 'Fix the import named in the message. Framework-only modules (next/*) cannot be bundled: pass their values as props from the demo entry.',
+  UI_BUNDLE: 'Fix the import named in the message. The demo is bundled for a plain static render: framework-only modules (next/*) and modules that need Node built-ins (react-dom/server, fs, util) cannot be bundled. Pass such values as props from the demo entry, or compute them in a build step (e.g. a JSON file the demo imports).',
   UI_RENDER: 'The component threw during a static render: give it the props it needs in the demo entry and avoid browser APIs (window, document, canvas) while rendering.',
   UI_NONLINEAR: 'Make the markup depend on the view linearly (a number = a*view + b), or bound the view to at most 64 values in its own Wasm code (ranges are derived for every state, not only the states the run reaches).',
   UI_TOO_MANY_VARIANTS: 'Split the view into separate views that change different elements, or narrow their ranges. Inside inline SVG every change makes the whole <svg> one variant: move numbers to HTML elements or split the SVG.',

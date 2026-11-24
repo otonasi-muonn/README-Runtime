@@ -25,6 +25,16 @@ function walk(dir, exts, limit = 2000) {
   return out.sort();
 }
 
+// The tsconfig whose compilerOptions (paths, jsx) apply to the app's sources. A "solution"
+// tsconfig.json (Vite's template) only lists references; the app's options are in
+// tsconfig.app.json.
+export function detectTsconfig(root) {
+  const app = fs.existsSync(path.join(root, 'tsconfig.app.json')) ? 'tsconfig.app.json' : null;
+  if (!fs.existsSync(path.join(root, 'tsconfig.json'))) return app;
+  const main = readJson(path.join(root, 'tsconfig.json'));
+  return app && Array.isArray(main?.references) && !main?.compilerOptions?.paths ? app : 'tsconfig.json';
+}
+
 const readJson = (p) => { try { return JSON.parse(fs.readFileSync(p, 'utf8').replace(/^﻿/, '').replace(/\/\/[^\n]*|\/\*[\s\S]*?\*\//g, '').replace(/,(\s*[}\]])/g, '$1')); } catch { return null; } };
 
 // Exported components as { name, component }: name is what to import ("default" for the
@@ -75,7 +85,7 @@ export async function analyzeProject(dir, { render = true, maxComponents = 40 } 
   };
   const pkg = readJson(path.join(root, 'package.json'));
   const deps = { ...(pkg?.dependencies ?? {}), ...(pkg?.devDependencies ?? {}) };
-  const tsconfigFile = fs.existsSync(path.join(root, 'tsconfig.json')) ? 'tsconfig.json' : null;
+  const tsconfigFile = detectTsconfig(root);
   const tsconfig = tsconfigFile ? readJson(path.join(root, tsconfigFile)) : null;
   const frameworks = ['next', 'react', 'react-dom', 'vue', 'svelte', 'solid-js', 'vite', 'astro'].filter((d) => deps[d]);
   const cssFiles = walk(root, ['.css']);

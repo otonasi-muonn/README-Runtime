@@ -286,7 +286,7 @@ export async function build(configPath, { only = [], force = false, log = consol
       entry.out = sha256(r.svg);
       if (card.options.ui) entry.uiInputs = Object.fromEntries(r.uiInputs.map((f) => [f, fileHash(cfg.dir, f)]));
       const end = r.verification.trace.end;
-      summary = `${kb(r.svg.length)}, ${end.kind === 'halt' ? `halts at step ${end.at}` : end.kind === 'trap' ? `traps at step ${end.at}` : `${end.at} steps`}, verified against Wasm under ${Object.keys(r.verification.models).length} browser arithmetic models`;
+      summary = `${kb(Buffer.byteLength(r.svg))}, ${end.kind === 'halt' ? `halts at step ${end.at}` : end.kind === 'trap' ? `traps at step ${end.at}` : `${end.at} steps`}, verified against Wasm under ${Object.keys(r.verification.models).length} browser arithmetic models`;
     }
     entry.render = card.options.ui ? renderKey(card, entry.wasm, entry.uiInputs) : key;
     lock.cards[card.name] = entry;
