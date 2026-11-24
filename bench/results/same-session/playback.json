@@ -1,0 +1,1629 @@
+{
+ "environment": {
+  "date": "2026-11-24T13:24:49.353Z",
+  "os": "Windows_NT 10.0.26200 x64",
+  "cpu": "AMD Ryzen 5 PRO 4650G with Radeon Graphics (12 threads)",
+  "ramGB": 47.4,
+  "node": "v22.21.0",
+  "ffmpeg": "ffmpeg version 9.0.1-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+  "git": "git version 2.51.0.windows.2"
+ },
+ "windowMs": 8000,
+ "engines": {
+  "chromium": {
+   "version": "159.0.8154.6",
+   "artifacts": {
+    "card-n160.svg": {
+     "baseline": {
+      "cpuPercent": 0,
+      "workingSetMB": 194,
+      "processes": 4,
+      "windowS": 9,
+      "queryMs": [
+       1004,
+       954
+      ]
+     },
+     "plays": true,
+     "cpu": {
+      "cpuPercent": 7,
+      "workingSetMB": 240,
+      "processes": 4,
+      "windowS": 8.9,
+      "queryMs": [
+       895,
+       944
+      ]
+     },
+     "match": {
+      "maxDistance": 0.01,
+      "framesSeen": 14,
+      "rate": 1.02,
+      "pairs": 13,
+      "samples": [
+       [
+        136,
+        74,
+        0
+       ],
+       [
+        2075,
+        87,
+        0
+       ],
+       [
+        2325,
+        89,
+        0.01
+       ],
+       [
+        2571,
+        90,
+        0.01
+       ],
+       [
+        2821,
+        92,
+        0
+       ],
+       [
+        3072,
+        94,
+        0
+       ],
+       [
+        3320,
+        95,
+        0
+       ],
+       [
+        3571,
+        97,
+        0
+       ],
+       [
+        3805,
+        99,
+        0
+       ],
+       [
+        4072,
+        100,
+        0
+       ],
+       [
+        4305,
+        102,
+        0
+       ],
+       [
+        4555,
+        103,
+        0
+       ],
+       [
+        4803,
+        105,
+        0
+       ],
+       [
+        5037,
+        107,
+        0
+       ]
+      ]
+     },
+     "trace": {
+      "msPerSecond": {
+       "style": 15.2,
+       "layout": 5,
+       "paint": 4.3,
+       "raster": 8,
+       "imageDecode": null,
+       "videoDecode": null
+      },
+      "styleUpdates": {
+       "perSecond": 6.8,
+       "meanMs": 1.3
+      },
+      "top": [
+       [
+        "RunTask",
+        52.1
+       ],
+       [
+        "TimerBase::run",
+        26.7
+       ],
+       [
+        "LocalFrameView::RunStyleAndLayoutLifecyclePhases",
+        21.4
+       ],
+       [
+        "LocalFrameView::UpdateStyleAndLayout",
+        21.1
+       ],
+       [
+        "UpdateLayoutTree",
+        15.2
+       ],
+       [
+        "Document::updateStyle",
+        14.6
+       ],
+       [
+        "Graphics.Pipeline",
+        14.3
+       ],
+       [
+        "Document::recalcStyle",
+        13.6
+       ],
+       [
+        "DisplayScheduler::OnBeginFrameDeadline",
+        9.6
+       ],
+       [
+        "DisplayScheduler::DrawAndSwap",
+        9.6
+       ],
+       [
+        "Display::DrawAndSwap",
+        9.5
+       ],
+       [
+        "DirectRenderer::DrawFrame",
+        8.7
+       ]
+      ]
+     },
+     "baselineAfter": {
+      "cpuPercent": 0.5,
+      "workingSetMB": 342,
+      "processes": 5,
+      "windowS": 8.9,
+      "queryMs": [
+       947,
+       927
+      ]
+     },
+     "cpuDelta": 6.8
+    },
+    "n160.webp-lossless.webp": {
+     "baseline": {
+      "cpuPercent": 0,
+      "workingSetMB": 193,
+      "processes": 4,
+      "windowS": 8.9,
+      "queryMs": [
+       897,
+       914
+      ]
+     },
+     "plays": true,
+     "cpu": {
+      "cpuPercent": 3,
+      "workingSetMB": 308,
+      "processes": 4,
+      "windowS": 8.9,
+      "queryMs": [
+       906,
+       909
+      ]
+     },
+     "match": {
+      "maxDistance": 0,
+      "framesSeen": 14,
+      "rate": 1.01,
+      "pairs": 13,
+      "samples": [
+       [
+        124,
+        74,
+        0
+       ],
+       [
+        358,
+        75,
+        0
+       ],
+       [
+        589,
+        77,
+        0
+       ],
+       [
+        826,
+        79,
+        0
+       ],
+       [
+        1056,
+        80,
+        0
+       ],
+       [
+        1291,
+        82,
+        0
+       ],
+       [
+        1539,
+        83,
+        0
+       ],
+       [
+        1790,
+        85,
+        0
+       ],
+       [
+        2040,
+        87,
+        0
+       ],
+       [
+        2289,
+        88,
+        0
+       ],
+       [
+        2540,
+        90,
+        0
+       ],
+       [
+        2776,
+        92,
+        0
+       ],
+       [
+        3024,
+        93,
+        0
+       ],
+       [
+        3257,
+        95,
+        0
+       ]
+      ]
+     },
+     "trace": {
+      "msPerSecond": {
+       "style": null,
+       "layout": null,
+       "paint": null,
+       "raster": 2.9,
+       "imageDecode": 16.4,
+       "videoDecode": null
+      },
+      "styleUpdates": {
+       "perSecond": 0,
+       "meanMs": null
+      },
+      "top": [
+       [
+        "RunTask",
+        19.9
+       ],
+       [
+        "SoftwareImageDecodeTaskImpl::RunOnWorkerThread",
+        16.5
+       ],
+       [
+        "ImageDecodeTask",
+        16.4
+       ],
+       [
+        "SoftwareImageDecodeCache::DecodeImageInTask",
+        16.3
+       ],
+       [
+        "Graphics.Pipeline",
+        15.9
+       ],
+       [
+        "DecodingImageGenerator::getPixels",
+        15.4
+       ],
+       [
+        "Decode LazyPixelRef",
+        15.4
+       ],
+       [
+        "ImageFrameGenerator::decodeAndScale",
+        15.4
+       ],
+       [
+        "ImageFrameGenerator::decode",
+        10.7
+       ],
+       [
+        "ImageDecoder::DecodeFrameBufferAtIndex",
+        10.7
+       ],
+       [
+        "Decode Image",
+        10.7
+       ],
+       [
+        "DisplayScheduler::OnBeginFrameDeadline",
+        9.6
+       ]
+      ]
+     },
+     "baselineAfter": {
+      "cpuPercent": 0,
+      "workingSetMB": 488,
+      "processes": 5,
+      "windowS": 8.9,
+      "queryMs": [
+       912,
+       908
+      ]
+     },
+     "cpuDelta": 3
+    },
+    "n160.webp-q80.webp": {
+     "baseline": {
+      "cpuPercent": 0,
+      "workingSetMB": 197,
+      "processes": 4,
+      "windowS": 9,
+      "queryMs": [
+       904,
+       1114
+      ]
+     },
+     "plays": true,
+     "cpu": {
+      "cpuPercent": 2.1,
+      "workingSetMB": 311,
+      "processes": 4,
+      "windowS": 9,
+      "queryMs": [
+       985,
+       900
+      ]
+     },
+     "match": {
+      "maxDistance": 0.36,
+      "framesSeen": 14,
+      "rate": 0.99,
+      "pairs": 13,
+      "samples": [
+       [
+        112,
+        74,
+        0.36
+       ],
+       [
+        360,
+        76,
+        0.36
+       ],
+       [
+        608,
+        77,
+        0.35
+       ],
+       [
+        843,
+        79,
+        0.33
+       ],
+       [
+        1079,
+        81,
+        0.32
+       ],
+       [
+        1325,
+        82,
+        0.31
+       ],
+       [
+        1559,
+        84,
+        0.31
+       ],
+       [
+        1810,
+        85,
+        0.3
+       ],
+       [
+        2078,
+        87,
+        0.31
+       ],
+       [
+        2328,
+        89,
+        0.3
+       ],
+       [
+        2579,
+        91,
+        0.3
+       ],
+       [
+        2825,
+        92,
+        0.31
+       ],
+       [
+        3076,
+        94,
+        0.33
+       ],
+       [
+        3311,
+        95,
+        0.33
+       ]
+      ]
+     },
+     "trace": {
+      "msPerSecond": {
+       "style": null,
+       "layout": null,
+       "paint": null,
+       "raster": 2.7,
+       "imageDecode": 21,
+       "videoDecode": null
+      },
+      "styleUpdates": {
+       "perSecond": 0,
+       "meanMs": null
+      },
+      "top": [
+       [
+        "SoftwareImageDecodeTaskImpl::RunOnWorkerThread",
+        21.2
+       ],
+       [
+        "ImageDecodeTask",
+        21
+       ],
+       [
+        "SoftwareImageDecodeCache::DecodeImageInTask",
+        20.9
+       ],
+       [
+        "RunTask",
+        20.1
+       ],
+       [
+        "DecodingImageGenerator::getPixels",
+        20
+       ],
+       [
+        "Decode LazyPixelRef",
+        20
+       ],
+       [
+        "ImageFrameGenerator::decodeAndScale",
+        19.9
+       ],
+       [
+        "Graphics.Pipeline",
+        15.9
+       ],
+       [
+        "ImageFrameGenerator::decode",
+        15.6
+       ],
+       [
+        "ImageDecoder::DecodeFrameBufferAtIndex",
+        15.6
+       ],
+       [
+        "Decode Image",
+        15.6
+       ],
+       [
+        "DisplayScheduler::OnBeginFrameDeadline",
+        9.8
+       ]
+      ]
+     },
+     "baselineAfter": {
+      "cpuPercent": 0,
+      "workingSetMB": 492,
+      "processes": 5,
+      "windowS": 9,
+      "queryMs": [
+       952,
+       965
+      ]
+     },
+     "cpuDelta": 2.1
+    },
+    "n160.mp4-h264-crf18.mp4": {
+     "baseline": {
+      "cpuPercent": 0,
+      "workingSetMB": 193,
+      "processes": 4,
+      "windowS": 8.9,
+      "queryMs": [
+       942,
+       908
+      ]
+     },
+     "plays": true,
+     "cpu": {
+      "cpuPercent": 0.9,
+      "workingSetMB": 220,
+      "processes": 4,
+      "windowS": 8.9,
+      "queryMs": [
+       930,
+       936
+      ]
+     },
+     "match": {
+      "maxDistance": 0.45,
+      "framesSeen": 14,
+      "rate": 0.99,
+      "pairs": 13,
+      "samples": [
+       [
+        104,
+        74,
+        0.45
+       ],
+       [
+        334,
+        76,
+        0.45
+       ],
+       [
+        568,
+        77,
+        0.45
+       ],
+       [
+        802,
+        79,
+        0.42
+       ],
+       [
+        1033,
+        80,
+        0.42
+       ],
+       [
+        1268,
+        82,
+        0.42
+       ],
+       [
+        1502,
+        83,
+        0.42
+       ],
+       [
+        1735,
+        85,
+        0.42
+       ],
+       [
+        1967,
+        87,
+        0.42
+       ],
+       [
+        2201,
+        88,
+        0.42
+       ],
+       [
+        2434,
+        90,
+        0.41
+       ],
+       [
+        2668,
+        91,
+        0.41
+       ],
+       [
+        2900,
+        93,
+        0.45
+       ],
+       [
+        3134,
+        94,
+        0.45
+       ]
+      ]
+     },
+     "trace": {
+      "msPerSecond": {
+       "style": null,
+       "layout": null,
+       "paint": null,
+       "raster": null,
+       "imageDecode": null,
+       "videoDecode": null
+      },
+      "styleUpdates": {
+       "perSecond": 0,
+       "meanMs": null
+      },
+      "top": [
+       [
+        "RunTask",
+        14.6
+       ],
+       [
+        "Graphics.Pipeline",
+        3.8
+       ],
+       [
+        "DisplayScheduler::OnBeginFrameDeadline",
+        2.6
+       ],
+       [
+        "DisplayScheduler::DrawAndSwap",
+        2.5
+       ],
+       [
+        "Display::DrawAndSwap",
+        2.5
+       ],
+       [
+        "VideoFrameSubmitter::OnBeginFrame",
+        2.4
+       ],
+       [
+        "V8.GC_MC_BACKGROUND_MARKING",
+        2
+       ],
+       [
+        "VideoFrameSubmitter::SubmitFrame",
+        1.9
+       ],
+       [
+        "DelayBasedBeginFrameSource::OnTimerTick",
+        1.7
+       ],
+       [
+        "DirectRenderer::DrawFrame",
+        1.7
+       ],
+       [
+        "VideoFrameResourceProvider::AppendQuads",
+        1.6
+       ],
+       [
+        "DirectRenderer::DrawRenderPass",
+        1.6
+       ]
+      ]
+     },
+     "baselineAfter": {
+      "cpuPercent": 0,
+      "workingSetMB": 329,
+      "processes": 5,
+      "windowS": 9.7,
+      "queryMs": [
+       2372,
+       924
+      ]
+     },
+     "cpuDelta": 0.9
+    }
+   }
+  },
+  "firefox": {
+   "version": "159.0",
+   "artifacts": {
+    "card-n160.svg": {
+     "baseline": {
+      "cpuPercent": 2.1,
+      "workingSetMB": 495,
+      "processes": 7,
+      "windowS": 8.9,
+      "queryMs": [
+       929,
+       936
+      ]
+     },
+     "plays": true,
+     "cpu": {
+      "cpuPercent": 9.5,
+      "workingSetMB": 534,
+      "processes": 7,
+      "windowS": 8.9,
+      "queryMs": [
+       905,
+       914
+      ]
+     },
+     "match": {
+      "maxDistance": 0.08,
+      "framesSeen": 14,
+      "rate": 1,
+      "pairs": 13,
+      "samples": [
+       [
+        130,
+        74,
+        0.08
+       ],
+       [
+        380,
+        75,
+        0.08
+       ],
+       [
+        626,
+        77,
+        0.08
+       ],
+       [
+        864,
+        79,
+        0.08
+       ],
+       [
+        1094,
+        80,
+        0.08
+       ],
+       [
+        1342,
+        82,
+        0.08
+       ],
+       [
+        1590,
+        83,
+        0.08
+       ],
+       [
+        1822,
+        85,
+        0.08
+       ],
+       [
+        2072,
+        87,
+        0.08
+       ],
+       [
+        2315,
+        88,
+        0.08
+       ],
+       [
+        2570,
+        90,
+        0.08
+       ],
+       [
+        2802,
+        92,
+        0.08
+       ],
+       [
+        3032,
+        93,
+        0.08
+       ],
+       [
+        3280,
+        95,
+        0.08
+       ]
+      ]
+     },
+     "baselineAfter": {
+      "cpuPercent": 0.3,
+      "workingSetMB": 565,
+      "processes": 7,
+      "windowS": 9,
+      "queryMs": [
+       1026,
+       962
+      ]
+     },
+     "cpuDelta": 8.3
+    },
+    "n160.webp-lossless.webp": {
+     "baseline": {
+      "cpuPercent": 2.3,
+      "workingSetMB": 494,
+      "processes": 7,
+      "windowS": 9,
+      "queryMs": [
+       996,
+       917
+      ]
+     },
+     "plays": true,
+     "cpu": {
+      "cpuPercent": 5.2,
+      "workingSetMB": 553,
+      "processes": 7,
+      "windowS": 8.9,
+      "queryMs": [
+       925,
+       916
+      ]
+     },
+     "match": {
+      "maxDistance": 0,
+      "framesSeen": 14,
+      "rate": 1.01,
+      "pairs": 13,
+      "samples": [
+       [
+        133,
+        74,
+        0
+       ],
+       [
+        402,
+        76,
+        0
+       ],
+       [
+        649,
+        77,
+        0
+       ],
+       [
+        915,
+        79,
+        0
+       ],
+       [
+        1163,
+        81,
+        0
+       ],
+       [
+        1399,
+        82,
+        0
+       ],
+       [
+        1629,
+        84,
+        0
+       ],
+       [
+        1874,
+        86,
+        0
+       ],
+       [
+        2122,
+        87,
+        0
+       ],
+       [
+        2386,
+        89,
+        0
+       ],
+       [
+        2635,
+        91,
+        0
+       ],
+       [
+        2883,
+        92,
+        0
+       ],
+       [
+        3129,
+        94,
+        0
+       ],
+       [
+        3394,
+        96,
+        0
+       ]
+      ]
+     },
+     "baselineAfter": {
+      "cpuPercent": 0.4,
+      "workingSetMB": 575,
+      "processes": 7,
+      "windowS": 8.9,
+      "queryMs": [
+       917,
+       928
+      ]
+     },
+     "cpuDelta": 3.9
+    },
+    "n160.webp-q80.webp": {
+     "baseline": {
+      "cpuPercent": 2.3,
+      "workingSetMB": 493,
+      "processes": 7,
+      "windowS": 8.9,
+      "queryMs": [
+       910,
+       965
+      ]
+     },
+     "plays": true,
+     "cpu": {
+      "cpuPercent": 3,
+      "workingSetMB": 551,
+      "processes": 7,
+      "windowS": 8.9,
+      "queryMs": [
+       912,
+       930
+      ]
+     },
+     "match": {
+      "maxDistance": 0.36,
+      "framesSeen": 14,
+      "rate": 0.99,
+      "pairs": 13,
+      "samples": [
+       [
+        136,
+        74,
+        0.36
+       ],
+       [
+        401,
+        76,
+        0.36
+       ],
+       [
+        648,
+        77,
+        0.35
+       ],
+       [
+        885,
+        79,
+        0.33
+       ],
+       [
+        1127,
+        81,
+        0.32
+       ],
+       [
+        1361,
+        82,
+        0.31
+       ],
+       [
+        1592,
+        84,
+        0.31
+       ],
+       [
+        1826,
+        85,
+        0.3
+       ],
+       [
+        2077,
+        87,
+        0.31
+       ],
+       [
+        2307,
+        88,
+        0.31
+       ],
+       [
+        2570,
+        90,
+        0.3
+       ],
+       [
+        2802,
+        92,
+        0.31
+       ],
+       [
+        3053,
+        93,
+        0.33
+       ],
+       [
+        3299,
+        95,
+        0.33
+       ]
+      ]
+     },
+     "baselineAfter": {
+      "cpuPercent": 0.2,
+      "workingSetMB": 580,
+      "processes": 7,
+      "windowS": 8.9,
+      "queryMs": [
+       911,
+       904
+      ]
+     },
+     "cpuDelta": 1.8
+    },
+    "n160.mp4-h264-crf18.mp4": {
+     "baseline": {
+      "cpuPercent": 1.7,
+      "workingSetMB": 495,
+      "processes": 7,
+      "windowS": 8.9,
+      "queryMs": [
+       907,
+       931
+      ]
+     },
+     "plays": true,
+     "cpu": {
+      "cpuPercent": 7.7,
+      "workingSetMB": 545,
+      "processes": 7,
+      "windowS": 9.1,
+      "queryMs": [
+       1312,
+       978
+      ]
+     },
+     "match": {
+      "maxDistance": 0.68,
+      "framesSeen": 14,
+      "rate": 0.99,
+      "pairs": 13,
+      "samples": [
+       [
+        121,
+        77,
+        0.68
+       ],
+       [
+        351,
+        78,
+        0.66
+       ],
+       [
+        553,
+        80,
+        0.66
+       ],
+       [
+        770,
+        81,
+        0.66
+       ],
+       [
+        972,
+        83,
+        0.66
+       ],
+       [
+        1177,
+        84,
+        0.66
+       ],
+       [
+        1392,
+        85,
+        0.66
+       ],
+       [
+        1613,
+        87,
+        0.66
+       ],
+       [
+        1815,
+        88,
+        0.66
+       ],
+       [
+        2014,
+        90,
+        0.65
+       ],
+       [
+        2219,
+        91,
+        0.65
+       ],
+       [
+        2420,
+        92,
+        0.66
+       ],
+       [
+        2656,
+        94,
+        0.67
+       ],
+       [
+        2859,
+        95,
+        0.66
+       ]
+      ]
+     },
+     "baselineAfter": {
+      "cpuPercent": 0.2,
+      "workingSetMB": 571,
+      "processes": 7,
+      "windowS": 8.9,
+      "queryMs": [
+       918,
+       907
+      ]
+     },
+     "cpuDelta": 6.8
+    }
+   }
+  },
+  "webkit": {
+   "version": "27.2",
+   "artifacts": {
+    "card-n160.svg": {
+     "baseline": {
+      "cpuPercent": 0,
+      "workingSetMB": 182,
+      "processes": 7,
+      "windowS": 9,
+      "queryMs": [
+       1105,
+       901
+      ]
+     },
+     "plays": true,
+     "cpu": {
+      "cpuPercent": 9.3,
+      "workingSetMB": 213,
+      "processes": 7,
+      "windowS": 8.9,
+      "queryMs": [
+       905,
+       895
+      ]
+     },
+     "match": {
+      "maxDistance": 0.53,
+      "framesSeen": 14,
+      "rate": 0.98,
+      "pairs": 13,
+      "samples": [
+       [
+        118,
+        74,
+        0.5
+       ],
+       [
+        387,
+        75,
+        0.51
+       ],
+       [
+        643,
+        77,
+        0.51
+       ],
+       [
+        903,
+        79,
+        0.52
+       ],
+       [
+        1154,
+        81,
+        0.52
+       ],
+       [
+        1415,
+        82,
+        0.51
+       ],
+       [
+        1679,
+        84,
+        0.5
+       ],
+       [
+        1927,
+        86,
+        0.51
+       ],
+       [
+        2198,
+        88,
+        0.51
+       ],
+       [
+        2459,
+        89,
+        0.51
+       ],
+       [
+        2720,
+        91,
+        0.51
+       ],
+       [
+        2967,
+        93,
+        0.53
+       ],
+       [
+        3245,
+        94,
+        0.53
+       ],
+       [
+        3507,
+        96,
+        0.53
+       ]
+      ]
+     },
+     "baselineAfter": {
+      "cpuPercent": 0.2,
+      "workingSetMB": 226,
+      "processes": 7,
+      "windowS": 8.9,
+      "queryMs": [
+       908,
+       985
+      ]
+     },
+     "cpuDelta": 9.2
+    },
+    "n160.webp-lossless.webp": {
+     "baseline": {
+      "cpuPercent": 0,
+      "workingSetMB": 182,
+      "processes": 7,
+      "windowS": 8.9,
+      "queryMs": [
+       901,
+       897
+      ]
+     },
+     "plays": true,
+     "cpu": {
+      "cpuPercent": 5.4,
+      "workingSetMB": 220,
+      "processes": 7,
+      "windowS": 8.9,
+      "queryMs": [
+       906,
+       915
+      ]
+     },
+     "match": {
+      "maxDistance": 0,
+      "framesSeen": 14,
+      "rate": 0.98,
+      "pairs": 13,
+      "samples": [
+       [
+        128,
+        75,
+        0
+       ],
+       [
+        387,
+        76,
+        0
+       ],
+       [
+        634,
+        78,
+        0
+       ],
+       [
+        860,
+        80,
+        0
+       ],
+       [
+        1115,
+        81,
+        0
+       ],
+       [
+        1361,
+        83,
+        0
+       ],
+       [
+        1607,
+        85,
+        0
+       ],
+       [
+        1855,
+        86,
+        0
+       ],
+       [
+        2107,
+        88,
+        0
+       ],
+       [
+        2362,
+        90,
+        0
+       ],
+       [
+        2615,
+        91,
+        0
+       ],
+       [
+        2860,
+        93,
+        0
+       ],
+       [
+        3110,
+        95,
+        0
+       ],
+       [
+        3359,
+        96,
+        0
+       ]
+      ]
+     },
+     "baselineAfter": {
+      "cpuPercent": 0.2,
+      "workingSetMB": 240,
+      "processes": 7,
+      "windowS": 8.9,
+      "queryMs": [
+       919,
+       921
+      ]
+     },
+     "cpuDelta": 5.3
+    },
+    "n160.webp-q80.webp": {
+     "baseline": {
+      "cpuPercent": 0,
+      "workingSetMB": 182,
+      "processes": 7,
+      "windowS": 9,
+      "queryMs": [
+       919,
+       1006
+      ]
+     },
+     "plays": true,
+     "cpu": {
+      "cpuPercent": 6.7,
+      "workingSetMB": 219,
+      "processes": 7,
+      "windowS": 8.9,
+      "queryMs": [
+       901,
+       931
+      ]
+     },
+     "match": {
+      "maxDistance": 0.36,
+      "framesSeen": 14,
+      "rate": 0.97,
+      "pairs": 13,
+      "samples": [
+       [
+        116,
+        75,
+        0.36
+       ],
+       [
+        373,
+        76,
+        0.36
+       ],
+       [
+        636,
+        78,
+        0.33
+       ],
+       [
+        909,
+        80,
+        0.32
+       ],
+       [
+        1162,
+        82,
+        0.31
+       ],
+       [
+        1433,
+        83,
+        0.31
+       ],
+       [
+        1692,
+        85,
+        0.3
+       ],
+       [
+        1955,
+        87,
+        0.31
+       ],
+       [
+        2206,
+        89,
+        0.3
+       ],
+       [
+        2468,
+        90,
+        0.3
+       ],
+       [
+        2733,
+        92,
+        0.31
+       ],
+       [
+        2995,
+        94,
+        0.33
+       ],
+       [
+        3258,
+        96,
+        0.33
+       ],
+       [
+        3520,
+        97,
+        0.33
+       ]
+      ]
+     },
+     "baselineAfter": {
+      "cpuPercent": 0.2,
+      "workingSetMB": 243,
+      "processes": 7,
+      "windowS": 8.9,
+      "queryMs": [
+       897,
+       921
+      ]
+     },
+     "cpuDelta": 6.6
+    },
+    "n160.mp4-h264-crf18.mp4": {
+     "baseline": {
+      "cpuPercent": 0.9,
+      "workingSetMB": 182,
+      "processes": 7,
+      "windowS": 8.9,
+      "queryMs": [
+       951,
+       892
+      ]
+     },
+     "plays": true,
+     "cpu": {
+      "cpuPercent": 13.1,
+      "workingSetMB": 255,
+      "processes": 7,
+      "windowS": 9,
+      "queryMs": [
+       999,
+       906
+      ]
+     },
+     "match": {
+      "maxDistance": 0.46,
+      "framesSeen": 14,
+      "rate": 1,
+      "pairs": 13,
+      "samples": [
+       [
+        126,
+        75,
+        0.46
+       ],
+       [
+        406,
+        77,
+        0.46
+       ],
+       [
+        671,
+        78,
+        0.43
+       ],
+       [
+        939,
+        80,
+        0.43
+       ],
+       [
+        1192,
+        82,
+        0.43
+       ],
+       [
+        1460,
+        84,
+        0.43
+       ],
+       [
+        1726,
+        85,
+        0.43
+       ],
+       [
+        2003,
+        87,
+        0.43
+       ],
+       [
+        2265,
+        89,
+        0.42
+       ],
+       [
+        2512,
+        91,
+        0.42
+       ],
+       [
+        2763,
+        92,
+        0.42
+       ],
+       [
+        3042,
+        94,
+        0.45
+       ],
+       [
+        3306,
+        96,
+        0.44
+       ],
+       [
+        3561,
+        98,
+        0.44
+       ]
+      ]
+     },
+     "baselineAfter": {
+      "cpuPercent": 0,
+      "workingSetMB": 225,
+      "processes": 7,
+      "windowS": 8.9,
+      "queryMs": [
+       989,
+       897
+      ]
+     },
+     "cpuDelta": 12.7
+    }
+   }
+  }
+ }
+}

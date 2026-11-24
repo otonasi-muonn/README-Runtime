@@ -1,0 +1,159 @@
+{
+ "environment": {
+  "date": "2026-11-24T13:35:27.476Z",
+  "os": "Windows_NT 10.0.26200 x64",
+  "cpu": "AMD Ryzen 5 PRO 4650G with Radeon Graphics (12 threads)",
+  "ramGB": 47.4,
+  "node": "v22.21.0",
+  "ffmpeg": "ffmpeg version 9.0.1-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+  "git": "git version 2.51.0.windows.2"
+ },
+ "seconds": 180,
+ "engines": {
+  "webkit": {
+   "version": "27.2",
+   "artifacts": {
+    "svg-endless": {
+     "base": 0,
+     "samples": [
+      {
+       "atS": 30,
+       "cpu": 7.9,
+       "memDeltaMB": 41
+      },
+      {
+       "atS": 60,
+       "cpu": 8.4,
+       "memDeltaMB": 59
+      },
+      {
+       "atS": 90,
+       "cpu": 7,
+       "memDeltaMB": 67
+      },
+      {
+       "atS": 120,
+       "cpu": 6.9,
+       "memDeltaMB": 72
+      },
+      {
+       "atS": 150,
+       "cpu": 6.8,
+       "memDeltaMB": 76
+      },
+      {
+       "atS": 180,
+       "cpu": 6.7,
+       "memDeltaMB": 79
+      }
+     ]
+    },
+    "svg-three-runs": {
+     "base": 0,
+     "samples": [
+      {
+       "atS": 30,
+       "cpu": 5.3,
+       "memDeltaMB": 34
+      },
+      {
+       "atS": 60,
+       "cpu": 0.1,
+       "memDeltaMB": 34
+      },
+      {
+       "atS": 90,
+       "cpu": 0.1,
+       "memDeltaMB": 34
+      },
+      {
+       "atS": 120,
+       "cpu": 0.1,
+       "memDeltaMB": 34
+      },
+      {
+       "atS": 150,
+       "cpu": 0.1,
+       "memDeltaMB": 34
+      },
+      {
+       "atS": 180,
+       "cpu": 0.1,
+       "memDeltaMB": 34
+      }
+     ]
+    },
+    "svg-before-runtime-change": {
+     "base": 0,
+     "samples": [
+      {
+       "atS": 30,
+       "cpu": 24.8,
+       "memDeltaMB": 84
+      },
+      {
+       "atS": 60,
+       "cpu": 24.7,
+       "memDeltaMB": 108
+      },
+      {
+       "atS": 90,
+       "cpu": 24,
+       "memDeltaMB": 117
+      },
+      {
+       "atS": 120,
+       "cpu": 23.4,
+       "memDeltaMB": 122
+      },
+      {
+       "atS": 150,
+       "cpu": 24.4,
+       "memDeltaMB": 126
+      },
+      {
+       "atS": 180,
+       "cpu": 24.2,
+       "memDeltaMB": 130
+      }
+     ]
+    },
+    "webp-lossless": {
+     "base": 0.2,
+     "samples": [
+      {
+       "atS": 30,
+       "cpu": 2.7,
+       "memDeltaMB": 92
+      },
+      {
+       "atS": 60,
+       "cpu": 2.7,
+       "memDeltaMB": 92
+      },
+      {
+       "atS": 90,
+       "cpu": 2.5,
+       "memDeltaMB": 92
+      },
+      {
+       "atS": 120,
+       "cpu": 3.3,
+       "memDeltaMB": 92
+      },
+      {
+       "atS": 150,
+       "cpu": 2.7,
+       "memDeltaMB": 92
+      },
+      {
+       "atS": 180,
+       "cpu": 2.6,
+       "memDeltaMB": 92
+      }
+     ]
+    }
+   }
+  }
+ }
+}

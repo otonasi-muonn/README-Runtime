@@ -1,0 +1,312 @@
+{
+ "environment": {
+  "date": "2026-11-24T12:53:11.588Z",
+  "os": "Windows_NT 10.0.26200 x64",
+  "cpu": "AMD Ryzen 5 PRO 4650G with Radeon Graphics (12 threads)",
+  "ramGB": 47.4,
+  "node": "v22.21.0",
+  "ffmpeg": "ffmpeg version 9.0.1-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+  "git": "git version 2.51.0.windows.2"
+ },
+ "steps": 40,
+ "runMs": 7950,
+ "engines": {
+  "chromium": {
+   "reachedLate": {
+    "once-inView": {
+     "frames": [
+      40,
+      40,
+      40
+     ],
+     "maxDistance": 0,
+     "moving": false
+    },
+    "once-below": {
+     "frames": [
+      40,
+      40,
+      40
+     ],
+     "maxDistance": 0,
+     "moving": false
+    },
+    "endless-inView": {
+     "frames": [
+      28,
+      32,
+      36
+     ],
+     "maxDistance": 0,
+     "moving": true
+    },
+    "endless-below": {
+     "frames": [
+      28,
+      32,
+      36
+     ],
+     "maxDistance": 0,
+     "moving": true
+    }
+   },
+   "cpu": {
+    "three-inView": {
+     "base": 0,
+     "early": 3.6,
+     "afterRuns": 0.2,
+     "afterRunsAtS": 26
+    },
+    "three-below": {
+     "base": 0,
+     "early": 0,
+     "afterRuns": 0,
+     "afterRunsAtS": 26
+    },
+    "endless-inView": {
+     "base": 0,
+     "early": 2.5,
+     "afterRuns": 2.7,
+     "afterRunsAtS": 26
+    },
+    "endless-below": {
+     "base": 0,
+     "early": 0,
+     "afterRuns": 0,
+     "afterRunsAtS": 26
+    }
+   },
+   "version": "159.0.8154.6",
+   "longView": [
+    {
+     "atS": 30,
+     "cpu": 5,
+     "memDeltaMB": 39
+    },
+    {
+     "atS": 60,
+     "cpu": 5.1,
+     "memDeltaMB": 37
+    },
+    {
+     "atS": 90,
+     "cpu": 3.8,
+     "memDeltaMB": 38
+    },
+    {
+     "atS": 120,
+     "cpu": 4.5,
+     "memDeltaMB": 38
+    },
+    {
+     "atS": 150,
+     "cpu": 5.5,
+     "memDeltaMB": 38
+    },
+    {
+     "atS": 180,
+     "cpu": 4.7,
+     "memDeltaMB": 38
+    }
+   ]
+  },
+  "firefox": {
+   "reachedLate": {
+    "once-inView": {
+     "frames": [
+      40,
+      40,
+      40
+     ],
+     "maxDistance": 0.08,
+     "moving": false
+    },
+    "once-below": {
+     "frames": [
+      1,
+      5,
+      9
+     ],
+     "maxDistance": 0.09,
+     "moving": true
+    },
+    "endless-inView": {
+     "frames": [
+      28,
+      32,
+      36
+     ],
+     "maxDistance": 0.08,
+     "moving": true
+    },
+    "endless-below": {
+     "frames": [
+      1,
+      5,
+      9
+     ],
+     "maxDistance": 0.09,
+     "moving": true
+    }
+   },
+   "cpu": {
+    "three-inView": {
+     "base": 3.1,
+     "early": 6.7,
+     "afterRuns": -2.2,
+     "afterRunsAtS": 26
+    },
+    "three-below": {
+     "base": 2.9,
+     "early": -0.9,
+     "afterRuns": -2.7,
+     "afterRunsAtS": 26
+    },
+    "endless-inView": {
+     "base": 2.7,
+     "early": 7.9,
+     "afterRuns": 1.1,
+     "afterRunsAtS": 26
+    },
+    "endless-below": {
+     "base": 3.1,
+     "early": -0.4,
+     "afterRuns": -3.1,
+     "afterRunsAtS": 26
+    }
+   },
+   "version": "159.0",
+   "longView": [
+    {
+     "atS": 30,
+     "cpu": 2,
+     "memDeltaMB": 33
+    },
+    {
+     "atS": 60,
+     "cpu": 6.1,
+     "memDeltaMB": 31
+    },
+    {
+     "atS": 90,
+     "cpu": 1.7,
+     "memDeltaMB": 31
+    },
+    {
+     "atS": 120,
+     "cpu": 3.6,
+     "memDeltaMB": 36
+    },
+    {
+     "atS": 150,
+     "cpu": 1.7,
+     "memDeltaMB": 35
+    },
+    {
+     "atS": 180,
+     "cpu": 2.6,
+     "memDeltaMB": 38
+    }
+   ]
+  },
+  "webkit": {
+   "reachedLate": {
+    "once-inView": {
+     "frames": [
+      40,
+      40,
+      40
+     ],
+     "maxDistance": 0.49,
+     "moving": false
+    },
+    "once-below": {
+     "frames": [
+      40,
+      40,
+      40
+     ],
+     "maxDistance": 0.49,
+     "moving": false
+    },
+    "endless-inView": {
+     "frames": [
+      28,
+      32,
+      36
+     ],
+     "maxDistance": 0.51,
+     "moving": true
+    },
+    "endless-below": {
+     "frames": [
+      28,
+      32,
+      36
+     ],
+     "maxDistance": 0.51,
+     "moving": true
+    }
+   },
+   "cpu": {
+    "three-inView": {
+     "base": 0.2,
+     "early": 6.4,
+     "afterRuns": -0.2,
+     "afterRunsAtS": 26
+    },
+    "three-below": {
+     "base": 0.7,
+     "early": 2.4,
+     "afterRuns": -0.7,
+     "afterRunsAtS": 26
+    },
+    "endless-inView": {
+     "base": 0.2,
+     "early": 8.8,
+     "afterRuns": 6.9,
+     "afterRunsAtS": 26
+    },
+    "endless-below": {
+     "base": 0.4,
+     "early": 3.2,
+     "afterRuns": 2.3,
+     "afterRunsAtS": 26
+    }
+   },
+   "version": "27.2",
+   "longView": [
+    {
+     "atS": 30,
+     "cpu": 6.7,
+     "memDeltaMB": 42
+    },
+    {
+     "atS": 60,
+     "cpu": 6.8,
+     "memDeltaMB": 61
+    },
+    {
+     "atS": 90,
+     "cpu": 7.3,
+     "memDeltaMB": 69
+    },
+    {
+     "atS": 120,
+     "cpu": 8.3,
+     "memDeltaMB": 73
+    },
+    {
+     "atS": 150,
+     "cpu": 7.5,
+     "memDeltaMB": 78
+    },
+    {
+     "atS": 180,
+     "cpu": 7.6,
+     "memDeltaMB": 81
+    }
+   ]
+  }
+ }
+}

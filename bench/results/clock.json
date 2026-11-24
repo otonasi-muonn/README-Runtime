@@ -1,0 +1,2844 @@
+{
+ "environment": {
+  "date": "2026-11-24T11:26:17.300Z",
+  "os": "Windows_NT 10.0.26200 x64",
+  "cpu": "AMD Ryzen 5 PRO 4650G with Radeon Graphics (12 threads)",
+  "ramGB": 47.4,
+  "node": "v22.21.0",
+  "ffmpeg": "ffmpeg version 9.0.1-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+  "git": "git version 2.51.0.windows.2"
+ },
+ "base": "dfafe10",
+ "head": "cf54637",
+ "repeat": 3,
+ "mainRepeat": 5,
+ "cards": {
+  "before-40": {
+   "buildMs": 5289,
+   "raw": 62946,
+   "gzip": 8772,
+   "brotli": 6871
+  },
+  "before-80": {
+   "buildMs": 5705,
+   "raw": 63627,
+   "gzip": 8796,
+   "brotli": 6872
+  },
+  "before-160": {
+   "buildMs": 6207,
+   "raw": 64993,
+   "gzip": 8810,
+   "brotli": 6880
+  },
+  "before-320": {
+   "buildMs": 7293,
+   "raw": 67713,
+   "gzip": 8854,
+   "brotli": 6863
+  },
+  "after-40": {
+   "buildMs": 5052,
+   "raw": 66023,
+   "gzip": 9279,
+   "brotli": 7154
+  },
+  "after-80": {
+   "buildMs": 5433,
+   "raw": 70184,
+   "gzip": 9787,
+   "brotli": 7303
+  },
+  "after-160": {
+   "buildMs": 5909,
+   "raw": 78754,
+   "gzip": 10892,
+   "brotli": 7619
+  },
+  "after-320": {
+   "buildMs": 7673,
+   "raw": 96034,
+   "gzip": 12953,
+   "brotli": 8299
+  }
+ },
+ "playback": {},
+ "firstRender": {
+  "chromium-before-40": [
+   75,
+   38,
+   35,
+   31,
+   30,
+   36,
+   29
+  ],
+  "chromium-after-40": [
+   34,
+   36,
+   37,
+   35,
+   30,
+   37,
+   30
+  ],
+  "chromium-before-80": [
+   69,
+   46,
+   45,
+   70,
+   54,
+   70,
+   46
+  ],
+  "chromium-after-80": [
+   56,
+   45,
+   46,
+   71,
+   65,
+   68,
+   45
+  ],
+  "chromium-before-160": [
+   80,
+   82,
+   79,
+   92,
+   86,
+   86,
+   80
+  ],
+  "chromium-after-160": [
+   79,
+   88,
+   85,
+   80,
+   80,
+   79,
+   83
+  ],
+  "chromium-before-320": [
+   170,
+   158,
+   154,
+   170,
+   152,
+   166,
+   148
+  ],
+  "chromium-after-320": [
+   165,
+   153,
+   153,
+   167,
+   153,
+   179,
+   150
+  ],
+  "firefox-before-40": [
+   157,
+   55,
+   75,
+   69,
+   74,
+   71,
+   61
+  ],
+  "firefox-after-40": [
+   76,
+   64,
+   83,
+   74,
+   56,
+   52,
+   53
+  ],
+  "firefox-before-80": [
+   70,
+   68,
+   73,
+   73,
+   71,
+   71,
+   73
+  ],
+  "firefox-after-80": [
+   68,
+   73,
+   71,
+   71,
+   69,
+   70,
+   73
+  ],
+  "firefox-before-160": [
+   103,
+   103,
+   101,
+   91,
+   89,
+   95,
+   89
+  ],
+  "firefox-after-160": [
+   91,
+   102,
+   93,
+   101,
+   95,
+   103,
+   92
+  ],
+  "firefox-before-320": [
+   155,
+   156,
+   151,
+   153,
+   158,
+   162,
+   153
+  ],
+  "firefox-after-320": [
+   170,
+   157,
+   156,
+   155,
+   162,
+   151,
+   167
+  ],
+  "webkit-before-40": [
+   75,
+   46,
+   72,
+   51,
+   59,
+   60,
+   46
+  ],
+  "webkit-after-40": [
+   70,
+   60,
+   60,
+   68,
+   73,
+   61,
+   60
+  ],
+  "webkit-before-80": [
+   91,
+   90,
+   91,
+   78,
+   92,
+   91,
+   89
+  ],
+  "webkit-after-80": [
+   77,
+   87,
+   92,
+   94,
+   78,
+   92,
+   94
+  ],
+  "webkit-before-160": [
+   137,
+   124,
+   139,
+   139,
+   138,
+   152,
+   137
+  ],
+  "webkit-after-160": [
+   137,
+   138,
+   154,
+   138,
+   136,
+   136,
+   140
+  ],
+  "webkit-before-320": [
+   480,
+   435,
+   433,
+   449,
+   459,
+   449,
+   472
+  ],
+  "webkit-after-320": [
+   268,
+   246,
+   273,
+   245,
+   244,
+   246,
+   241
+  ]
+ },
+ "runs": [
+  {
+   "v": "before",
+   "engine": "chromium",
+   "version": "159.0.8154.6",
+   "N": 40,
+   "repeat": 0,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 21.4,
+   "memDeltaMB": 47,
+   "rate": 1.03,
+   "framesSeen": 8,
+   "maxDistance": 0,
+   "styleMsPerS": 138.7,
+   "updatesPerS": 6.8,
+   "updateMeanMs": 19.6
+  },
+  {
+   "v": "before",
+   "engine": "chromium",
+   "version": "159.0.8154.6",
+   "N": 80,
+   "repeat": 0,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 42.1,
+   "memDeltaMB": 71,
+   "rate": 1.01,
+   "framesSeen": 12,
+   "maxDistance": 0,
+   "styleMsPerS": 255.5,
+   "updatesPerS": 6.5,
+   "updateMeanMs": 38.4
+  },
+  {
+   "v": "before",
+   "engine": "chromium",
+   "version": "159.0.8154.6",
+   "N": 160,
+   "repeat": 0,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 70.8,
+   "memDeltaMB": 127,
+   "rate": 0.99,
+   "framesSeen": 14,
+   "maxDistance": 0,
+   "styleMsPerS": 518.4,
+   "updatesPerS": 6.5,
+   "updateMeanMs": 79.2
+  },
+  {
+   "v": "before",
+   "engine": "chromium",
+   "version": "159.0.8154.6",
+   "N": 320,
+   "repeat": 0,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 109.7,
+   "memDeltaMB": 205,
+   "rate": 1,
+   "framesSeen": 14,
+   "maxDistance": 0,
+   "styleMsPerS": 875.6,
+   "updatesPerS": 5,
+   "updateMeanMs": 175.1
+  },
+  {
+   "v": "before",
+   "engine": "firefox",
+   "version": "159.0",
+   "N": 40,
+   "repeat": 0,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 25.7,
+   "memDeltaMB": 35,
+   "rate": 0.95,
+   "framesSeen": 10,
+   "maxDistance": 0.08,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "before",
+   "engine": "firefox",
+   "version": "159.0",
+   "N": 80,
+   "repeat": 0,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 34.1,
+   "memDeltaMB": 36,
+   "rate": 0.98,
+   "framesSeen": 8,
+   "maxDistance": 0.09,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "before",
+   "engine": "firefox",
+   "version": "159.0",
+   "N": 160,
+   "repeat": 0,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 53,
+   "memDeltaMB": 38,
+   "rate": 1,
+   "framesSeen": 14,
+   "maxDistance": 0.08,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "before",
+   "engine": "firefox",
+   "version": "159.0",
+   "N": 320,
+   "repeat": 0,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 87.5,
+   "memDeltaMB": 39,
+   "rate": 0.98,
+   "framesSeen": 14,
+   "maxDistance": 0.08,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "before",
+   "engine": "webkit",
+   "version": "27.2",
+   "N": 40,
+   "repeat": 0,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 29.2,
+   "memDeltaMB": 43,
+   "rate": 1,
+   "framesSeen": 8,
+   "maxDistance": 0.52,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "before",
+   "engine": "webkit",
+   "version": "27.2",
+   "N": 80,
+   "repeat": 0,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 47.8,
+   "memDeltaMB": 62,
+   "rate": 0.93,
+   "framesSeen": 10,
+   "maxDistance": 0.54,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "before",
+   "engine": "webkit",
+   "version": "27.2",
+   "N": 160,
+   "repeat": 0,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 83.6,
+   "memDeltaMB": 93,
+   "rate": 1.01,
+   "framesSeen": 14,
+   "maxDistance": 0.54,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "before",
+   "engine": "webkit",
+   "version": "27.2",
+   "N": 320,
+   "repeat": 0,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 93.2,
+   "memDeltaMB": 98,
+   "rate": 1.01,
+   "framesSeen": 14,
+   "maxDistance": 0.54,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "after",
+   "engine": "chromium",
+   "version": "159.0.8154.6",
+   "N": 40,
+   "repeat": 0,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 6.2,
+   "memDeltaMB": 40,
+   "rate": 0.97,
+   "framesSeen": 8,
+   "maxDistance": 0,
+   "styleMsPerS": 13.8,
+   "updatesPerS": 2.5,
+   "updateMeanMs": 1.3
+  },
+  {
+   "v": "after",
+   "engine": "chromium",
+   "version": "159.0.8154.6",
+   "N": 80,
+   "repeat": 0,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 7.1,
+   "memDeltaMB": 41,
+   "rate": 1.01,
+   "framesSeen": 13,
+   "maxDistance": 0,
+   "styleMsPerS": 15.3,
+   "updatesPerS": 5.5,
+   "updateMeanMs": 1.3
+  },
+  {
+   "v": "after",
+   "engine": "chromium",
+   "version": "159.0.8154.6",
+   "N": 160,
+   "repeat": 0,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 6.8,
+   "memDeltaMB": 47,
+   "rate": 1.01,
+   "framesSeen": 14,
+   "maxDistance": 0.01,
+   "styleMsPerS": 20.7,
+   "updatesPerS": 6.8,
+   "updateMeanMs": 1.8
+  },
+  {
+   "v": "after",
+   "engine": "chromium",
+   "version": "159.0.8154.6",
+   "N": 320,
+   "repeat": 0,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 6.8,
+   "memDeltaMB": 63,
+   "rate": 0.98,
+   "framesSeen": 14,
+   "maxDistance": 0,
+   "styleMsPerS": 24.9,
+   "updatesPerS": 6.8,
+   "updateMeanMs": 2.5
+  },
+  {
+   "v": "after",
+   "engine": "firefox",
+   "version": "159.0",
+   "N": 40,
+   "repeat": 0,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 9.7,
+   "memDeltaMB": 33,
+   "rate": 1.05,
+   "framesSeen": 9,
+   "maxDistance": 0.08,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "after",
+   "engine": "firefox",
+   "version": "159.0",
+   "N": 80,
+   "repeat": 0,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 6.8,
+   "memDeltaMB": 34,
+   "rate": 0.95,
+   "framesSeen": 9,
+   "maxDistance": 0.09,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "after",
+   "engine": "firefox",
+   "version": "159.0",
+   "N": 160,
+   "repeat": 0,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 6,
+   "memDeltaMB": 34,
+   "rate": 0.96,
+   "framesSeen": 14,
+   "maxDistance": 0.08,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "after",
+   "engine": "firefox",
+   "version": "159.0",
+   "N": 320,
+   "repeat": 0,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 8.9,
+   "memDeltaMB": 38,
+   "rate": 1.03,
+   "framesSeen": 14,
+   "maxDistance": 0.08,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "after",
+   "engine": "webkit",
+   "version": "27.2",
+   "N": 40,
+   "repeat": 0,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 10.1,
+   "memDeltaMB": 27,
+   "rate": 1,
+   "framesSeen": 11,
+   "maxDistance": 0.52,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "after",
+   "engine": "webkit",
+   "version": "27.2",
+   "N": 80,
+   "repeat": 0,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 10.4,
+   "memDeltaMB": 29,
+   "rate": 1.02,
+   "framesSeen": 8,
+   "maxDistance": 0.53,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "after",
+   "engine": "webkit",
+   "version": "27.2",
+   "N": 160,
+   "repeat": 0,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 11.1,
+   "memDeltaMB": 33,
+   "rate": 1.01,
+   "framesSeen": 14,
+   "maxDistance": 0.54,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "after",
+   "engine": "webkit",
+   "version": "27.2",
+   "N": 320,
+   "repeat": 0,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 16.5,
+   "memDeltaMB": 37,
+   "rate": 0.99,
+   "framesSeen": 14,
+   "maxDistance": 0.54,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "after",
+   "engine": "chromium",
+   "version": "159.0.8154.6",
+   "N": 40,
+   "repeat": 1,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 5.3,
+   "memDeltaMB": 40,
+   "rate": 0.93,
+   "framesSeen": 9,
+   "maxDistance": 0,
+   "styleMsPerS": 11.9,
+   "updatesPerS": 1.5,
+   "updateMeanMs": 1.2
+  },
+  {
+   "v": "after",
+   "engine": "chromium",
+   "version": "159.0.8154.6",
+   "N": 80,
+   "repeat": 1,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 6.8,
+   "memDeltaMB": 41,
+   "rate": 0.88,
+   "framesSeen": 8,
+   "maxDistance": 0,
+   "styleMsPerS": 12.9,
+   "updatesPerS": 3.8,
+   "updateMeanMs": 1.1
+  },
+  {
+   "v": "after",
+   "engine": "chromium",
+   "version": "159.0.8154.6",
+   "N": 160,
+   "repeat": 1,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 5.8,
+   "memDeltaMB": 47,
+   "rate": 1,
+   "framesSeen": 14,
+   "maxDistance": 0.01,
+   "styleMsPerS": 15.7,
+   "updatesPerS": 6.8,
+   "updateMeanMs": 1.3
+  },
+  {
+   "v": "after",
+   "engine": "chromium",
+   "version": "159.0.8154.6",
+   "N": 320,
+   "repeat": 1,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 8.2,
+   "memDeltaMB": 63,
+   "rate": 0.96,
+   "framesSeen": 14,
+   "maxDistance": 0,
+   "styleMsPerS": 25.2,
+   "updatesPerS": 6.8,
+   "updateMeanMs": 2.5
+  },
+  {
+   "v": "after",
+   "engine": "firefox",
+   "version": "159.0",
+   "N": 40,
+   "repeat": 1,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 13.6,
+   "memDeltaMB": 36,
+   "rate": 0.99,
+   "framesSeen": 13,
+   "maxDistance": 0.08,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "after",
+   "engine": "firefox",
+   "version": "159.0",
+   "N": 80,
+   "repeat": 1,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 14.7,
+   "memDeltaMB": 37,
+   "rate": 0.97,
+   "framesSeen": 8,
+   "maxDistance": 0.09,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "after",
+   "engine": "firefox",
+   "version": "159.0",
+   "N": 160,
+   "repeat": 1,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 18.6,
+   "memDeltaMB": 38,
+   "rate": 0.99,
+   "framesSeen": 14,
+   "maxDistance": 0.09,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "after",
+   "engine": "firefox",
+   "version": "159.0",
+   "N": 320,
+   "repeat": 1,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 11.5,
+   "memDeltaMB": 39,
+   "rate": 1.02,
+   "framesSeen": 14,
+   "maxDistance": 0.09,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "after",
+   "engine": "webkit",
+   "version": "27.2",
+   "N": 40,
+   "repeat": 1,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 7.9,
+   "memDeltaMB": 27,
+   "rate": 1,
+   "framesSeen": 12,
+   "maxDistance": 0.53,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "after",
+   "engine": "webkit",
+   "version": "27.2",
+   "N": 80,
+   "repeat": 1,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 9.4,
+   "memDeltaMB": 28,
+   "rate": 1.18,
+   "framesSeen": 7,
+   "maxDistance": 0.53,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "after",
+   "engine": "webkit",
+   "version": "27.2",
+   "N": 160,
+   "repeat": 1,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 8.8,
+   "memDeltaMB": 32,
+   "rate": 0.98,
+   "framesSeen": 14,
+   "maxDistance": 0.53,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "after",
+   "engine": "webkit",
+   "version": "27.2",
+   "N": 320,
+   "repeat": 1,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 12.6,
+   "memDeltaMB": 36,
+   "rate": 1.03,
+   "framesSeen": 14,
+   "maxDistance": 0.53,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "before",
+   "engine": "chromium",
+   "version": "159.0.8154.6",
+   "N": 40,
+   "repeat": 1,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 16.1,
+   "memDeltaMB": 47,
+   "rate": 1.01,
+   "framesSeen": 10,
+   "maxDistance": 0,
+   "styleMsPerS": 126.5,
+   "updatesPerS": 6.5,
+   "updateMeanMs": 18.5
+  },
+  {
+   "v": "before",
+   "engine": "chromium",
+   "version": "159.0.8154.6",
+   "N": 80,
+   "repeat": 1,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 38.7,
+   "memDeltaMB": 71,
+   "rate": 0.99,
+   "framesSeen": 8,
+   "maxDistance": 0,
+   "styleMsPerS": 237.8,
+   "updatesPerS": 6.5,
+   "updateMeanMs": 35.8
+  },
+  {
+   "v": "before",
+   "engine": "chromium",
+   "version": "159.0.8154.6",
+   "N": 160,
+   "repeat": 1,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 65.7,
+   "memDeltaMB": 127,
+   "rate": 0.98,
+   "framesSeen": 14,
+   "maxDistance": 0.01,
+   "styleMsPerS": 479.5,
+   "updatesPerS": 6.5,
+   "updateMeanMs": 73.2
+  },
+  {
+   "v": "before",
+   "engine": "chromium",
+   "version": "159.0.8154.6",
+   "N": 320,
+   "repeat": 1,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 114,
+   "memDeltaMB": 194,
+   "rate": 0.98,
+   "framesSeen": 14,
+   "maxDistance": 0,
+   "styleMsPerS": 866.7,
+   "updatesPerS": 6,
+   "updateMeanMs": 144.4
+  },
+  {
+   "v": "before",
+   "engine": "firefox",
+   "version": "159.0",
+   "N": 40,
+   "repeat": 1,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 16.1,
+   "memDeltaMB": 36,
+   "rate": 1.01,
+   "framesSeen": 13,
+   "maxDistance": 0.08,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "before",
+   "engine": "firefox",
+   "version": "159.0",
+   "N": 80,
+   "repeat": 1,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 23.3,
+   "memDeltaMB": 36,
+   "rate": 0.96,
+   "framesSeen": 7,
+   "maxDistance": 0.08,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "before",
+   "engine": "firefox",
+   "version": "159.0",
+   "N": 160,
+   "repeat": 1,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 47.1,
+   "memDeltaMB": 37,
+   "rate": 0.99,
+   "framesSeen": 14,
+   "maxDistance": 0.09,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "before",
+   "engine": "firefox",
+   "version": "159.0",
+   "N": 320,
+   "repeat": 1,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 81.1,
+   "memDeltaMB": 39,
+   "rate": 1,
+   "framesSeen": 14,
+   "maxDistance": 0.09,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "before",
+   "engine": "webkit",
+   "version": "27.2",
+   "N": 40,
+   "repeat": 1,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 22.3,
+   "memDeltaMB": 41,
+   "rate": 1.03,
+   "framesSeen": 11,
+   "maxDistance": 0.53,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "before",
+   "engine": "webkit",
+   "version": "27.2",
+   "N": 80,
+   "repeat": 1,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 39.7,
+   "memDeltaMB": 59,
+   "rate": 0.97,
+   "framesSeen": 9,
+   "maxDistance": 0.53,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "before",
+   "engine": "webkit",
+   "version": "27.2",
+   "N": 160,
+   "repeat": 1,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 74.6,
+   "memDeltaMB": 91,
+   "rate": 1.01,
+   "framesSeen": 14,
+   "maxDistance": 0.55,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "before",
+   "engine": "webkit",
+   "version": "27.2",
+   "N": 320,
+   "repeat": 1,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 99.1,
+   "memDeltaMB": 110,
+   "rate": 1,
+   "framesSeen": 14,
+   "maxDistance": 0.55,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "before",
+   "engine": "chromium",
+   "version": "159.0.8154.6",
+   "N": 40,
+   "repeat": 2,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 20.1,
+   "memDeltaMB": 47,
+   "rate": 1.02,
+   "framesSeen": 10,
+   "maxDistance": 0,
+   "styleMsPerS": 128.1,
+   "updatesPerS": 6.5,
+   "updateMeanMs": 18.8
+  },
+  {
+   "v": "before",
+   "engine": "chromium",
+   "version": "159.0.8154.6",
+   "N": 80,
+   "repeat": 2,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 39.1,
+   "memDeltaMB": 71,
+   "rate": 0.95,
+   "framesSeen": 9,
+   "maxDistance": 0,
+   "styleMsPerS": 243.5,
+   "updatesPerS": 6.5,
+   "updateMeanMs": 36.7
+  },
+  {
+   "v": "before",
+   "engine": "chromium",
+   "version": "159.0.8154.6",
+   "N": 160,
+   "repeat": 2,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 67.6,
+   "memDeltaMB": 127,
+   "rate": 1,
+   "framesSeen": 14,
+   "maxDistance": 0.01,
+   "styleMsPerS": 475.8,
+   "updatesPerS": 6.5,
+   "updateMeanMs": 72.6
+  },
+  {
+   "v": "before",
+   "engine": "chromium",
+   "version": "159.0.8154.6",
+   "N": 320,
+   "repeat": 2,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 107.5,
+   "memDeltaMB": 194,
+   "rate": 1.01,
+   "framesSeen": 14,
+   "maxDistance": 0,
+   "styleMsPerS": 854.3,
+   "updatesPerS": 5.8,
+   "updateMeanMs": 148.6
+  },
+  {
+   "v": "before",
+   "engine": "firefox",
+   "version": "159.0",
+   "N": 40,
+   "repeat": 2,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 14.3,
+   "memDeltaMB": 37,
+   "rate": 1.01,
+   "framesSeen": 13,
+   "maxDistance": 0.08,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "before",
+   "engine": "firefox",
+   "version": "159.0",
+   "N": 80,
+   "repeat": 2,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 39.4,
+   "memDeltaMB": 37,
+   "rate": 0.93,
+   "framesSeen": 7,
+   "maxDistance": 0.09,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "before",
+   "engine": "firefox",
+   "version": "159.0",
+   "N": 160,
+   "repeat": 2,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 51,
+   "memDeltaMB": 37,
+   "rate": 0.97,
+   "framesSeen": 14,
+   "maxDistance": 0.09,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "before",
+   "engine": "firefox",
+   "version": "159.0",
+   "N": 320,
+   "repeat": 2,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 83.7,
+   "memDeltaMB": 38,
+   "rate": 1,
+   "framesSeen": 14,
+   "maxDistance": 0.09,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "before",
+   "engine": "webkit",
+   "version": "27.2",
+   "N": 40,
+   "repeat": 2,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 23.4,
+   "memDeltaMB": 41,
+   "rate": 1.04,
+   "framesSeen": 11,
+   "maxDistance": 0.53,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "before",
+   "engine": "webkit",
+   "version": "27.2",
+   "N": 80,
+   "repeat": 2,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 44.6,
+   "memDeltaMB": 60,
+   "rate": 1.01,
+   "framesSeen": 8,
+   "maxDistance": 0.53,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "before",
+   "engine": "webkit",
+   "version": "27.2",
+   "N": 160,
+   "repeat": 2,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 76.3,
+   "memDeltaMB": 90,
+   "rate": 1.02,
+   "framesSeen": 14,
+   "maxDistance": 0.55,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "before",
+   "engine": "webkit",
+   "version": "27.2",
+   "N": 320,
+   "repeat": 2,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 101,
+   "memDeltaMB": 109,
+   "rate": 0.99,
+   "framesSeen": 14,
+   "maxDistance": 0.54,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "after",
+   "engine": "chromium",
+   "version": "159.0.8154.6",
+   "N": 40,
+   "repeat": 2,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 5.5,
+   "memDeltaMB": 40,
+   "rate": 1.04,
+   "framesSeen": 10,
+   "maxDistance": 0,
+   "styleMsPerS": 11.4,
+   "updatesPerS": 1.3,
+   "updateMeanMs": 1.2
+  },
+  {
+   "v": "after",
+   "engine": "chromium",
+   "version": "159.0.8154.6",
+   "N": 80,
+   "repeat": 2,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 7.2,
+   "memDeltaMB": 41,
+   "rate": 0.98,
+   "framesSeen": 8,
+   "maxDistance": 0,
+   "styleMsPerS": 12.1,
+   "updatesPerS": 1,
+   "updateMeanMs": 1
+  },
+  {
+   "v": "after",
+   "engine": "chromium",
+   "version": "159.0.8154.6",
+   "N": 160,
+   "repeat": 2,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 7.4,
+   "memDeltaMB": 47,
+   "rate": 1.03,
+   "framesSeen": 14,
+   "maxDistance": 0.01,
+   "styleMsPerS": 15.9,
+   "updatesPerS": 6.8,
+   "updateMeanMs": 1.4
+  },
+  {
+   "v": "after",
+   "engine": "chromium",
+   "version": "159.0.8154.6",
+   "N": 320,
+   "repeat": 2,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 8.7,
+   "memDeltaMB": 63,
+   "rate": 0.96,
+   "framesSeen": 14,
+   "maxDistance": 0,
+   "styleMsPerS": 20.4,
+   "updatesPerS": 6.8,
+   "updateMeanMs": 2
+  },
+  {
+   "v": "after",
+   "engine": "firefox",
+   "version": "159.0",
+   "N": 40,
+   "repeat": 2,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 8.3,
+   "memDeltaMB": 37,
+   "rate": 0.98,
+   "framesSeen": 14,
+   "maxDistance": 0.08,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "after",
+   "engine": "firefox",
+   "version": "159.0",
+   "N": 80,
+   "repeat": 2,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 5.5,
+   "memDeltaMB": 36,
+   "rate": 0.97,
+   "framesSeen": 7,
+   "maxDistance": 0.09,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "after",
+   "engine": "firefox",
+   "version": "159.0",
+   "N": 160,
+   "repeat": 2,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 5.4,
+   "memDeltaMB": 39,
+   "rate": 1.03,
+   "framesSeen": 14,
+   "maxDistance": 0.08,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "after",
+   "engine": "firefox",
+   "version": "159.0",
+   "N": 320,
+   "repeat": 2,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 11.9,
+   "memDeltaMB": 45,
+   "rate": 1.01,
+   "framesSeen": 14,
+   "maxDistance": 0.09,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "after",
+   "engine": "webkit",
+   "version": "27.2",
+   "N": 40,
+   "repeat": 2,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 7.4,
+   "memDeltaMB": 25,
+   "rate": 1.04,
+   "framesSeen": 12,
+   "maxDistance": 0.53,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "after",
+   "engine": "webkit",
+   "version": "27.2",
+   "N": 80,
+   "repeat": 2,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 8.2,
+   "memDeltaMB": 30,
+   "rate": 1.01,
+   "framesSeen": 14,
+   "maxDistance": 0.54,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "after",
+   "engine": "webkit",
+   "version": "27.2",
+   "N": 160,
+   "repeat": 2,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 10.3,
+   "memDeltaMB": 31,
+   "rate": 0.98,
+   "framesSeen": 14,
+   "maxDistance": 0.54,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "after",
+   "engine": "webkit",
+   "version": "27.2",
+   "N": 320,
+   "repeat": 2,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 11.6,
+   "memDeltaMB": 38,
+   "rate": 0.97,
+   "framesSeen": 14,
+   "maxDistance": 0.53,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "after",
+   "engine": "chromium",
+   "version": "159.0.8154.6",
+   "N": 160,
+   "repeat": 3,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 5.6,
+   "memDeltaMB": 46,
+   "rate": 0.98,
+   "framesSeen": 14,
+   "maxDistance": 0.01,
+   "styleMsPerS": 15.1,
+   "updatesPerS": 6.8,
+   "updateMeanMs": 1.3
+  },
+  {
+   "v": "after",
+   "engine": "firefox",
+   "version": "159.0",
+   "N": 160,
+   "repeat": 3,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 5.5,
+   "memDeltaMB": 39,
+   "rate": 0.98,
+   "framesSeen": 14,
+   "maxDistance": 0.09,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "after",
+   "engine": "webkit",
+   "version": "27.2",
+   "N": 160,
+   "repeat": 3,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 10.8,
+   "memDeltaMB": 31,
+   "rate": 1.01,
+   "framesSeen": 14,
+   "maxDistance": 0.53,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "before",
+   "engine": "chromium",
+   "version": "159.0.8154.6",
+   "N": 160,
+   "repeat": 3,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 68.8,
+   "memDeltaMB": 127,
+   "rate": 1.01,
+   "framesSeen": 14,
+   "maxDistance": 0.01,
+   "styleMsPerS": 475.3,
+   "updatesPerS": 6.5,
+   "updateMeanMs": 72.5
+  },
+  {
+   "v": "before",
+   "engine": "firefox",
+   "version": "159.0",
+   "N": 160,
+   "repeat": 3,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 55,
+   "memDeltaMB": 37,
+   "rate": 0.99,
+   "framesSeen": 14,
+   "maxDistance": 0.08,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "before",
+   "engine": "webkit",
+   "version": "27.2",
+   "N": 160,
+   "repeat": 3,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 73.6,
+   "memDeltaMB": 89,
+   "rate": 1,
+   "framesSeen": 14,
+   "maxDistance": 0.55,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "before",
+   "engine": "chromium",
+   "version": "159.0.8154.6",
+   "N": 160,
+   "repeat": 4,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 63.3,
+   "memDeltaMB": 127,
+   "rate": 1.02,
+   "framesSeen": 14,
+   "maxDistance": 0.01,
+   "styleMsPerS": 487,
+   "updatesPerS": 6.5,
+   "updateMeanMs": 74.4
+  },
+  {
+   "v": "before",
+   "engine": "firefox",
+   "version": "159.0",
+   "N": 160,
+   "repeat": 4,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 43.7,
+   "memDeltaMB": 38,
+   "rate": 0.98,
+   "framesSeen": 14,
+   "maxDistance": 0.09,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "before",
+   "engine": "webkit",
+   "version": "27.2",
+   "N": 160,
+   "repeat": 4,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 75,
+   "memDeltaMB": 90,
+   "rate": 0.99,
+   "framesSeen": 14,
+   "maxDistance": 0.55,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "after",
+   "engine": "chromium",
+   "version": "159.0.8154.6",
+   "N": 160,
+   "repeat": 4,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 8.4,
+   "memDeltaMB": 46,
+   "rate": 1.03,
+   "framesSeen": 14,
+   "maxDistance": 0.01,
+   "styleMsPerS": 14.9,
+   "updatesPerS": 6.8,
+   "updateMeanMs": 1.3
+  },
+  {
+   "v": "after",
+   "engine": "firefox",
+   "version": "159.0",
+   "N": 160,
+   "repeat": 4,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 8.7,
+   "memDeltaMB": 39,
+   "rate": 1.02,
+   "framesSeen": 14,
+   "maxDistance": 0.09,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  },
+  {
+   "v": "after",
+   "engine": "webkit",
+   "version": "27.2",
+   "N": 160,
+   "repeat": 4,
+   "plays": true,
+   "error": null,
+   "cpuDelta": 10.9,
+   "memDeltaMB": 31,
+   "rate": 1.03,
+   "framesSeen": 14,
+   "maxDistance": 0.53,
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null
+  }
+ ],
+ "summary": {
+  "chromium-40-before": {
+   "plays": true,
+   "cpuDelta": {
+    "median": 20.1,
+    "min": 16.1,
+    "max": 21.4,
+    "n": 3
+   },
+   "memDeltaMB": {
+    "median": 47,
+    "min": 47,
+    "max": 47,
+    "n": 3
+   },
+   "rate": {
+    "median": 1,
+    "min": 1.01,
+    "max": 1.03,
+    "n": 3
+   },
+   "framesSeen": {
+    "median": 10,
+    "min": 8,
+    "max": 10,
+    "n": 3
+   },
+   "maxDistance": {
+    "median": 0,
+    "min": 0,
+    "max": 0,
+    "n": 3
+   },
+   "styleMsPerS": {
+    "median": 128.1,
+    "min": 126.5,
+    "max": 138.7,
+    "n": 3
+   },
+   "updatesPerS": {
+    "median": 6.5,
+    "min": 6.5,
+    "max": 6.8,
+    "n": 3
+   },
+   "updateMeanMs": {
+    "median": 18.8,
+    "min": 18.5,
+    "max": 19.6,
+    "n": 3
+   },
+   "firstRenderMs": {
+    "median": 35,
+    "min": 29,
+    "max": 75,
+    "n": 7
+   }
+  },
+  "chromium-40-after": {
+   "plays": true,
+   "cpuDelta": {
+    "median": 5.5,
+    "min": 5.3,
+    "max": 6.2,
+    "n": 3
+   },
+   "memDeltaMB": {
+    "median": 40,
+    "min": 40,
+    "max": 40,
+    "n": 3
+   },
+   "rate": {
+    "median": 1,
+    "min": 0.93,
+    "max": 1.04,
+    "n": 3
+   },
+   "framesSeen": {
+    "median": 9,
+    "min": 8,
+    "max": 10,
+    "n": 3
+   },
+   "maxDistance": {
+    "median": 0,
+    "min": 0,
+    "max": 0,
+    "n": 3
+   },
+   "styleMsPerS": {
+    "median": 11.9,
+    "min": 11.4,
+    "max": 13.8,
+    "n": 3
+   },
+   "updatesPerS": {
+    "median": 1.5,
+    "min": 1.3,
+    "max": 2.5,
+    "n": 3
+   },
+   "updateMeanMs": {
+    "median": 1.2,
+    "min": 1.2,
+    "max": 1.3,
+    "n": 3
+   },
+   "firstRenderMs": {
+    "median": 35,
+    "min": 30,
+    "max": 37,
+    "n": 7
+   }
+  },
+  "chromium-80-before": {
+   "plays": true,
+   "cpuDelta": {
+    "median": 39.1,
+    "min": 38.7,
+    "max": 42.1,
+    "n": 3
+   },
+   "memDeltaMB": {
+    "median": 71,
+    "min": 71,
+    "max": 71,
+    "n": 3
+   },
+   "rate": {
+    "median": 1,
+    "min": 0.95,
+    "max": 1.01,
+    "n": 3
+   },
+   "framesSeen": {
+    "median": 9,
+    "min": 8,
+    "max": 12,
+    "n": 3
+   },
+   "maxDistance": {
+    "median": 0,
+    "min": 0,
+    "max": 0,
+    "n": 3
+   },
+   "styleMsPerS": {
+    "median": 243.5,
+    "min": 237.8,
+    "max": 255.5,
+    "n": 3
+   },
+   "updatesPerS": {
+    "median": 6.5,
+    "min": 6.5,
+    "max": 6.5,
+    "n": 3
+   },
+   "updateMeanMs": {
+    "median": 36.7,
+    "min": 35.8,
+    "max": 38.4,
+    "n": 3
+   },
+   "firstRenderMs": {
+    "median": 54,
+    "min": 45,
+    "max": 70,
+    "n": 7
+   }
+  },
+  "chromium-80-after": {
+   "plays": true,
+   "cpuDelta": {
+    "median": 7.1,
+    "min": 6.8,
+    "max": 7.2,
+    "n": 3
+   },
+   "memDeltaMB": {
+    "median": 41,
+    "min": 41,
+    "max": 41,
+    "n": 3
+   },
+   "rate": {
+    "median": 1,
+    "min": 0.88,
+    "max": 1.01,
+    "n": 3
+   },
+   "framesSeen": {
+    "median": 8,
+    "min": 8,
+    "max": 13,
+    "n": 3
+   },
+   "maxDistance": {
+    "median": 0,
+    "min": 0,
+    "max": 0,
+    "n": 3
+   },
+   "styleMsPerS": {
+    "median": 12.9,
+    "min": 12.1,
+    "max": 15.3,
+    "n": 3
+   },
+   "updatesPerS": {
+    "median": 3.8,
+    "min": 1,
+    "max": 5.5,
+    "n": 3
+   },
+   "updateMeanMs": {
+    "median": 1.1,
+    "min": 1,
+    "max": 1.3,
+    "n": 3
+   },
+   "firstRenderMs": {
+    "median": 56,
+    "min": 45,
+    "max": 71,
+    "n": 7
+   }
+  },
+  "chromium-160-before": {
+   "plays": true,
+   "cpuDelta": {
+    "median": 67.6,
+    "min": 63.3,
+    "max": 70.8,
+    "n": 5
+   },
+   "memDeltaMB": {
+    "median": 127,
+    "min": 127,
+    "max": 127,
+    "n": 5
+   },
+   "rate": {
+    "median": 1,
+    "min": 0.98,
+    "max": 1.02,
+    "n": 5
+   },
+   "framesSeen": {
+    "median": 14,
+    "min": 14,
+    "max": 14,
+    "n": 5
+   },
+   "maxDistance": {
+    "median": 0,
+    "min": 0,
+    "max": 0.01,
+    "n": 5
+   },
+   "styleMsPerS": {
+    "median": 479.5,
+    "min": 475.3,
+    "max": 518.4,
+    "n": 5
+   },
+   "updatesPerS": {
+    "median": 6.5,
+    "min": 6.5,
+    "max": 6.5,
+    "n": 5
+   },
+   "updateMeanMs": {
+    "median": 73.2,
+    "min": 72.5,
+    "max": 79.2,
+    "n": 5
+   },
+   "firstRenderMs": {
+    "median": 82,
+    "min": 79,
+    "max": 92,
+    "n": 7
+   }
+  },
+  "chromium-160-after": {
+   "plays": true,
+   "cpuDelta": {
+    "median": 6.8,
+    "min": 5.6,
+    "max": 8.4,
+    "n": 5
+   },
+   "memDeltaMB": {
+    "median": 47,
+    "min": 46,
+    "max": 47,
+    "n": 5
+   },
+   "rate": {
+    "median": 1,
+    "min": 0.98,
+    "max": 1.03,
+    "n": 5
+   },
+   "framesSeen": {
+    "median": 14,
+    "min": 14,
+    "max": 14,
+    "n": 5
+   },
+   "maxDistance": {
+    "median": 0,
+    "min": 0.01,
+    "max": 0.01,
+    "n": 5
+   },
+   "styleMsPerS": {
+    "median": 15.7,
+    "min": 14.9,
+    "max": 20.7,
+    "n": 5
+   },
+   "updatesPerS": {
+    "median": 6.8,
+    "min": 6.8,
+    "max": 6.8,
+    "n": 5
+   },
+   "updateMeanMs": {
+    "median": 1.3,
+    "min": 1.3,
+    "max": 1.8,
+    "n": 5
+   },
+   "firstRenderMs": {
+    "median": 80,
+    "min": 79,
+    "max": 88,
+    "n": 7
+   }
+  },
+  "chromium-320-before": {
+   "plays": true,
+   "cpuDelta": {
+    "median": 109.7,
+    "min": 107.5,
+    "max": 114,
+    "n": 3
+   },
+   "memDeltaMB": {
+    "median": 194,
+    "min": 194,
+    "max": 205,
+    "n": 3
+   },
+   "rate": {
+    "median": 1,
+    "min": 0.98,
+    "max": 1.01,
+    "n": 3
+   },
+   "framesSeen": {
+    "median": 14,
+    "min": 14,
+    "max": 14,
+    "n": 3
+   },
+   "maxDistance": {
+    "median": 0,
+    "min": 0,
+    "max": 0,
+    "n": 3
+   },
+   "styleMsPerS": {
+    "median": 866.7,
+    "min": 854.3,
+    "max": 875.6,
+    "n": 3
+   },
+   "updatesPerS": {
+    "median": 5.8,
+    "min": 5,
+    "max": 6,
+    "n": 3
+   },
+   "updateMeanMs": {
+    "median": 148.6,
+    "min": 144.4,
+    "max": 175.1,
+    "n": 3
+   },
+   "firstRenderMs": {
+    "median": 158,
+    "min": 148,
+    "max": 170,
+    "n": 7
+   }
+  },
+  "chromium-320-after": {
+   "plays": true,
+   "cpuDelta": {
+    "median": 8.2,
+    "min": 6.8,
+    "max": 8.7,
+    "n": 3
+   },
+   "memDeltaMB": {
+    "median": 63,
+    "min": 63,
+    "max": 63,
+    "n": 3
+   },
+   "rate": {
+    "median": 1,
+    "min": 0.96,
+    "max": 0.98,
+    "n": 3
+   },
+   "framesSeen": {
+    "median": 14,
+    "min": 14,
+    "max": 14,
+    "n": 3
+   },
+   "maxDistance": {
+    "median": 0,
+    "min": 0,
+    "max": 0,
+    "n": 3
+   },
+   "styleMsPerS": {
+    "median": 24.9,
+    "min": 20.4,
+    "max": 25.2,
+    "n": 3
+   },
+   "updatesPerS": {
+    "median": 6.8,
+    "min": 6.8,
+    "max": 6.8,
+    "n": 3
+   },
+   "updateMeanMs": {
+    "median": 2.5,
+    "min": 2,
+    "max": 2.5,
+    "n": 3
+   },
+   "firstRenderMs": {
+    "median": 153,
+    "min": 150,
+    "max": 179,
+    "n": 7
+   }
+  },
+  "firefox-40-before": {
+   "plays": true,
+   "cpuDelta": {
+    "median": 16.1,
+    "min": 14.3,
+    "max": 25.7,
+    "n": 3
+   },
+   "memDeltaMB": {
+    "median": 36,
+    "min": 35,
+    "max": 37,
+    "n": 3
+   },
+   "rate": {
+    "median": 1,
+    "min": 0.95,
+    "max": 1.01,
+    "n": 3
+   },
+   "framesSeen": {
+    "median": 13,
+    "min": 10,
+    "max": 13,
+    "n": 3
+   },
+   "maxDistance": {
+    "median": 0.1,
+    "min": 0.08,
+    "max": 0.08,
+    "n": 3
+   },
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null,
+   "firstRenderMs": {
+    "median": 71,
+    "min": 55,
+    "max": 157,
+    "n": 7
+   }
+  },
+  "firefox-40-after": {
+   "plays": true,
+   "cpuDelta": {
+    "median": 9.7,
+    "min": 8.3,
+    "max": 13.6,
+    "n": 3
+   },
+   "memDeltaMB": {
+    "median": 36,
+    "min": 33,
+    "max": 37,
+    "n": 3
+   },
+   "rate": {
+    "median": 1,
+    "min": 0.98,
+    "max": 1.05,
+    "n": 3
+   },
+   "framesSeen": {
+    "median": 13,
+    "min": 9,
+    "max": 14,
+    "n": 3
+   },
+   "maxDistance": {
+    "median": 0.1,
+    "min": 0.08,
+    "max": 0.08,
+    "n": 3
+   },
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null,
+   "firstRenderMs": {
+    "median": 64,
+    "min": 52,
+    "max": 83,
+    "n": 7
+   }
+  },
+  "firefox-80-before": {
+   "plays": true,
+   "cpuDelta": {
+    "median": 34.1,
+    "min": 23.3,
+    "max": 39.4,
+    "n": 3
+   },
+   "memDeltaMB": {
+    "median": 36,
+    "min": 36,
+    "max": 37,
+    "n": 3
+   },
+   "rate": {
+    "median": 1,
+    "min": 0.93,
+    "max": 0.98,
+    "n": 3
+   },
+   "framesSeen": {
+    "median": 7,
+    "min": 7,
+    "max": 8,
+    "n": 3
+   },
+   "maxDistance": {
+    "median": 0.1,
+    "min": 0.08,
+    "max": 0.09,
+    "n": 3
+   },
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null,
+   "firstRenderMs": {
+    "median": 71,
+    "min": 68,
+    "max": 73,
+    "n": 7
+   }
+  },
+  "firefox-80-after": {
+   "plays": true,
+   "cpuDelta": {
+    "median": 6.8,
+    "min": 5.5,
+    "max": 14.7,
+    "n": 3
+   },
+   "memDeltaMB": {
+    "median": 36,
+    "min": 34,
+    "max": 37,
+    "n": 3
+   },
+   "rate": {
+    "median": 1,
+    "min": 0.95,
+    "max": 0.97,
+    "n": 3
+   },
+   "framesSeen": {
+    "median": 8,
+    "min": 7,
+    "max": 9,
+    "n": 3
+   },
+   "maxDistance": {
+    "median": 0.1,
+    "min": 0.09,
+    "max": 0.09,
+    "n": 3
+   },
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null,
+   "firstRenderMs": {
+    "median": 71,
+    "min": 68,
+    "max": 73,
+    "n": 7
+   }
+  },
+  "firefox-160-before": {
+   "plays": true,
+   "cpuDelta": {
+    "median": 51,
+    "min": 43.7,
+    "max": 55,
+    "n": 5
+   },
+   "memDeltaMB": {
+    "median": 37,
+    "min": 37,
+    "max": 38,
+    "n": 5
+   },
+   "rate": {
+    "median": 1,
+    "min": 0.97,
+    "max": 1,
+    "n": 5
+   },
+   "framesSeen": {
+    "median": 14,
+    "min": 14,
+    "max": 14,
+    "n": 5
+   },
+   "maxDistance": {
+    "median": 0.1,
+    "min": 0.08,
+    "max": 0.09,
+    "n": 5
+   },
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null,
+   "firstRenderMs": {
+    "median": 95,
+    "min": 89,
+    "max": 103,
+    "n": 7
+   }
+  },
+  "firefox-160-after": {
+   "plays": true,
+   "cpuDelta": {
+    "median": 6,
+    "min": 5.4,
+    "max": 18.6,
+    "n": 5
+   },
+   "memDeltaMB": {
+    "median": 39,
+    "min": 34,
+    "max": 39,
+    "n": 5
+   },
+   "rate": {
+    "median": 1,
+    "min": 0.96,
+    "max": 1.03,
+    "n": 5
+   },
+   "framesSeen": {
+    "median": 14,
+    "min": 14,
+    "max": 14,
+    "n": 5
+   },
+   "maxDistance": {
+    "median": 0.1,
+    "min": 0.08,
+    "max": 0.09,
+    "n": 5
+   },
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null,
+   "firstRenderMs": {
+    "median": 95,
+    "min": 91,
+    "max": 103,
+    "n": 7
+   }
+  },
+  "firefox-320-before": {
+   "plays": true,
+   "cpuDelta": {
+    "median": 83.7,
+    "min": 81.1,
+    "max": 87.5,
+    "n": 3
+   },
+   "memDeltaMB": {
+    "median": 39,
+    "min": 38,
+    "max": 39,
+    "n": 3
+   },
+   "rate": {
+    "median": 1,
+    "min": 0.98,
+    "max": 1,
+    "n": 3
+   },
+   "framesSeen": {
+    "median": 14,
+    "min": 14,
+    "max": 14,
+    "n": 3
+   },
+   "maxDistance": {
+    "median": 0.1,
+    "min": 0.08,
+    "max": 0.09,
+    "n": 3
+   },
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null,
+   "firstRenderMs": {
+    "median": 155,
+    "min": 151,
+    "max": 162,
+    "n": 7
+   }
+  },
+  "firefox-320-after": {
+   "plays": true,
+   "cpuDelta": {
+    "median": 11.5,
+    "min": 8.9,
+    "max": 11.9,
+    "n": 3
+   },
+   "memDeltaMB": {
+    "median": 39,
+    "min": 38,
+    "max": 45,
+    "n": 3
+   },
+   "rate": {
+    "median": 1,
+    "min": 1.01,
+    "max": 1.03,
+    "n": 3
+   },
+   "framesSeen": {
+    "median": 14,
+    "min": 14,
+    "max": 14,
+    "n": 3
+   },
+   "maxDistance": {
+    "median": 0.1,
+    "min": 0.08,
+    "max": 0.09,
+    "n": 3
+   },
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null,
+   "firstRenderMs": {
+    "median": 157,
+    "min": 151,
+    "max": 170,
+    "n": 7
+   }
+  },
+  "webkit-40-before": {
+   "plays": true,
+   "cpuDelta": {
+    "median": 23.4,
+    "min": 22.3,
+    "max": 29.2,
+    "n": 3
+   },
+   "memDeltaMB": {
+    "median": 41,
+    "min": 41,
+    "max": 43,
+    "n": 3
+   },
+   "rate": {
+    "median": 1,
+    "min": 1,
+    "max": 1.04,
+    "n": 3
+   },
+   "framesSeen": {
+    "median": 11,
+    "min": 8,
+    "max": 11,
+    "n": 3
+   },
+   "maxDistance": {
+    "median": 0.5,
+    "min": 0.52,
+    "max": 0.53,
+    "n": 3
+   },
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null,
+   "firstRenderMs": {
+    "median": 59,
+    "min": 46,
+    "max": 75,
+    "n": 7
+   }
+  },
+  "webkit-40-after": {
+   "plays": true,
+   "cpuDelta": {
+    "median": 7.9,
+    "min": 7.4,
+    "max": 10.1,
+    "n": 3
+   },
+   "memDeltaMB": {
+    "median": 27,
+    "min": 25,
+    "max": 27,
+    "n": 3
+   },
+   "rate": {
+    "median": 1,
+    "min": 1,
+    "max": 1.04,
+    "n": 3
+   },
+   "framesSeen": {
+    "median": 12,
+    "min": 11,
+    "max": 12,
+    "n": 3
+   },
+   "maxDistance": {
+    "median": 0.5,
+    "min": 0.52,
+    "max": 0.53,
+    "n": 3
+   },
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null,
+   "firstRenderMs": {
+    "median": 61,
+    "min": 60,
+    "max": 73,
+    "n": 7
+   }
+  },
+  "webkit-80-before": {
+   "plays": true,
+   "cpuDelta": {
+    "median": 44.6,
+    "min": 39.7,
+    "max": 47.8,
+    "n": 3
+   },
+   "memDeltaMB": {
+    "median": 60,
+    "min": 59,
+    "max": 62,
+    "n": 3
+   },
+   "rate": {
+    "median": 1,
+    "min": 0.93,
+    "max": 1.01,
+    "n": 3
+   },
+   "framesSeen": {
+    "median": 9,
+    "min": 8,
+    "max": 10,
+    "n": 3
+   },
+   "maxDistance": {
+    "median": 0.5,
+    "min": 0.53,
+    "max": 0.54,
+    "n": 3
+   },
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null,
+   "firstRenderMs": {
+    "median": 91,
+    "min": 78,
+    "max": 92,
+    "n": 7
+   }
+  },
+  "webkit-80-after": {
+   "plays": true,
+   "cpuDelta": {
+    "median": 9.4,
+    "min": 8.2,
+    "max": 10.4,
+    "n": 3
+   },
+   "memDeltaMB": {
+    "median": 29,
+    "min": 28,
+    "max": 30,
+    "n": 3
+   },
+   "rate": {
+    "median": 1,
+    "min": 1.01,
+    "max": 1.18,
+    "n": 3
+   },
+   "framesSeen": {
+    "median": 8,
+    "min": 7,
+    "max": 14,
+    "n": 3
+   },
+   "maxDistance": {
+    "median": 0.5,
+    "min": 0.53,
+    "max": 0.54,
+    "n": 3
+   },
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null,
+   "firstRenderMs": {
+    "median": 92,
+    "min": 77,
+    "max": 94,
+    "n": 7
+   }
+  },
+  "webkit-160-before": {
+   "plays": true,
+   "cpuDelta": {
+    "median": 75,
+    "min": 73.6,
+    "max": 83.6,
+    "n": 5
+   },
+   "memDeltaMB": {
+    "median": 90,
+    "min": 89,
+    "max": 93,
+    "n": 5
+   },
+   "rate": {
+    "median": 1,
+    "min": 0.99,
+    "max": 1.02,
+    "n": 5
+   },
+   "framesSeen": {
+    "median": 14,
+    "min": 14,
+    "max": 14,
+    "n": 5
+   },
+   "maxDistance": {
+    "median": 0.6,
+    "min": 0.54,
+    "max": 0.55,
+    "n": 5
+   },
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null,
+   "firstRenderMs": {
+    "median": 138,
+    "min": 124,
+    "max": 152,
+    "n": 7
+   }
+  },
+  "webkit-160-after": {
+   "plays": true,
+   "cpuDelta": {
+    "median": 10.8,
+    "min": 8.8,
+    "max": 11.1,
+    "n": 5
+   },
+   "memDeltaMB": {
+    "median": 31,
+    "min": 31,
+    "max": 33,
+    "n": 5
+   },
+   "rate": {
+    "median": 1,
+    "min": 0.98,
+    "max": 1.03,
+    "n": 5
+   },
+   "framesSeen": {
+    "median": 14,
+    "min": 14,
+    "max": 14,
+    "n": 5
+   },
+   "maxDistance": {
+    "median": 0.5,
+    "min": 0.53,
+    "max": 0.54,
+    "n": 5
+   },
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null,
+   "firstRenderMs": {
+    "median": 138,
+    "min": 136,
+    "max": 154,
+    "n": 7
+   }
+  },
+  "webkit-320-before": {
+   "plays": true,
+   "cpuDelta": {
+    "median": 99.1,
+    "min": 93.2,
+    "max": 101,
+    "n": 3
+   },
+   "memDeltaMB": {
+    "median": 109,
+    "min": 98,
+    "max": 110,
+    "n": 3
+   },
+   "rate": {
+    "median": 1,
+    "min": 0.99,
+    "max": 1.01,
+    "n": 3
+   },
+   "framesSeen": {
+    "median": 14,
+    "min": 14,
+    "max": 14,
+    "n": 3
+   },
+   "maxDistance": {
+    "median": 0.5,
+    "min": 0.54,
+    "max": 0.55,
+    "n": 3
+   },
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null,
+   "firstRenderMs": {
+    "median": 449,
+    "min": 433,
+    "max": 480,
+    "n": 7
+   }
+  },
+  "webkit-320-after": {
+   "plays": true,
+   "cpuDelta": {
+    "median": 12.6,
+    "min": 11.6,
+    "max": 16.5,
+    "n": 3
+   },
+   "memDeltaMB": {
+    "median": 37,
+    "min": 36,
+    "max": 38,
+    "n": 3
+   },
+   "rate": {
+    "median": 1,
+    "min": 0.97,
+    "max": 1.03,
+    "n": 3
+   },
+   "framesSeen": {
+    "median": 14,
+    "min": 14,
+    "max": 14,
+    "n": 3
+   },
+   "maxDistance": {
+    "median": 0.5,
+    "min": 0.53,
+    "max": 0.54,
+    "n": 3
+   },
+   "styleMsPerS": null,
+   "updatesPerS": null,
+   "updateMeanMs": null,
+   "firstRenderMs": {
+    "median": 246,
+    "min": 241,
+    "max": 273,
+    "n": 7
+   }
+  }
+ }
+}

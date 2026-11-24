@@ -108,7 +108,7 @@ if (ne) {
     return [deep.ok ? '正しい' : `誤り（${deep.differingPx} px）`, s(deep.firstRenderMs),
       `${d.animation.cpuPercent} %${d.animation.style ? `（style ${d.animation.style.updatesPerS} 回/秒 × ${d.animation.style.meanMs} ms）` : ''}`];
   };
-  out.push(`### 深いネスト（1ステップ＝入れ子1段。製品は ${ne.maxSteps} ステップで打ち切り）`, '',
+  out.push(`### 深いネスト（1ステップ＝入れ子1段。製品は ${ne.maxSteps} ステップで打ち切り。${ne.environment.date.slice(0, 10)} に測定${ne.environment.date >= '2026-11-24' ? '、時計と状態計算を分けた改善後のカード' : ''}）`, '',
     '「最深の状態」は、時計を最後のステップに固定したカードの UI が、同じ状態を描いたページと一致するか（Chromium は CSS カウンタの字送りのため 150 px まで許容）。「初回描画」は `img.decode()` と 2 フレーム待ちまでの時間で、1 回の計測です。クラッシュは、この UI とこのマシンでの観測です。', '',
     table(['ステップ', 'カード', '生成', ...Object.keys(ne.engines).flatMap((e) => [`${e}: 最深の状態`, `${e}: 初回描画`, `${e}: 再生中の CPU`])],
       Ns.map((n) => [n, `${(ne.cards[n].bytes / 1024).toFixed(0)} KB`, s(ne.cards[n].generateMs), ...Object.values(ne.engines).flatMap((e) => cell(e.depths[n]))])), '');
