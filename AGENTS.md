@@ -51,7 +51,10 @@ then reports as out of date.
    (whole runs for about a minute from page load, then it rests on the last step and costs
    nothing); `"loops": "infinite"` keeps it running while it is on screen.
 7. `altInits: [97]` lets the same file start from other initial values, each verified like
-   `init`: embed `![demo](readme-runtime/<name>.svg#x97)` (negative: `#x-17`).
+   `init`: embed `![demo](readme-runtime/<name>.svg?x97#x97)` (negative: `#x-17`). Keep the query:
+   WebKit shares one document between images of the same URL and recomputes the whole run each
+   time it switches fragments (two such images used a full CPU core). `build --json` returns the
+   lines to paste in `cards[].embed`.
 8. Embed `![demo](readme-runtime/<name>.svg)` in README.md; commit the SVG, `readme-runtime.json`,
    `readme-runtime.lock.json`, the workflow and `readme-runtime/demo/<name>/` including `logic.wasm`
    (CI checks against it and never builds it). Never edit generated SVGs or the lock by hand. CI

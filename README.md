@@ -8,11 +8,11 @@
 
 ## 録画ではない証拠
 
-下の2枚は**同じファイル**（[`readme-runtime/collatz.svg`](readme-runtime/collatz.svg)）です。2枚目は、画像の URL に `#x97` を付けただけです。ブラウザは初期値 97 から計算し直し、1枚目（27 から始まり 111 ステップで 1 に着く）とは違う、118 ステップの軌道を描きます。録画では、1つのファイルは1本の映像しか再生できません。
+下の2枚は**同じファイル**（[`readme-runtime/collatz.svg`](readme-runtime/collatz.svg)）です。2枚目は、画像の URL に `#x97` を付けただけです（`?x97` は、Safari が同じファイルの2枚を別々に描くための目印で、配信されるファイルは同じです）。ブラウザは初期値 97 から計算し直し、1枚目（27 から始まり 111 ステップで 1 に着く）とは違う、118 ステップの軌道を描きます。録画では、1つのファイルは1本の映像しか再生できません。
 
 ![Collatz from 27: step() from collatz.wasm, computed live by CSS](readme-runtime/collatz.svg)
 
-![The same file from 97: the URL fragment #x97 changes the initial value](readme-runtime/collatz.svg#x97)
+![The same file from 97: the URL fragment #x97 changes the initial value](readme-runtime/collatz.svg?x97#x97)
 
 - SVG の中にあるのは、[`collatz.c`](examples/collatz/collatz.c) の `step()` を変換した CSS と初期値だけです。途中の値は1つも入っていません。テキストエディタで `style="--rxb:27"` の数字を書き換えても、ブラウザはその値から計算します。
 - 表示する値は、本物の WebAssembly の実行と1ステップずつ一致することを、ビルド時と実ブラウザ（Chromium・Firefox・WebKit）で確かめています。CSS で正確に計算できない値になると、間違った数字を出さずに `OUT OF RANGE` で止まります（例: 初期値 77671）。
@@ -150,7 +150,7 @@ your code (C / Rust / AssemblyScript ...)  ──build command──▶  .wasm  
 | `name` | カード名。出力は `readme-runtime/<name>.svg` | 必須 |
 | `wasm` | `.wasm` のパス | 必須 |
 | `init` | 初期状態 x₀ | 必須 |
-| `altInits` | URL の `#x<値>` で選べる、ほかの初期値（16個まで）。それぞれ `init` と同じくビルド時に照合します | なし |
+| `altInits` | URL の `#x<値>` で選べる、ほかの初期値（16個まで）。それぞれ `init` と同じくビルド時に照合します。同じページに同じファイルを2回以上置くときは、`card.svg?x97#x97` のようにクエリも変えてください（WebKit は URL が同じ画像の文書を共有し、フラグメントを切り替えるたびに実行全体を計算し直すため、2枚で 1コア近くになりました） | なし |
 | `export` | 実行する export 関数（`(i32) -> i32`） | `step` |
 | `steps` | 最大ステップ数（1〜400） | 120 |
 | `halt` | 状態がこの値になったら停止 | なし |

@@ -119,7 +119,7 @@ async function run(cmd, pos, flags, log) {
       const written = results.filter((r) => r.card === 'written');
       if (written.length) {
         log('\nEmbed in README.md (the file name stays the same on every rebuild):');
-        for (const r of written) log(`  ![${r.name}](${r.out.replace(/\\/g, '/')})`);
+        for (const r of written) for (const line of r.embed) log(`  ${line.replace(/\\/g, '/')}`);
       }
       return { ok: true, cards: results };
     }

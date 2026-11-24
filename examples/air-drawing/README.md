@@ -4,6 +4,8 @@
 
 ![実際の描画データを再生するカード](../../readme-runtime/air-drawing.svg)
 
+このカードは重い例です。描く速さを再現するため 50 ms ごとに更新し、表示部分が大きい（要素 758 個、`@container` の規則 188 個）ので、`build` は `PERF_FAST_CLOCK` と `PERF_LARGE_DISPLAY` を警告します。メインの README には載せず、このページだけに置いています。
+
 上流は `otonasi-muonn/air-drawing-board` のコミット `d71f3368114119d9a47edf53b8cce6768c393b1a`。`tools/sync-upstream.mjs` がコミット済み blob を複製し、SHA-256 を [upstream.json](upstream.json) に記録している。5ファイルとも参照 clone のコミット済み blob とバイト単位で一致した（[検査結果](boundary-results.json)）。
 
 | 結果 | 対象 | 実測・対応方法 |

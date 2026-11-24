@@ -292,7 +292,10 @@ export async function build(configPath, { only = [], force = false, log = consol
     lock.cards[card.name] = entry;
     // what the card asks of its viewers (also for a cached card: from its options and file)
     const perf = lastGen ? lastGen.perf : perfReport({ ...DEFAULTS, ...card.options }, normalizeEol(fs.readFileSync(outPath, 'utf8')));
-    results.push({ name: card.name, build: buildState, card: cardState, out: card.out, summary, reason, ...(lastGen ? { steps: lastGen.verification.endAt, end: lastGen.verification.trace.end, ui: lastGen.ui } : {}), perf: perf.report, ...(perf.warnings.length ? { warnings: perf.warnings } : {}) });
+    // what to paste into README.md: the card, and each other initial value under its own URL
+    // (WebKit shares the document of images with the same URL and would switch it per paint)
+    const embed = [`![${card.name}](${card.out})`, ...(card.options.altInits ?? []).map((x) => `![${card.name} from ${x}](${card.out}?x${x}#x${x})`)];
+    results.push({ name: card.name, build: buildState, card: cardState, out: card.out, summary, reason, ...(lastGen ? { steps: lastGen.verification.endAt, end: lastGen.verification.trace.end, ui: lastGen.ui } : {}), perf: perf.report, ...(perf.warnings.length ? { warnings: perf.warnings } : {}), embed });
     log(`${card.name}: wasm ${buildState === 'none' ? 'prebuilt' : buildState === 'cached' ? 'up to date (sources unchanged)' : 'rebuilt'} · card ${cardState === 'cached' ? 'up to date' : cardState === 'unchanged' ? 'regenerated (identical)' : `written ${card.out}`}${summary ? ` · ${summary}` : ''}`);
     for (const w of perf.warnings) log(`${card.name}: warning ${w.code}: ${w.message} (fix: ${JSON.stringify(w.fix)} in ${CONFIG_FILE})`);
   }

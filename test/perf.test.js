@@ -45,12 +45,14 @@ test('build --json reports perf and warnings, also for a card that did not chang
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rr-perf-'));
   t.after(() => fs.rmSync(dir, { recursive: true, force: true, maxRetries: 5 }));
   fs.copyFileSync(path.join(root, 'examples/collatz/collatz.wasm'), path.join(dir, 'c.wasm'));
-  fs.writeFileSync(path.join(dir, 'readme-runtime.json'), JSON.stringify({ cards: [{ name: 'c', wasm: 'c.wasm', init: 27, steps: 40, halt: 1, stepMs: 60, loops: 1 }] }));
+  fs.writeFileSync(path.join(dir, 'readme-runtime.json'), JSON.stringify({ cards: [{ name: 'c', wasm: 'c.wasm', init: 27, altInits: [97, -5], steps: 40, halt: 1, stepMs: 60, loops: 1 }] }));
   for (const state of ['written', 'cached']) {
     const r = spawnSync(process.execPath, [path.join(root, 'bin/readme-runtime.js'), 'build', '--json'], { cwd: dir, encoding: 'utf8' });
     const card = JSON.parse(r.stdout).cards[0];
     assert.equal(card.card, state);
     assert.equal(card.perf.updatesPerSecond, 16.7);
     assert.deepEqual(card.warnings.map((w) => w.code), ['PERF_FAST_CLOCK'], state);
+    // each other initial value gets its own URL: WebKit shares the document of same-URL images
+    assert.deepEqual(card.embed, ['![c](readme-runtime/c.svg)', '![c from 97](readme-runtime/c.svg?x97#x97)', '![c from -5](readme-runtime/c.svg?x-5#x-5)'], state);
   }
 });

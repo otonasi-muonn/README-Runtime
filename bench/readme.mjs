@@ -27,10 +27,10 @@ for (const ref of REFS) {
   if (!fs.existsSync(htmlFile)) fs.writeFileSync(htmlFile, execFileSync('gh', ['api', `repos/${REPO}/readme?ref=${sha}`, '-H', 'Accept: application/vnd.github.html'], { encoding: 'utf8', maxBuffer: 1 << 26 }));
   const html = fs.readFileSync(htmlFile, 'utf8');
   // README images are repository paths; a URL fragment (#x97, see altInits) stays on the src
-  const IMG = /<img src="([^"#]+\.svg)(#[^"]*)?"/g;
-  const images = [...html.matchAll(IMG)].map((m) => m[1] + (m[2] ?? ''));
-  for (const img of new Set(images.map((x) => x.split('#')[0]))) fs.writeFileSync(path.join(dir, path.basename(img)), execFileSync('git', ['show', `${sha}:${img}`], { cwd: ROOT, maxBuffer: 1 << 26 }));
-  pages[ref] = { sha, dir, images, body: html.replace(IMG, (m, src, frag) => `<img src="/${sha.slice(0, 7)}/${path.basename(src)}${frag ?? ''}"`) };
+  const IMG = /<img src="([^"#?]+\.svg)(\?[^"#]*)?(#[^"]*)?"/g;
+  const images = [...html.matchAll(IMG)].map((m) => m[1] + (m[2] ?? '') + (m[3] ?? ''));
+  for (const img of new Set(images.map((x) => x.split(/[?#]/)[0]))) fs.writeFileSync(path.join(dir, path.basename(img)), execFileSync('git', ['show', `${sha}:${img}`], { cwd: ROOT, maxBuffer: 1 << 26 }));
+  pages[ref] = { sha, dir, images, body: html.replace(IMG, (m, src, query, frag) => `<img src="/${sha.slice(0, 7)}/${path.basename(src)}${query ?? ''}${frag ?? ''}"`) };
 }
 
 const server = http.createServer((req, res) => {
