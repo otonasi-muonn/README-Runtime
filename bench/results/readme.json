@@ -1,0 +1,292 @@
+{
+ "environment": {
+  "date": "2026-11-24T14:36:55.321Z",
+  "os": "Windows_NT 10.0.26200 x64",
+  "cpu": "AMD Ryzen 5 PRO 4650G with Radeon Graphics (12 threads)",
+  "ramGB": 47.4,
+  "node": "v22.21.0",
+  "ffmpeg": "ffmpeg version 9.0.1-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+  "git": "git version 2.51.0.windows.2"
+ },
+ "windowMs": 8000,
+ "repeat": 3,
+ "pages": {
+  "dfafe10": {
+   "sha": "dfafe10225cf3fd9a5b0011487af15b5ab1f26a3",
+   "images": [
+    "readme-runtime/collatz.svg",
+    "readme-runtime/lfsr-rust.svg",
+    "readme-runtime/mockcraft.svg",
+    "readme-runtime/air-drawing.svg"
+   ]
+  },
+  "3bdd788": {
+   "sha": "3bdd7888591ce72dbcf5487908015e866e5cb0a7",
+   "images": [
+    "readme-runtime/mockcraft.svg",
+    "readme-runtime/collatz.svg",
+    "readme-runtime/collatz.svg?x97#x97"
+   ]
+  }
+ },
+ "engines": {
+  "chromium": {
+   "dfafe10-top": {
+    "cpuDelta": [
+     34.3,
+     34.1,
+     37.8
+    ],
+    "memDeltaMB": [
+     326,
+     324,
+     303
+    ],
+    "firstPaintMs": [
+     788,
+     671,
+     666
+    ],
+    "version": "159.0.8154.6",
+    "cpuDeltaMedian": 34.3,
+    "memDeltaMBMedian": 324,
+    "firstPaintMsMedian": 671
+   },
+   "dfafe10-all": {
+    "cpuDelta": [
+     131.7,
+     122.4,
+     130.4
+    ],
+    "memDeltaMB": [
+     1322,
+     1286,
+     1378
+    ],
+    "firstPaintMs": [
+     1301,
+     1280,
+     1049
+    ],
+    "version": "159.0.8154.6",
+    "cpuDeltaMedian": 130.4,
+    "memDeltaMBMedian": 1322,
+    "firstPaintMsMedian": 1280
+   },
+   "3bdd788-top": {
+    "cpuDelta": [
+     7.6,
+     7.7,
+     7.6
+    ],
+    "memDeltaMB": [
+     91,
+     104,
+     91
+    ],
+    "firstPaintMs": [
+     379,
+     415,
+     400
+    ],
+    "version": "159.0.8154.6",
+    "cpuDeltaMedian": 7.6,
+    "memDeltaMBMedian": 91,
+    "firstPaintMsMedian": 400
+   },
+   "3bdd788-all": {
+    "cpuDelta": [
+     35.8,
+     27.4,
+     27.2
+    ],
+    "memDeltaMB": [
+     186,
+     186,
+     180
+    ],
+    "firstPaintMs": [
+     444,
+     495,
+     435
+    ],
+    "version": "159.0.8154.6",
+    "cpuDeltaMedian": 27.4,
+    "memDeltaMBMedian": 186,
+    "firstPaintMsMedian": 444
+   }
+  },
+  "firefox": {
+   "dfafe10-top": {
+    "cpuDelta": [
+     113,
+     115.8,
+     111.1
+    ],
+    "memDeltaMB": [
+     113,
+     118,
+     111
+    ],
+    "firstPaintMs": [
+     453,
+     547,
+     593
+    ],
+    "version": "159.0",
+    "cpuDeltaMedian": 113,
+    "memDeltaMBMedian": 113,
+    "firstPaintMsMedian": 547
+   },
+   "dfafe10-all": {
+    "cpuDelta": [
+     119.4,
+     124.1,
+     120
+    ],
+    "memDeltaMB": [
+     198,
+     198,
+     200
+    ],
+    "firstPaintMs": [
+     511,
+     484,
+     680
+    ],
+    "version": "159.0",
+    "cpuDeltaMedian": 120,
+    "memDeltaMBMedian": 198,
+    "firstPaintMsMedian": 511
+   },
+   "3bdd788-top": {
+    "cpuDelta": [
+     23.8,
+     35.6,
+     24.7
+    ],
+    "memDeltaMB": [
+     103,
+     106,
+     106
+    ],
+    "firstPaintMs": [
+     460,
+     383,
+     481
+    ],
+    "version": "159.0",
+    "cpuDeltaMedian": 24.7,
+    "memDeltaMBMedian": 106,
+    "firstPaintMsMedian": 460
+   },
+   "3bdd788-all": {
+    "cpuDelta": [
+     35.3,
+     35.2,
+     25.8
+    ],
+    "memDeltaMB": [
+     147,
+     145,
+     141
+    ],
+    "firstPaintMs": [
+     387,
+     478,
+     600
+    ],
+    "version": "159.0",
+    "cpuDeltaMedian": 35.2,
+    "memDeltaMBMedian": 145,
+    "firstPaintMsMedian": 478
+   }
+  },
+  "webkit": {
+   "dfafe10-top": {
+    "cpuDelta": [
+     94.7,
+     99.5,
+     98.5
+    ],
+    "memDeltaMB": [
+     214,
+     216,
+     223
+    ],
+    "firstPaintMs": [
+     1073,
+     1125,
+     1142
+    ],
+    "version": "27.2",
+    "cpuDeltaMedian": 98.5,
+    "memDeltaMBMedian": 216,
+    "firstPaintMsMedian": 1125
+   },
+   "dfafe10-all": {
+    "cpuDelta": [
+     104,
+     104.9,
+     103.3
+    ],
+    "memDeltaMB": [
+     249,
+     245,
+     247
+    ],
+    "firstPaintMs": [
+     1145,
+     1150,
+     1347
+    ],
+    "version": "27.2",
+    "cpuDeltaMedian": 104,
+    "memDeltaMBMedian": 247,
+    "firstPaintMsMedian": 1150
+   },
+   "3bdd788-top": {
+    "cpuDelta": [
+     20.8,
+     25.4,
+     21.7
+    ],
+    "memDeltaMB": [
+     101,
+     100,
+     103
+    ],
+    "firstPaintMs": [
+     417,
+     418,
+     756
+    ],
+    "version": "27.2",
+    "cpuDeltaMedian": 21.7,
+    "memDeltaMBMedian": 101,
+    "firstPaintMsMedian": 418
+   },
+   "3bdd788-all": {
+    "cpuDelta": [
+     44.3,
+     43.2,
+     41.2
+    ],
+    "memDeltaMB": [
+     122,
+     120,
+     121
+    ],
+    "firstPaintMs": [
+     554,
+     546,
+     541
+    ],
+    "version": "27.2",
+    "cpuDeltaMedian": 43.2,
+    "memDeltaMBMedian": 121,
+    "firstPaintMsMedian": 546
+   }
+  }
+ }
+}
