@@ -2,7 +2,7 @@
 // Everything that depends on the program's values is driven by CSS custom properties that
 // the browser computes at view time; the markup only holds layout.
 import { N, V, toCss, signBit, absV, STORED_LIMIT } from '../compiler/css.js';
-import { declarations, levelStyle } from '../runtime/machine.js';
+import { altInitAnchors, altInitCss, clockAnimation, declarations, levelStyle } from '../runtime/machine.js';
 
 export const TEMPLATE_VERSION = 1;
 
@@ -48,6 +48,7 @@ export function renderCard(machine, meta, opts = {}) {
   // ---------------------------------------------------------------- machine
   const rootDefs = machine.root.filter((d) => !d.literal);
   css += `.R{\n${declarations(rootDefs, ' ')}\n}\n`;
+  css += altInitCss(machine, meta.altInits);
   // The step clock is the only animation. It runs on .C, which wraps the display (.D) at the
   // innermost level: a tick restyles the display only, never the levels that compute the run,
   // and on a frame where the step does not change .C's style comes out the same, so nothing
@@ -55,7 +56,7 @@ export function renderCard(machine, meta, opts = {}) {
   // re-rasterize the whole image every frame (a pulsing dot cost ~20% of a CPU core on a
   // static card), and "reduce motion" stops the clock, i.e. everything (this rule comes
   // after .C's, which it overrides).
-  css += `.C{animation:rrclk ${(machine.T + 1) * meta.stepMs}ms steps(${machine.T + 1},jump-none) infinite}\n`;
+  css += `.C{animation:${clockAnimation(machine, meta)}}\n`;
   css += `@keyframes rrclk{from{--rt:0}to{--rt:${machine.T}}}\n`;
   css += `@media (prefers-reduced-motion:reduce){.C{animation:none;--rt:${machine.T}}}\n`;
   css += `.A{\n${declarations(machine.level.A, ' ')}\n}\n`;
@@ -201,7 +202,7 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
   x0 += `<text x="${196}" y="${sy + 45}" class="mut" font-size="11">← the only input</text></g>`;
 
   // ---------------------------------------------------------------- nested levels
-  let levels = `<g class="R" style="--${machine.initProp}:${machine.init}"><use href="#col" class="col"/>${x0}`;
+  let levels = `${altInitAnchors(meta.altInits)}<g class="R" style="--${machine.initProp}:${machine.init}"><use href="#col" class="col"/>${x0}`;
   let close = '</g>';
   for (let k = 1; k <= steps; k++) {
     levels += `\n<g class="${k % 2 === 1 ? 'A' : 'B'}" style="${levelStyle(k)}"><use href="#col" class="col"/>`;
@@ -216,7 +217,8 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
      exported step function compiled to CSS math, applied once per nested g element (the run is unrolled
      into ${steps} levels when the card is built; no value is stored). The only input is the custom
      property ${machine.initProp} in the style attribute of g.R: change it and the browser recomputes the run;
-     a value that CSS cannot compute exactly shows OUT OF RANGE. Regenerate with: readme-runtime build -->`;
+     a value that CSS cannot compute exactly shows OUT OF RANGE.${meta.altInits?.length ? ` The URL fragments ${meta.altInits.map((x) => `#x${x}`).join(' ')}
+     start the same run from those values instead.` : ''} Regenerate with: readme-runtime build -->`;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="rrt rrd">
 ${header}
 <title id="rrt">${title} — README Runtime</title>

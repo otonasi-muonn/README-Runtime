@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import url from 'node:url';
-import { generate } from '../src/generate.js';
+import { generate, OptionError } from '../src/generate.js';
 import { VerifyError } from '../src/verify.js';
 import { simulateMachine } from '../src/runtime/machine.js';
 import { referenceTrace } from '../src/runtime/reference.js';
@@ -58,7 +58,7 @@ test('the clock drives only the display: levels never read it, so a tick does no
   const rule = (sel) => r.svg.match(new RegExp(`\\n\\${sel}\\{\\n([^}]*)\\}`))[1];
   for (const sel of ['.R', '.A', '.B']) assert.ok(!rule(sel).includes('var(--rt)'), `${sel} reads the clock`);
   assert.ok(rule('.D').includes('var(--rt)'), 'the display reads the clock');
-  assert.match(r.svg, /\n\.C\{animation:rrclk \d+ms steps\(\d+,jump-none\) infinite\}/);
+  assert.match(r.svg, /\n\.C\{animation:rrclk \d+ms steps\(\d+,jump-none\) (?:infinite|\d+ forwards)\}/);
   // the clock element wraps the display, inside the innermost level
   const opened = r.svg.match(/<g class="[AB]"[^>]*>/g);
   assert.equal(opened.length, opts.steps);
@@ -87,6 +87,25 @@ test('the display shows the Wasm run at every clock time, also for edited initia
         assert.equal(inner.get('rfs'), shown === stop ? flags : 0, `flags ${at}`);
       }
     }
+  }
+});
+
+test('altInits: the same file starts from another verified initial value for #x<value>', async () => {
+  const r = await generate(collatz, { ...opts, altInits: [97, 871, -17] });
+  assert.ok(r.svg.includes('<g id="x97"/><g id="x871"/><g id="x-17"/><g class="R" style="--rxb:27">'));
+  for (const x of [97, 871, -17]) assert.ok(r.svg.includes(`#x${x}:target~.R{--rxb:${x}!important}`), String(x));
+  assert.deepEqual(r.verification.alt.map((a) => [a.init, a.end.kind, a.end.at]), [[97, 'halt', 118], [871, 'steps', 120], [-17, 'steps', 120]]);
+  // still no precomputed state of any run in the file
+  for (const init of [97, 871]) {
+    const tr = await referenceTrace(collatz, { exportName: 'step', haltValue: 1, init, steps: 120 });
+    const big = tr.values.filter((v) => v >= 4000);
+    assert.ok(big.length > 3, `${init}: ${big.length} large values`);
+    for (const v of big) assert.ok(!r.svg.includes(String(v)), `found ${v} (init ${init})`);
+  }
+  // each run is verified like the main one
+  await assert.rejects(generate(collatz, { ...opts, altInits: [97, 77671] }), (e) => e instanceof VerifyError && /^altInits 77671: step 14/.test(e.message));
+  for (const altInits of [[27], [97, 97], [1.5], [1_000_000], Array.from({ length: 17 }, (_, i) => i + 100), 'x97']) {
+    await assert.rejects(generate(collatz, { ...opts, altInits }), (e) => e instanceof OptionError && /"altInits"/.test(e.message), JSON.stringify(altInits));
   }
 });
 

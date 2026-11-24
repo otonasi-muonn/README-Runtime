@@ -8,8 +8,10 @@ import { renderUiCard } from './render/ui-card.js';
 import { checkWellFormed } from './render/xml.js';
 import { verifyRun } from './verify.js';
 import { TOOL_VERSION } from './version.js';
+import { perfReport, resolveLoops } from './perf.js';
 
-export const DEFAULTS = { export: 'step', steps: 120, hold: 12, stepMs: 120, bits: 20 };
+export const DEFAULTS = { export: 'step', steps: 120, hold: 12, stepMs: 150, bits: 20, loops: 'auto', altInits: [] };
+export const MAX_ALT_INITS = 16;
 
 export class OptionError extends Error {}
 
@@ -28,11 +30,16 @@ export async function generate(wasmBytes, opts) {
   if (!isInt(o.steps, 1, MAX_STEPS)) throw new OptionError(`"steps" must be an integer between 1 and ${MAX_STEPS} (WebKit stops resolving styles beyond ~510 nested elements)`);
   if (!isInt(o.stepMs, 16, 10000)) throw new OptionError('"stepMs" must be an integer between 16 and 10000');
   if (!isInt(o.hold, 0, 1000)) throw new OptionError('"hold" must be an integer between 0 and 1000');
+  if (o.loops !== 'auto' && o.loops !== 'infinite' && !isInt(o.loops, 1, 1000)) throw new OptionError('"loops" must be "auto" (play for about a minute), "infinite" or an integer between 1 and 1000: how many times the run plays before the card stays on its last step');
   if (!isInt(o.bits, 4, 20)) throw new OptionError('"bits" must be an integer between 4 and 20');
   if (o.haltValue !== undefined && o.haltValue !== null && !isInt(o.haltValue, -STORED_LIMIT, STORED_LIMIT)) {
     throw new OptionError(`"halt" must be an integer with |halt| <= ${STORED_LIMIT.toLocaleString('en-US')}`);
   }
   if (o.haltExport && o.haltValue !== undefined && o.haltValue !== null) throw new OptionError('use either "halt" (a value) or "haltExport" (a predicate), not both');
+  if (!Array.isArray(o.altInits) || o.altInits.length > MAX_ALT_INITS || !o.altInits.every((x) => isInt(x, -STORED_LIMIT, STORED_LIMIT))
+    || new Set([o.init, ...o.altInits]).size !== o.altInits.length + 1) {
+    throw new OptionError(`"altInits" must list up to ${MAX_ALT_INITS} other initial values (integers, |x| <= ${STORED_LIMIT.toLocaleString('en-US')}, none equal to "init" or repeated); the card shows them for the URL fragments #x<value>`);
+  }
   let views = [];
   if (o.ui) {
     if (!o.ui.entry || typeof o.ui.entry !== 'string') throw new OptionError('"ui.entry" (the demo component file) is required');
@@ -51,12 +58,24 @@ export async function generate(wasmBytes, opts) {
     if (depth > MAX_DECL_DEPTH) throw new Error(`internal: --${d.name} is nested ${depth} levels deep (limit ${MAX_DECL_DEPTH})`);
   }
   const verification = await verifyRun(wasmBytes, program, machine);
+  // the other initial values the card can show (img src="card.svg#x97"): each run is verified
+  // like the main one, and the UI is checked on the states of every run
+  verification.alt = [];
+  for (const init of o.altInits) {
+    let v;
+    try { v = await verifyRun(wasmBytes, program, machine, { init }); } catch (e) { e.message = `altInits ${init}: ${e.message}`; throw e; }
+    verification.alt.push({ init, end: v.trace.end, endAt: v.endAt });
+    const seen = new Set(verification.viewSamples.map((x) => JSON.stringify(x)));
+    for (const x of v.viewSamples) if (!seen.has(JSON.stringify(x))) { seen.add(JSON.stringify(x)); verification.viewSamples.push(x); }
+  }
   const stateDef = machine.level.A.find((d) => d.name === 'rxa');
   const meta = {
     title: o.title ?? o.export,
     wasmName: o.wasmName ?? 'module.wasm',
     exportName: o.export,
     stepMs: o.stepMs,
+    loops: resolveLoops(o),
+    altInits: o.altInits,
     toolVersion: TOOL_VERSION,
     wasmSha256: sha256(wasmBytes),
     cssSnippet: `${o.export}() in CSS → --rxa: ${toCss(stateDef.ast)}`,
@@ -73,5 +92,5 @@ export async function generate(wasmBytes, opts) {
   // \r\n as \n anyway, and a Linux build must give the same bytes.
   svg = svg.replace(/\r\n?/g, '\n');
   checkWellFormed(svg);
-  return { svg, verification, machine, program, ui: ui?.info ?? null, uiInputs: ui?.inputs ?? [] };
+  return { svg, verification, machine, program, ui: ui?.info ?? null, uiInputs: ui?.inputs ?? [], perf: perfReport(o, svg) };
 }

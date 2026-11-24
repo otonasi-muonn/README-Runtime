@@ -1,6 +1,6 @@
 // SVG card whose body is the project's own UI (static markup + CSS bindings), driven by
 // the CSS machine. The machine is the same as for trace cards; only the display differs.
-import { declarations, levelStyle } from '../runtime/machine.js';
+import { altInitAnchors, altInitCss, clockAnimation, declarations, levelStyle } from '../runtime/machine.js';
 import { toCss, V, absV } from '../compiler/css.js';
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -24,10 +24,11 @@ export function renderUiCard(machine, meta, ui) {
   // the project's stylesheet first, so the card chrome below wins any overlap
   css += `${ui.css}\n`;
   css += `.R{\n${declarations(machine.root.filter((d) => !d.literal), ' ')}\n}\n`;
+  css += altInitCss(machine, meta.altInits);
   // the step clock is the only animation of the card and runs on .C around the display (see
   // render/card.js); "reduce motion" (after .C's rule, which it overrides) stops it and any
   // animation or transition of the project's own stylesheet in the UI
-  css += `.C{animation:rrclk ${(machine.T + 1) * meta.stepMs}ms steps(${machine.T + 1},jump-none) infinite}\n`;
+  css += `.C{animation:${clockAnimation(machine, meta)}}\n`;
   css += `@keyframes rrclk{from{--rt:0}to{--rt:${machine.T}}}\n`;
   css += `@media (prefers-reduced-motion:reduce){.C{animation:none;--rt:${machine.T}}.rr-ui *,.rr-ui *::before,.rr-ui *::after{animation:none!important;transition:none!important}}\n`;
   css += `.A{\n${declarations(machine.level.A, ' ')}\n}\n.B{\n${declarations(machine.level.B, ' ')}\n}\n`;
@@ -84,7 +85,7 @@ svg{--rr-bg:#0d1117;--rr-line:#30363d;--rr-fg:#e6edf3;--rr-mut:#7d8590;--rr-acc:
   body += `<circle class="rr-pulse" cx="${W - 132}" cy="25" r="4" style="fill:var(--rr-acc)"/><text x="${W - 122}" y="29" class="rr-l">LIVE · CSS RUNTIME</text>`;
   body += `<line x1="0" y1="44" x2="${W}" y2="44" stroke="var(--rr-line)"/><line x1="0" y1="${H - L.foot}" x2="${W}" y2="${H - L.foot}" stroke="var(--rr-line)"/>`;
 
-  let levels = `<g class="R" style="--${machine.initProp}:${machine.init}">`;
+  let levels = `${altInitAnchors(meta.altInits)}<g class="R" style="--${machine.initProp}:${machine.init}">`;
   let close = '</g>';
   for (let k = 1; k <= steps; k++) { levels += `<g class="${k % 2 === 1 ? 'A' : 'B'}" style="${levelStyle(k)}">`; close += '</g>'; }
   levels += disp + close;
@@ -93,7 +94,8 @@ svg{--rr-bg:#0d1117;--rr-line:#30363d;--rr-fg:#e6edf3;--rr-mut:#7d8590;--rr-acc:
      The UI below is the project's own component markup (rendered once, statically) whose
      view-dependent parts are CSS bindings. The view values are computed by CSS from the live
      state, which the rules .A and .B advance one step per nested g element. The only input is
-     the custom property ${machine.initProp} in the style attribute of g.R. Regenerate with: readme-runtime build -->`;
+     the custom property ${machine.initProp} in the style attribute of g.R.${meta.altInits?.length ? ` The URL fragments ${meta.altInits.map((x) => `#x${x}`).join(' ')}
+     start the same run from those values instead.` : ''} Regenerate with: readme-runtime build -->`;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="rrt rrd">
 ${header}
 <title id="rrt">${esc(meta.title)} — README Runtime</title>

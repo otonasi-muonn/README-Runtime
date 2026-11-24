@@ -1,17 +1,42 @@
 // `readme-runtime init`: scaffold a config and a check-only CI workflow. Never overwrites.
 import fs from 'node:fs';
 import path from 'node:path';
+import url from 'node:url';
+import { spawnSync } from 'node:child_process';
 import { CONFIG_FILE } from './project.js';
-import { TOOL_VERSION } from './version.js';
 import { parseModule } from './wasm/reader.js';
 import { listExports, compileStep } from './compiler/program.js';
 import { CodedError } from './errors.js';
 
-export const PACKAGE = `github:otonasi-muonn/README-Runtime#v${TOOL_VERSION}`;
+export const REPOSITORY = 'github:otonasi-muonn/README-Runtime';
+const pkgRoot = path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), '..');
 
-export const WORKFLOW = `# README Runtime: verify that the committed cards match a fresh, Wasm-verified build.
+// The commit this copy of README Runtime was installed from, so that CI runs exactly the
+// generator that built the cards (a newer one may write different, equally valid SVG):
+// npm and npx record it for an install from GitHub (node_modules/.package-lock.json), and a
+// git checkout knows it when its sources are unmodified. null when neither tells.
+export function installedCommit(root = pkgRoot) {
+  try {
+    const lock = JSON.parse(fs.readFileSync(path.join(root, '..', '.package-lock.json'), 'utf8'));
+    const key = path.relative(path.resolve(root, '..', '..'), root).split(path.sep).join('/');
+    const m = /README-Runtime(?:\.git)?#([0-9a-f]{40})$/i.exec(lock.packages?.[key]?.resolved ?? '');
+    if (m) return m[1].toLowerCase();
+  } catch { /* not an npm install */ }
+  if (!fs.existsSync(path.join(root, '.git'))) return null;
+  const git = (...args) => spawnSync('git', ['-C', root, ...args], { encoding: 'utf8' });
+  const head = git('rev-parse', 'HEAD');
+  const dirty = git('status', '--porcelain', '--', 'src', 'bin', 'package.json');
+  return head.status === 0 && dirty.status === 0 && !dirty.stdout.trim() ? head.stdout.trim() : null;
+}
+// The npx package spec of this version: pinned to its commit when known.
+export function toolSpec(root = pkgRoot) {
+  const sha = installedCommit(root);
+  return { spec: sha ? `${REPOSITORY}#${sha}` : REPOSITORY, pinned: !!sha };
+}
+
+export const workflow = (spec) => `# README Runtime: verify that the committed cards match a fresh, Wasm-verified build.
 # Check only: this workflow never commits or pushes. If it fails, run
-# "npx ${PACKAGE} build" locally and commit the updated files.
+# "npx --yes ${spec} build" locally and commit the updated files.
 name: README Runtime
 on:
   push:
@@ -35,9 +60,9 @@ jobs:
         run: corepack enable && yarn install --immutable
       - if: hashFiles('package.json') != '' && hashFiles('package-lock.json', 'pnpm-lock.yaml', 'yarn.lock') == ''
         run: npm install --ignore-scripts --no-audit --no-fund
-      # Pinned to the README Runtime version that generated the cards: a newer generator can
+      # Pinned to the README Runtime commit that generated the cards: a newer generator can
       # produce different (equally valid) SVG, so update this together with a rebuild.
-      - run: npx --yes ${PACKAGE} check
+      - run: npx --yes ${spec} check
 `;
 
 export const ASC = 'assemblyscript@0.28.20';
@@ -108,13 +133,27 @@ export function view_t(s: i32): i32 { return s; }
     fs.writeFileSync(cfgPath, `${JSON.stringify(cfg, null, 2)}\n`);
     created.push({ file: configPath, status: 'card added' });
   }
+  // the check-only CI workflow (installs the project's dependencies first), unless one exists
+  const wf = ensureWorkflow(cwd);
+  created.push({ file: WORKFLOW_FILE, status: wf.status });
   return {
     created,
     card: name,
+    tool: `npx --yes ${wf.tool.spec}`,
+    pinned: wf.tool.pinned,
     next: ['readme-runtime build --json', `edit ${dir}/logic.ts and ${dir}/demo.tsx`, 'readme-runtime build --json', 'readme-runtime check --json',
-      'readme-runtime init --json (adds a check-only CI workflow that installs the dependencies first; keeps existing files)',
-      `commit readme-runtime/${name}.svg, ${dir}/ (including logic.wasm: CI checks against it and never builds it), ${configPath} and readme-runtime.lock.json`],
+      `commit readme-runtime/${name}.svg, ${dir}/ (including logic.wasm: CI checks against it and never builds it), ${configPath}, readme-runtime.lock.json and ${WORKFLOW_FILE}`],
   };
+}
+
+export const WORKFLOW_FILE = '.github/workflows/readme-runtime.yml';
+function ensureWorkflow(cwd) {
+  const tool = toolSpec();
+  const wf = path.join(cwd, WORKFLOW_FILE);
+  if (fs.existsSync(wf)) return { tool, status: 'kept' };
+  fs.mkdirSync(path.dirname(wf), { recursive: true });
+  fs.writeFileSync(wf, workflow(tool.spec));
+  return { tool, status: `created (check only, no commits; runs ${tool.spec})` };
 }
 
 export function initProject(cwd, { wasm, exportName, init, configPath = CONFIG_FILE }) {
@@ -146,14 +185,10 @@ export function initProject(cwd, { wasm, exportName, init, configPath = CONFIG_F
     fs.writeFileSync(cfgPath, `${JSON.stringify({ cards: [card] }, null, 2)}\n`);
     lines.push(`created ${configPath}`);
   }
-  const wf = path.join(cwd, '.github', 'workflows', 'readme-runtime.yml');
-  if (fs.existsSync(wf)) lines.push('kept existing .github/workflows/readme-runtime.yml');
-  else {
-    fs.mkdirSync(path.dirname(wf), { recursive: true });
-    fs.writeFileSync(wf, WORKFLOW);
-    lines.push('created .github/workflows/readme-runtime.yml (check only, no commits)');
-  }
-  lines.push('', 'Next:', '  1. edit readme-runtime.json (wasm path, export, init; optional "build": {"command", "inputs"})',
-    `  2. npx ${PACKAGE} build`, '  3. add ![demo](readme-runtime/<name>.svg) to README.md and commit');
-  return lines;
+  const { tool, status } = ensureWorkflow(cwd);
+  lines.push(`${status === 'kept' ? 'kept existing' : 'created'} ${WORKFLOW_FILE}${status === 'kept' ? '' : status.slice('created'.length)}`);
+  if (!tool.pinned) lines.push(`warning: could not tell which commit this README Runtime comes from, so the workflow runs the repository's default branch; pin it (${REPOSITORY}#<commit>) to the version you build with`);
+  lines.push('', 'Next (use this exact version locally too, so CI regenerates the same cards):', '  1. edit readme-runtime.json (wasm path, export, init; optional "build": {"command", "inputs"})',
+    `  2. npx --yes ${tool.spec} build`, '  3. add ![demo](readme-runtime/<name>.svg) to README.md and commit');
+  return { lines, tool };
 }

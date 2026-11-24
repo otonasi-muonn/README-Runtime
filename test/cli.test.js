@@ -36,6 +36,27 @@ test('errors come back as JSON with a stable code and a hint', () => {
   assert.equal(run(['analyze', 'no/such/folder']).json.error.code, 'OPTION_INVALID');
 });
 
+test('init pins the CI workflow to the commit README Runtime was installed from', async (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rr-init-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true, maxRetries: 5 }));
+  fs.copyFileSync(path.join(root, 'examples/collatz/collatz.wasm'), path.join(dir, 'c.wasm'));
+  const { status, json } = run(['init', '--wasm', 'c.wasm', '--init', '27'], dir);
+  assert.equal(status, 0);
+  assert.match(json.tool, /^npx --yes github:otonasi-muonn\/README-Runtime(#[0-9a-f]{40})?$/);
+  assert.equal(json.pinned, json.tool.includes('#'));
+  const wf = fs.readFileSync(path.join(dir, '.github/workflows/readme-runtime.yml'), 'utf8');
+  assert.ok(wf.includes(`- run: ${json.tool} check`), wf);
+  assert.ok(!wf.includes('#v0.'), 'no version tag: none is published');
+  // an install by npm or npx from GitHub records the commit in node_modules/.package-lock.json
+  const { installedCommit } = await import('../src/init.js');
+  const nm = path.join(dir, 'node_modules');
+  fs.mkdirSync(path.join(nm, 'readme-runtime'), { recursive: true });
+  const sha = 'dfafe10225cf3fd9a5b0011487af15b5ab1f26a3';
+  fs.writeFileSync(path.join(nm, '.package-lock.json'), JSON.stringify({ lockfileVersion: 3, packages: { 'node_modules/readme-runtime': { version: '0.1.0', resolved: `git+ssh://git@github.com/otonasi-muonn/README-Runtime.git#${sha}` } } }));
+  assert.equal(installedCommit(path.join(nm, 'readme-runtime')), sha);
+  assert.equal(installedCommit(path.join(dir, 'nowhere')), null);
+});
+
 test('check --json reports structured problems and never writes', () => {
   const { status, json } = run(['check']);
   assert.equal(status, 0);
@@ -59,6 +80,8 @@ test('analyze + init --ui + build: a fresh React project gets a working UI card'
   const i = run(['init', '--ui', 'src/Badge.jsx#Badge', '--name', 'badge'], dir);
   assert.equal(i.status, 0);
   assert.ok(fs.existsSync(path.join(dir, 'readme-runtime/demo/badge/logic.ts')));
+  // the check-only CI workflow comes with the first card, pinned like the tool it reports
+  assert.ok(fs.readFileSync(path.join(dir, '.github/workflows/readme-runtime.yml'), 'utf8').includes(`- run: ${i.json.tool} check`));
   // the scaffold's build command downloads AssemblyScript with npx; use the local copy here
   const cfg = JSON.parse(fs.readFileSync(path.join(dir, 'readme-runtime.json'), 'utf8'));
   cfg.cards[0].build.command = cfg.cards[0].build.command.replace(/^npx --yes -p \S+ asc/, `node ${JSON.stringify(path.join(root, 'node_modules/assemblyscript/bin/asc.js'))}`);

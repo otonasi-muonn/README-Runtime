@@ -175,6 +175,19 @@ export function buildMachine(program, { init, steps, hold = 0, haltValue = null 
 
 export const viewProp = (name) => `rview_${name}`;
 
+// Other initial values, chosen by the image's URL fragment (img src="card.svg#x97"): an empty
+// anchor per value before the root level, and a rule that overrides the root's style
+// attribute while that anchor is the :target. The browser runs the same CSS from there.
+export const altInitId = (x) => `x${x}`;
+export const altInitAnchors = (altInits = []) => altInits.map((x) => `<g id="${altInitId(x)}"/>`).join('');
+export const altInitCss = (machine, altInits = []) => altInits.map((x) => `#${altInitId(x)}:target~.R{--${machine.initProp}:${x}!important}\n`).join('');
+
+// The clock: --rt counts 0..T, one step per stepMs; after `loops` runs (unless "infinite")
+// it stays on T, the last step, and the card stops updating.
+export function clockAnimation(machine, { stepMs, loops = 'infinite' }) {
+  return `rrclk ${(machine.T + 1) * stepMs}ms steps(${machine.T + 1},jump-none) ${loops === 'infinite' ? 'infinite' : `${loops} forwards`}`;
+}
+
 // Evaluate the display definitions (view functions) for one shown state under a model.
 export function evalDisplay(machine, shown, model = MODELS.exact) {
   const env = new Map([[machine.out.c, model.store(shown)]]);

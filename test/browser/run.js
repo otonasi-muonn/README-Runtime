@@ -109,6 +109,12 @@ for (const name of programNames) {
     for (const [x, t] of quick ? [[97, 40]] : [[27, 0], [27, 7], [97, 40], [871, 99]]) cards.set(`${name}--x${x}-t${t}`, { svg: pin(withInit(x), t), p, gen, init: x, t });
     cards.set('collatz--live97', { svg: withInit(97), p, gen, init: 97, live: true });
     cards.set('collatz--live27', { svg: gen.svg, p, gen, init: 27, live: true });
+    // the same file, other initial values chosen by the image's URL fragment (altInits);
+    // an unknown fragment leaves the initial value of the style attribute
+    const alt = await generate(p.wasm, { export: p.export, init: p.init, steps: STEPS, haltValue: p.haltValue ?? null, title: name, wasmName: `${name}.wasm`, altInits: [97, 871] });
+    for (const [x, t, fragment] of [[97, alt.machine.T, 'x97'], [871, 99, 'x871'], [27, alt.machine.T, 'x5']]) {
+      cards.set(`${name}--frag-${fragment}-t${t}`, { svg: pin(alt.svg, t), p, gen: alt, init: x, t, fragment });
+    }
   }
 }
 
@@ -127,7 +133,8 @@ const server = http.createServer((req, res) => {
     res.end(cards.get(m[2]).svg);
   } else {
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-    res.end(`<!doctype html><meta charset="utf-8"><body style="margin:0;background:#ffffff"><article class="markdown-body"><p><img id="card" src="/card/${m[2]}.svg" alt="README Runtime" style="max-width:100%"></p></article></body>`);
+    const fragment = cards.get(m[2]).fragment;
+    res.end(`<!doctype html><meta charset="utf-8"><body style="margin:0;background:#ffffff"><article class="markdown-body"><p><img id="card" src="/card/${m[2]}.svg${fragment ? `#${fragment}` : ''}" alt="README Runtime" style="max-width:100%"></p></article></body>`);
   }
 });
 await new Promise((r) => server.listen(0, '127.0.0.1', r));

@@ -20,10 +20,11 @@ const INLINE_EXACT = 2 ** 24;
 const stateAt = (machine, levels, k) => levels[k].get(k === 0 ? machine.initProp : `rx${k % 2 === 1 ? 'a' : 'b'}`);
 const flagAt = (levels, k, f) => levels[k].get(`r${f}${k === 0 ? 'b' : k % 2 === 1 ? 'a' : 'b'}`);
 
-export async function verifyRun(wasmBytes, program, machine, cfg) {
+// `init`: the run to verify (an alternative initial value of the card, see altInits).
+export async function verifyRun(wasmBytes, program, machine, { init = machine.init } = {}) {
   const trace = await referenceTrace(wasmBytes, {
     exportName: program.exportName, haltExport: program.haltExport, haltValue: machine.haltValue,
-    init: machine.init, steps: machine.steps, rangeLimit: STORED_LIMIT,
+    init, steps: machine.steps, rangeLimit: STORED_LIMIT,
   });
   const { values, end } = trace;
   if (end.kind === 'range') {
@@ -59,7 +60,7 @@ export async function verifyRun(wasmBytes, program, machine, cfg) {
   const endAt = Math.min(end.at, machine.steps);
   const call = (k) => (k === 0 ? `the initial value ${values[0]}` : `step(${values[k - 1]})`);
   for (const [name, model] of Object.entries(MODELS)) {
-    const { levels, stats } = simulateMachine(machine, { model });
+    const { levels, stats } = simulateMachine(machine, { model, init });
     for (let k = 0; k <= lastValid; k++) {
       if (name === 'exact' && stats.levels[k].maxInline > INLINE_EXACT) {
         throw new VerifyError(
@@ -91,7 +92,7 @@ export async function verifyRun(wasmBytes, program, machine, cfg) {
     // the clock-driven selection shown by the display
     const out = machine.out;
     for (const t of new Set([0, 1, Math.floor(endAt / 2), endAt, machine.T])) {
-      const sim = simulateMachine(machine, { model, t });
+      const sim = simulateMachine(machine, { model, t, init });
       const inner = sim.levels[machine.steps];
       const shownStep = Math.min(t, endAt);
       const want = end.kind === 'trap' && shownStep === endAt ? null : values[shownStep];

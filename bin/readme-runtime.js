@@ -33,6 +33,7 @@ Render options:
   --init <n>           initial state x0                       (required)
   --steps <n>          maximum steps, 1..${MAX_STEPS}                  (default: ${DEFAULTS.steps})
   --halt <n> | --halt-export <name>   stop condition
+  --loops auto|infinite|<n>   runs before the card rests on its last step (default: ${DEFAULTS.loops}, about a minute)
   --title <text>  --step-ms <n>  --hold <n>  --bits <n>
 
 Common options:
@@ -107,9 +108,10 @@ async function run(cmd, pos, flags, log) {
         log(`next: ${r.next.join('  ->  ')}`);
         return { ok: true, ...r };
       }
-      const lines = initProject(process.cwd(), { wasm: flags.wasm, exportName: flags.export, init: int(flags, 'init'), configPath });
+      const { lines, tool } = initProject(process.cwd(), { wasm: flags.wasm, exportName: flags.export, init: int(flags, 'init'), configPath });
       for (const line of lines) log(line);
-      return { ok: true, created: lines.filter((l) => /^(created|kept)/.test(l)) };
+      // tool: the npx spec to run from now on (pinned to this commit when known), as in the workflow
+      return { ok: true, created: lines.filter((l) => /^(created|kept)/.test(l)), tool: `npx --yes ${tool.spec}`, pinned: tool.pinned };
     }
     case 'build': {
       const results = await build(configPath, { only: pos, force: !!flags.force, log, quiet: !!flags.json });
@@ -138,6 +140,7 @@ async function run(cmd, pos, flags, log) {
         export: flags.export ?? DEFAULTS.export, init,
         steps: int(flags, 'steps') ?? DEFAULTS.steps, hold: int(flags, 'hold') ?? DEFAULTS.hold,
         stepMs: int(flags, 'step-ms') ?? DEFAULTS.stepMs, bits: int(flags, 'bits') ?? DEFAULTS.bits,
+        loops: flags.loops === undefined || flags.loops === 'infinite' || flags.loops === 'auto' ? (flags.loops ?? DEFAULTS.loops) : int(flags, 'loops'),
         haltValue: int(flags, 'halt') ?? null, haltExport: flags['halt-export'] ?? null,
         title: flags.title ?? path.basename(file, '.wasm'), wasmName: path.basename(file),
       });
