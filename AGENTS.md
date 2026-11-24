@@ -2,14 +2,21 @@
 
 Adding a live README card to a project. Every command is non-interactive; add `--json` to get
 one JSON object on stdout (`ok`, results, or `error: { code, message, hint }`, exit code 2).
+README Runtime runs the project's build commands and renders its components in Node during
+`build` and `check`: use it on code you trust. It is a build tool, not a sandbox.
 
 ```sh
-RR="npx --yes github:otonasi-muonn/README-Runtime#v0.1.0"   # or: node <checkout>/bin/readme-runtime.js
+RR="npx --yes github:otonasi-muonn/README-Runtime"   # or: node <checkout>/bin/readme-runtime.js
 $RR analyze --json                 # what can be reused: components[].reusable, warnings, nextSteps
-$RR init --ui src/components/X.tsx#X --name demo --json   # scaffold (builds as generated if X renders without props)
+$RR init --ui src/components/X.tsx#X --name demo --json   # scaffold + CI workflow; returns "tool"
 $RR build --json                   # repeat until ok; only changed cards are rebuilt (cards[].reason)
 $RR check --json                   # what CI runs; never writes
 ```
+
+`init` writes `.github/workflows/readme-runtime.yml`, pinned to the README Runtime commit you ran,
+and returns that command as `tool` (`npx --yes github:otonasi-muonn/README-Runtime#<commit>`).
+Use `tool` for every later command: another version may write different SVG, which `check`
+then reports as out of date.
 
 1. `analyze`: a `DEPS_NOT_INSTALLED` warning means install the project first (`npm ci`); a
    `SUBPACKAGES` warning means run it in the folder it names. `reusable: "yes"` components render
@@ -36,10 +43,18 @@ $RR check --json                   # what CI runs; never writes
    named construct), `RANGE_*` (values too large for exact CSS), `UI_NONLINEAR` (make the dependence
    linear or the view smaller), `UI_RENDER` (missing props / browser APIs during render),
    `UI_BUNDLE` (framework-only import such as `next/font`: pass the value as a prop instead).
-6. Embed `![demo](readme-runtime/<name>.svg)` in README.md; commit the SVG, `readme-runtime.json`,
-   `readme-runtime.lock.json` and `readme-runtime/demo/<name>/` including `logic.wasm` (CI checks
-   against it and never builds it). Never edit generated SVGs or the lock by hand. CI must install
-   the project's dependencies before `check` (`readme-runtime init --json` adds such a workflow).
+6. Viewers' cost: while a card plays, the browser restyles its display once per step (not the
+   whole run). `build --json` returns `cards[].perf` (updates per second, `activeSeconds` it keeps
+   updating, display elements, gzip bytes) and `cards[].warnings` with `PERF_*` codes, each with a
+   `fix` to merge into the card in `readme-runtime.json`. Defaults: `stepMs` 150, `loops: "auto"`
+   (whole runs for about a minute from page load, then it rests on the last step and costs
+   nothing); `"loops": "infinite"` keeps it running while it is on screen.
+7. `altInits: [97]` lets the same file start from other initial values, each verified like
+   `init`: embed `![demo](readme-runtime/<name>.svg#x97)` (negative: `#x-17`).
+8. Embed `![demo](readme-runtime/<name>.svg)` in README.md; commit the SVG, `readme-runtime.json`,
+   `readme-runtime.lock.json`, the workflow and `readme-runtime/demo/<name>/` including `logic.wasm`
+   (CI checks against it and never builds it). Never edit generated SVGs or the lock by hand. CI
+   installs the project's dependencies before `check` (the workflow `init` writes does).
    Renders run in UTC with the en-US locale, so dates and numbers are the same on every machine.
 
 Working on README Runtime itself: `npm test` (unit), `npm run test:browser` and

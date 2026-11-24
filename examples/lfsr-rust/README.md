@@ -1,6 +1,8 @@
 # 16ビットLFSR（Rust）
 
-Rustで書いた16ビットのガロア型LFSR（線形帰還シフトレジスタ）の `step()` です。ビルドコマンドを差し替えるだけで、C以外の言語でも [`examples/collatz`](../collatz/) と同じ流れでカードを作れることを示す例です。
+![16-bit LFSR written in Rust, computed live by CSS](../../readme-runtime/lfsr-rust.svg)
+
+Rustで書いた16ビットのガロア型LFSR（線形帰還シフトレジスタ）の `step()` です。ビルドコマンドを差し替えるだけで、C以外の言語でも [`examples/collatz`](../collatz/) と同じ流れでカードを作れることを示す例です。`readme-runtime.json` の `build.command` を `rustc …` にしているだけで、`xor` を含むビット演算がCSSで計算されます。
 
 ```text
 step(s) = (s >> 1) ^ (if s & 1 != 0 { 0xB400 } else { 0 })   // タップ 16, 14, 13, 11
