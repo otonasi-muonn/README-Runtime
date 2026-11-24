@@ -16,16 +16,12 @@
 @property --rhb{syntax:'<integer>';inherits:true;initial-value:0}
 @property --rea{syntax:'<integer>';inherits:true;initial-value:0}
 @property --reb{syntax:'<integer>';inherits:true;initial-value:0}
-@property --rca{syntax:'<integer>';inherits:true;initial-value:0}
-@property --rcb{syntax:'<integer>';inherits:true;initial-value:0}
-@property --rsa{syntax:'<integer>';inherits:true;initial-value:0}
-@property --rsb{syntax:'<integer>';inherits:true;initial-value:0}
 @property --rfa{syntax:'<integer>';inherits:true;initial-value:0}
 @property --rfb{syntax:'<integer>';inherits:true;initial-value:0}
 @property --rqa{syntax:'<integer>';inherits:true;initial-value:0}
 @property --rqb{syntax:'<integer>';inherits:true;initial-value:0}
-@property --raa{syntax:'<integer>';inherits:true;initial-value:0}
-@property --rab{syntax:'<integer>';inherits:true;initial-value:0}
+@property --rza{syntax:'<integer>';inherits:true;initial-value:0}
+@property --rzb{syntax:'<integer>';inherits:true;initial-value:0}
 @property --rx{syntax:'<integer>';inherits:true;initial-value:0}
 @property --rk{syntax:'<integer>';inherits:true;initial-value:0}
 @property --ra{syntax:'<integer>';inherits:true;initial-value:0}
@@ -34,25 +30,27 @@
 @property --rg0{syntax:'<integer>';inherits:false;initial-value:0}
 @property --rlv{syntax:'<integer>';inherits:false;initial-value:0}
 @property --rrg{syntax:'<integer>';inherits:false;initial-value:0}
-@property --rdv{syntax:'<integer>';inherits:true;initial-value:0}
 @property --rsx{syntax:'<integer>';inherits:true;initial-value:0}
+@property --rcs{syntax:'<integer>';inherits:true;initial-value:0}
+@property --rfs{syntax:'<integer>';inherits:true;initial-value:0}
+@property --rdv{syntax:'<integer>';inherits:true;initial-value:0}
 @property --rx0{syntax:'<integer>';inherits:true;initial-value:0}
 .R{
  --rkb: 0;
  --rrg: clamp(0, max(var(--rxb), -1 * var(--rxb)) - 999999, 1);
  --rhb: 0;
  --reb: var(--rrg);
- --rcb: var(--rxb);
- --rsb: 0;
  --rfb: calc(2 * var(--rrg));
  --rqb: 0;
- --rab: 1;
+ --rzb: 0;
  --rx: var(--rxb);
  --rk: 0;
  --ra: calc(1 - var(--rrg));
- animation:rrclk 15960ms steps(133,jump-none) infinite}
+ --rS0: var(--rx);
+}
+.C{animation:rrclk 15960ms steps(133,jump-none) infinite}
 @keyframes rrclk{from{--rt:0}to{--rt:132}}
-@media (prefers-reduced-motion:reduce){.R{animation:none;--rt:132}}
+@media (prefers-reduced-motion:reduce){.C{animation:none;--rt:132}}
 .A{
  --rv0: calc(1024 * mod(round(down, (0 - mod(var(--rxb), 2)) / 1024), 2) + 4096 * mod(round(down, (0 - mod(var(--rxb), 2)) / 4096), 2) + 8192 * mod(round(down, (0 - mod(var(--rxb), 2)) / 8192), 2) + 32768 * mod(round(down, (0 - mod(var(--rxb), 2)) / 32768), 2));
  --rxa: calc(var(--rv0) + (round(down, var(--rxb) / 2) + clamp(0, -1 * var(--rxb), 1) * 2147483648) - 2 * (mod(var(--rv0), 2) * mod(round(down, var(--rxb) / 2) + clamp(0, -1 * var(--rxb), 1) * 2147483648, 2) + 2 * (mod(round(down, var(--rv0) / 2), 2) * mod(round(down, (round(down, var(--rxb) / 2) + clamp(0, -1 * var(--rxb), 1) * 2147483648) / 2), 2)) + 4 * (mod(round(down, var(--rv0) / 4), 2) * mod(round(down, (round(down, var(--rxb) / 2) + clamp(0, -1 * var(--rxb), 1) * 2147483648) / 4), 2)) + 8 * (mod(round(down, var(--rv0) / 8), 2) * mod(round(down, (round(down, var(--rxb) / 2) + clamp(0, -1 * var(--rxb), 1) * 2147483648) / 8), 2)) + 16 * (mod(round(down, var(--rv0) / 16), 2) * mod(round(down, (round(down, var(--rxb) / 2) + clamp(0, -1 * var(--rxb), 1) * 2147483648) / 16), 2)) + 32 * (mod(round(down, var(--rv0) / 32), 2) * mod(round(down, (round(down, var(--rxb) / 2) + clamp(0, -1 * var(--rxb), 1) * 2147483648) / 32), 2)) + 64 * (mod(round(down, var(--rv0) / 64), 2) * mod(round(down, (round(down, var(--rxb) / 2) + clamp(0, -1 * var(--rxb), 1) * 2147483648) / 64), 2)) + 128 * (mod(round(down, var(--rv0) / 128), 2) * mod(round(down, (round(down, var(--rxb) / 2) + clamp(0, -1 * var(--rxb), 1) * 2147483648) / 128), 2)) + 256 * (mod(round(down, var(--rv0) / 256), 2) * mod(round(down, (round(down, var(--rxb) / 2) + clamp(0, -1 * var(--rxb), 1) * 2147483648) / 256), 2)) + 512 * (mod(round(down, var(--rv0) / 512), 2) * mod(round(down, (round(down, var(--rxb) / 2) + clamp(0, -1 * var(--rxb), 1) * 2147483648) / 512), 2)) + 1024 * (mod(round(down, var(--rv0) / 1024), 2) * mod(round(down, (round(down, var(--rxb) / 2) + clamp(0, -1 * var(--rxb), 1) * 2147483648) / 1024), 2)) + 2048 * (mod(round(down, var(--rv0) / 2048), 2) * mod(round(down, (round(down, var(--rxb) / 2) + clamp(0, -1 * var(--rxb), 1) * 2147483648) / 2048), 2)) + 4096 * (mod(round(down, var(--rv0) / 4096), 2) * mod(round(down, (round(down, var(--rxb) / 2) + clamp(0, -1 * var(--rxb), 1) * 2147483648) / 4096), 2)) + 8192 * (mod(round(down, var(--rv0) / 8192), 2) * mod(round(down, (round(down, var(--rxb) / 2) + clamp(0, -1 * var(--rxb), 1) * 2147483648) / 8192), 2)) + 16384 * (mod(round(down, var(--rv0) / 16384), 2) * mod(round(down, (round(down, var(--rxb) / 2) + clamp(0, -1 * var(--rxb), 1) * 2147483648) / 16384), 2)) + 32768 * (mod(round(down, var(--rv0) / 32768), 2) * mod(round(down, (round(down, var(--rxb) / 2) + clamp(0, -1 * var(--rxb), 1) * 2147483648) / 32768), 2)) + 65536 * (mod(round(down, var(--rv0) / 65536), 2) * mod(round(down, (round(down, var(--rxb) / 2) + clamp(0, -1 * var(--rxb), 1) * 2147483648) / 65536), 2)) + 131072 * (mod(round(down, var(--rv0) / 131072), 2) * mod(round(down, (round(down, var(--rxb) / 2) + clamp(0, -1 * var(--rxb), 1) * 2147483648) / 131072), 2)) + 262144 * (mod(round(down, var(--rv0) / 262144), 2) * mod(round(down, (round(down, var(--rxb) / 2) + clamp(0, -1 * var(--rxb), 1) * 2147483648) / 262144), 2)) + 524288 * (mod(round(down, var(--rv0) / 524288), 2) * mod(round(down, (round(down, var(--rxb) / 2) + clamp(0, -1 * var(--rxb), 1) * 2147483648) / 524288), 2)) + 1048576 * (mod(round(down, var(--rv0) / 1048576), 2) * mod(round(down, (round(down, var(--rxb) / 2) + clamp(0, -1 * var(--rxb), 1) * 2147483648) / 1048576), 2)) + 2097152 * (mod(round(down, var(--rv0) / 2097152), 2) * mod(round(down, (round(down, var(--rxb) / 2) + clamp(0, -1 * var(--rxb), 1) * 2147483648) / 2097152), 2)) + 4194304 * (mod(round(down, var(--rv0) / 4194304), 2) * mod(round(down, (round(down, var(--rxb) / 2) + clamp(0, -1 * var(--rxb), 1) * 2147483648) / 4194304), 2)) - 8388608 * (clamp(0, -1 * var(--rv0), 1) * clamp(0, -1 * (round(down, var(--rxb) / 2) + clamp(0, -1 * var(--rxb), 1) * 2147483648), 1))));
@@ -60,16 +58,14 @@
  --rlv: calc(1 - max(var(--rhb), var(--reb)));
  --rg0: clamp(0, max(round(down, var(--rxb) / 2) + clamp(0, -1 * var(--rxb), 1) * 2147483648, -1 * (round(down, var(--rxb) / 2) + clamp(0, -1 * var(--rxb), 1) * 2147483648)) - 8388607, 1);
  --rrg: max(clamp(0, max(var(--rxa), -1 * var(--rxa)) - 999999, 1), var(--rg0));
- --raa: calc(var(--rlv) * clamp(0, var(--rt) - var(--rka) + 1, 1));
  --rea: max(var(--reb), var(--rlv) * var(--rrg));
  --rha: max(var(--rhb), 0);
- --rca: calc(var(--rxa) * var(--raa) + var(--rcb) * (1 - var(--raa)));
- --rsa: calc(var(--rka) * var(--raa) + var(--rsb) * (1 - var(--raa)));
- --rfa: calc(2 * var(--rrg) * var(--raa) + var(--rfb) * (1 - var(--raa)));
+ --rfa: calc(var(--rfb) + var(--rlv) * (2 * var(--rrg)));
  --rqa: var(--rqb);
+ --rza: calc(var(--rzb) + var(--rlv));
  --rx: var(--rxa);
  --rk: var(--rka);
- --ra: calc(var(--raa) * (1 - var(--rrg)));
+ --ra: calc(var(--rlv) * (1 - var(--rrg)));
 }
 .B{
  --rv0: calc(1024 * mod(round(down, (0 - mod(var(--rxa), 2)) / 1024), 2) + 4096 * mod(round(down, (0 - mod(var(--rxa), 2)) / 4096), 2) + 8192 * mod(round(down, (0 - mod(var(--rxa), 2)) / 8192), 2) + 32768 * mod(round(down, (0 - mod(var(--rxa), 2)) / 32768), 2));
@@ -78,16 +74,14 @@
  --rlv: calc(1 - max(var(--rha), var(--rea)));
  --rg0: clamp(0, max(round(down, var(--rxa) / 2) + clamp(0, -1 * var(--rxa), 1) * 2147483648, -1 * (round(down, var(--rxa) / 2) + clamp(0, -1 * var(--rxa), 1) * 2147483648)) - 8388607, 1);
  --rrg: max(clamp(0, max(var(--rxb), -1 * var(--rxb)) - 999999, 1), var(--rg0));
- --rab: calc(var(--rlv) * clamp(0, var(--rt) - var(--rkb) + 1, 1));
  --reb: max(var(--rea), var(--rlv) * var(--rrg));
  --rhb: max(var(--rha), 0);
- --rcb: calc(var(--rxb) * var(--rab) + var(--rca) * (1 - var(--rab)));
- --rsb: calc(var(--rkb) * var(--rab) + var(--rsa) * (1 - var(--rab)));
- --rfb: calc(2 * var(--rrg) * var(--rab) + var(--rfa) * (1 - var(--rab)));
+ --rfb: calc(var(--rfa) + var(--rlv) * (2 * var(--rrg)));
  --rqb: var(--rqa);
+ --rzb: calc(var(--rza) + var(--rlv));
  --rx: var(--rxb);
  --rk: var(--rkb);
- --ra: calc(var(--rab) * (1 - var(--rrg)));
+ --ra: calc(var(--rlv) * (1 - var(--rrg)));
 }
 
 svg{--bg:#0d1117;--panel:#161b22;--line:#30363d;--fg:#e6edf3;--mut:#7d8590;--acc:#3fb950;--blue:#58a6ff;--red:#f85149;--led:#3fb950}
@@ -118,8 +112,13 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
 .js{fill:var(--red);opacity:calc(clamp(0, -1 * var(--rx), 1) * var(--ra))}
 .jo{fill:#d29922;opacity:calc(clamp(0, max(var(--rx) - 65535, -1 * var(--rx) - 65536), 1) * var(--ra))}
 .jm{fill:var(--mut);opacity:var(--ra)}
-.D{--rdv:max(var(--rcb), -1 * var(--rcb));--rsx:var(--rsb)}
-.hl{transform:translateX(calc(var(--rsb) * 3.7686px))}
+.D{
+ --rsx: min(var(--rt), var(--rzb));
+ --rcs: calc(var(--rS0) * max(0, 1 - var(--rsx)) + var(--rS1) * max(0, min(2 - var(--rsx), var(--rsx))) + var(--rS2) * max(0, min(3 - var(--rsx), var(--rsx) - 1)) + var(--rS3) * max(0, min(4 - var(--rsx), var(--rsx) - 2)) + var(--rS4) * max(0, min(5 - var(--rsx), var(--rsx) - 3)) + var(--rS5) * max(0, min(6 - var(--rsx), var(--rsx) - 4)) + var(--rS6) * max(0, min(7 - var(--rsx), var(--rsx) - 5)) + var(--rS7) * max(0, min(8 - var(--rsx), var(--rsx) - 6)) + var(--rS8) * max(0, min(9 - var(--rsx), var(--rsx) - 7)) + var(--rS9) * max(0, min(10 - var(--rsx), var(--rsx) - 8)) + var(--rS10) * max(0, min(11 - var(--rsx), var(--rsx) - 9)) + var(--rS11) * max(0, min(12 - var(--rsx), var(--rsx) - 10)) + var(--rS12) * max(0, min(13 - var(--rsx), var(--rsx) - 11)) + var(--rS13) * max(0, min(14 - var(--rsx), var(--rsx) - 12)) + var(--rS14) * max(0, min(15 - var(--rsx), var(--rsx) - 13)) + var(--rS15) * max(0, min(16 - var(--rsx), var(--rsx) - 14)) + var(--rS16) * max(0, min(17 - var(--rsx), var(--rsx) - 15)) + var(--rS17) * max(0, min(18 - var(--rsx), var(--rsx) - 16)) + var(--rS18) * max(0, min(19 - var(--rsx), var(--rsx) - 17)) + var(--rS19) * max(0, min(20 - var(--rsx), var(--rsx) - 18)) + var(--rS20) * max(0, min(21 - var(--rsx), var(--rsx) - 19)) + var(--rS21) * max(0, min(22 - var(--rsx), var(--rsx) - 20)) + var(--rS22) * max(0, min(23 - var(--rsx), var(--rsx) - 21)) + var(--rS23) * max(0, min(24 - var(--rsx), var(--rsx) - 22)) + var(--rS24) * max(0, min(25 - var(--rsx), var(--rsx) - 23)) + var(--rS25) * max(0, min(26 - var(--rsx), var(--rsx) - 24)) + var(--rS26) * max(0, min(27 - var(--rsx), var(--rsx) - 25)) + var(--rS27) * max(0, min(28 - var(--rsx), var(--rsx) - 26)) + var(--rS28) * max(0, min(29 - var(--rsx), var(--rsx) - 27)) + var(--rS29) * max(0, min(30 - var(--rsx), var(--rsx) - 28)) + var(--rS30) * max(0, min(31 - var(--rsx), var(--rsx) - 29)) + var(--rS31) * max(0, min(32 - var(--rsx), var(--rsx) - 30)) + var(--rS32) * max(0, min(33 - var(--rsx), var(--rsx) - 31)) + var(--rS33) * max(0, min(34 - var(--rsx), var(--rsx) - 32)) + var(--rS34) * max(0, min(35 - var(--rsx), var(--rsx) - 33)) + var(--rS35) * max(0, min(36 - var(--rsx), var(--rsx) - 34)) + var(--rS36) * max(0, min(37 - var(--rsx), var(--rsx) - 35)) + var(--rS37) * max(0, min(38 - var(--rsx), var(--rsx) - 36)) + var(--rS38) * max(0, min(39 - var(--rsx), var(--rsx) - 37)) + var(--rS39) * max(0, min(40 - var(--rsx), var(--rsx) - 38)) + var(--rS40) * max(0, min(41 - var(--rsx), var(--rsx) - 39)) + var(--rS41) * max(0, min(42 - var(--rsx), var(--rsx) - 40)) + var(--rS42) * max(0, min(43 - var(--rsx), var(--rsx) - 41)) + var(--rS43) * max(0, min(44 - var(--rsx), var(--rsx) - 42)) + var(--rS44) * max(0, min(45 - var(--rsx), var(--rsx) - 43)) + var(--rS45) * max(0, min(46 - var(--rsx), var(--rsx) - 44)) + var(--rS46) * max(0, min(47 - var(--rsx), var(--rsx) - 45)) + var(--rS47) * max(0, min(48 - var(--rsx), var(--rsx) - 46)) + var(--rS48) * max(0, min(49 - var(--rsx), var(--rsx) - 47)) + var(--rS49) * max(0, min(50 - var(--rsx), var(--rsx) - 48)) + var(--rS50) * max(0, min(51 - var(--rsx), var(--rsx) - 49)) + var(--rS51) * max(0, min(52 - var(--rsx), var(--rsx) - 50)) + var(--rS52) * max(0, min(53 - var(--rsx), var(--rsx) - 51)) + var(--rS53) * max(0, min(54 - var(--rsx), var(--rsx) - 52)) + var(--rS54) * max(0, min(55 - var(--rsx), var(--rsx) - 53)) + var(--rS55) * max(0, min(56 - var(--rsx), var(--rsx) - 54)) + var(--rS56) * max(0, min(57 - var(--rsx), var(--rsx) - 55)) + var(--rS57) * max(0, min(58 - var(--rsx), var(--rsx) - 56)) + var(--rS58) * max(0, min(59 - var(--rsx), var(--rsx) - 57)) + var(--rS59) * max(0, min(60 - var(--rsx), var(--rsx) - 58)) + var(--rS60) * max(0, min(61 - var(--rsx), var(--rsx) - 59)) + var(--rS61) * max(0, min(62 - var(--rsx), var(--rsx) - 60)) + var(--rS62) * max(0, min(63 - var(--rsx), var(--rsx) - 61)) + var(--rS63) * max(0, min(64 - var(--rsx), var(--rsx) - 62)) + var(--rS64) * max(0, min(65 - var(--rsx), var(--rsx) - 63)) + var(--rS65) * max(0, min(66 - var(--rsx), var(--rsx) - 64)) + var(--rS66) * max(0, min(67 - var(--rsx), var(--rsx) - 65)) + var(--rS67) * max(0, min(68 - var(--rsx), var(--rsx) - 66)) + var(--rS68) * max(0, min(69 - var(--rsx), var(--rsx) - 67)) + var(--rS69) * max(0, min(70 - var(--rsx), var(--rsx) - 68)) + var(--rS70) * max(0, min(71 - var(--rsx), var(--rsx) - 69)) + var(--rS71) * max(0, min(72 - var(--rsx), var(--rsx) - 70)) + var(--rS72) * max(0, min(73 - var(--rsx), var(--rsx) - 71)) + var(--rS73) * max(0, min(74 - var(--rsx), var(--rsx) - 72)) + var(--rS74) * max(0, min(75 - var(--rsx), var(--rsx) - 73)) + var(--rS75) * max(0, min(76 - var(--rsx), var(--rsx) - 74)) + var(--rS76) * max(0, min(77 - var(--rsx), var(--rsx) - 75)) + var(--rS77) * max(0, min(78 - var(--rsx), var(--rsx) - 76)) + var(--rS78) * max(0, min(79 - var(--rsx), var(--rsx) - 77)) + var(--rS79) * max(0, min(80 - var(--rsx), var(--rsx) - 78)) + var(--rS80) * max(0, min(81 - var(--rsx), var(--rsx) - 79)) + var(--rS81) * max(0, min(82 - var(--rsx), var(--rsx) - 80)) + var(--rS82) * max(0, min(83 - var(--rsx), var(--rsx) - 81)) + var(--rS83) * max(0, min(84 - var(--rsx), var(--rsx) - 82)) + var(--rS84) * max(0, min(85 - var(--rsx), var(--rsx) - 83)) + var(--rS85) * max(0, min(86 - var(--rsx), var(--rsx) - 84)) + var(--rS86) * max(0, min(87 - var(--rsx), var(--rsx) - 85)) + var(--rS87) * max(0, min(88 - var(--rsx), var(--rsx) - 86)) + var(--rS88) * max(0, min(89 - var(--rsx), var(--rsx) - 87)) + var(--rS89) * max(0, min(90 - var(--rsx), var(--rsx) - 88)) + var(--rS90) * max(0, min(91 - var(--rsx), var(--rsx) - 89)) + var(--rS91) * max(0, min(92 - var(--rsx), var(--rsx) - 90)) + var(--rS92) * max(0, min(93 - var(--rsx), var(--rsx) - 91)) + var(--rS93) * max(0, min(94 - var(--rsx), var(--rsx) - 92)) + var(--rS94) * max(0, min(95 - var(--rsx), var(--rsx) - 93)) + var(--rS95) * max(0, min(96 - var(--rsx), var(--rsx) - 94)) + var(--rS96) * max(0, min(97 - var(--rsx), var(--rsx) - 95)) + var(--rS97) * max(0, min(98 - var(--rsx), var(--rsx) - 96)) + var(--rS98) * max(0, min(99 - var(--rsx), var(--rsx) - 97)) + var(--rS99) * max(0, min(100 - var(--rsx), var(--rsx) - 98)) + var(--rS100) * max(0, min(101 - var(--rsx), var(--rsx) - 99)) + var(--rS101) * max(0, min(102 - var(--rsx), var(--rsx) - 100)) + var(--rS102) * max(0, min(103 - var(--rsx), var(--rsx) - 101)) + var(--rS103) * max(0, min(104 - var(--rsx), var(--rsx) - 102)) + var(--rS104) * max(0, min(105 - var(--rsx), var(--rsx) - 103)) + var(--rS105) * max(0, min(106 - var(--rsx), var(--rsx) - 104)) + var(--rS106) * max(0, min(107 - var(--rsx), var(--rsx) - 105)) + var(--rS107) * max(0, min(108 - var(--rsx), var(--rsx) - 106)) + var(--rS108) * max(0, min(109 - var(--rsx), var(--rsx) - 107)) + var(--rS109) * max(0, min(110 - var(--rsx), var(--rsx) - 108)) + var(--rS110) * max(0, min(111 - var(--rsx), var(--rsx) - 109)) + var(--rS111) * max(0, min(112 - var(--rsx), var(--rsx) - 110)) + var(--rS112) * max(0, min(113 - var(--rsx), var(--rsx) - 111)) + var(--rS113) * max(0, min(114 - var(--rsx), var(--rsx) - 112)) + var(--rS114) * max(0, min(115 - var(--rsx), var(--rsx) - 113)) + var(--rS115) * max(0, min(116 - var(--rsx), var(--rsx) - 114)) + var(--rS116) * max(0, min(117 - var(--rsx), var(--rsx) - 115)) + var(--rS117) * max(0, min(118 - var(--rsx), var(--rsx) - 116)) + var(--rS118) * max(0, min(119 - var(--rsx), var(--rsx) - 117)) + var(--rS119) * max(0, min(120 - var(--rsx), var(--rsx) - 118)) + var(--rS120) * max(0, min(121 - var(--rsx), var(--rsx) - 119)));
+ --rfs: calc(var(--rfb) * clamp(0, var(--rsx) - var(--rzb) + 1, 1));
+ --rdv:max(var(--rcs), -1 * var(--rcs))}
+.tm{transform:translateX(calc((var(--rsx) + 1) * 3.7686px))}
+.hl{transform:translateX(calc(var(--rsx) * 3.7686px))}
 .d0 use{transform:translateY(calc(mod(var(--rdv), 10) * -52px))}
 .d1 use{transform:translateY(calc(mod(round(down, var(--rdv) / 10), 10) * -52px))}
 .d1{opacity:clamp(0, var(--rdv) - 9, 1)}
@@ -133,40 +132,40 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
 .d5{opacity:clamp(0, var(--rdv) - 99999, 1)}
 .d6 use{transform:translateY(calc(mod(round(down, var(--rdv) / 1000000), 10) * -52px))}
 .d6{opacity:clamp(0, var(--rdv) - 999999, 1)}
-.neg{opacity:clamp(0, -1 * var(--rcb), 1);transform:translateX(calc((6 - (1 + clamp(0, var(--rdv) - 9, 1) + clamp(0, var(--rdv) - 99, 1) + clamp(0, var(--rdv) - 999, 1) + clamp(0, var(--rdv) - 9999, 1) + clamp(0, var(--rdv) - 99999, 1) + clamp(0, var(--rdv) - 999999, 1))) * 30px))}
-.num{opacity:calc(1 - min(1, round(down, var(--rfb) / 2)))}
-.L0{opacity:calc(.18 + .82 * mod(var(--rcb), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
-.L1{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 2), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
-.L2{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 4), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
-.L3{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 8), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
-.L4{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 16), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
-.L5{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 32), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
-.L6{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 64), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
-.L7{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 128), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
-.L8{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 256), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
-.L9{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 512), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
-.L10{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 1024), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
-.L11{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 2048), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
-.L12{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 4096), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
-.L13{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 8192), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
-.L14{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 16384), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
-.L15{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 32768), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
-.L16{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 65536), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
-.L17{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 131072), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
-.L18{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 262144), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
-.L19{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 524288), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
-.L20{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 1048576), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
-.L21{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 2097152), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
-.L22{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 4194304), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
-.L23{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 8388608), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
-.L24{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 16777216), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
-.L25{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 33554432), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
-.L26{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 67108864), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
-.L27{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 134217728), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
-.L28{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 268435456), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
-.L29{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 536870912), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
-.L30{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 1073741824), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
-.L31{opacity:calc(.18 + .82 * mod(round(down, var(--rcb) / 2147483648), 2) * (1 - min(1, round(down, var(--rfb) / 2))))}
+.neg{opacity:clamp(0, -1 * var(--rcs), 1);transform:translateX(calc((6 - (1 + clamp(0, var(--rdv) - 9, 1) + clamp(0, var(--rdv) - 99, 1) + clamp(0, var(--rdv) - 999, 1) + clamp(0, var(--rdv) - 9999, 1) + clamp(0, var(--rdv) - 99999, 1) + clamp(0, var(--rdv) - 999999, 1))) * 30px))}
+.num{opacity:calc(1 - min(1, round(down, var(--rfs) / 2)))}
+.L0{opacity:calc(.18 + .82 * mod(var(--rcs), 2) * (1 - min(1, round(down, var(--rfs) / 2))))}
+.L1{opacity:calc(.18 + .82 * mod(round(down, var(--rcs) / 2), 2) * (1 - min(1, round(down, var(--rfs) / 2))))}
+.L2{opacity:calc(.18 + .82 * mod(round(down, var(--rcs) / 4), 2) * (1 - min(1, round(down, var(--rfs) / 2))))}
+.L3{opacity:calc(.18 + .82 * mod(round(down, var(--rcs) / 8), 2) * (1 - min(1, round(down, var(--rfs) / 2))))}
+.L4{opacity:calc(.18 + .82 * mod(round(down, var(--rcs) / 16), 2) * (1 - min(1, round(down, var(--rfs) / 2))))}
+.L5{opacity:calc(.18 + .82 * mod(round(down, var(--rcs) / 32), 2) * (1 - min(1, round(down, var(--rfs) / 2))))}
+.L6{opacity:calc(.18 + .82 * mod(round(down, var(--rcs) / 64), 2) * (1 - min(1, round(down, var(--rfs) / 2))))}
+.L7{opacity:calc(.18 + .82 * mod(round(down, var(--rcs) / 128), 2) * (1 - min(1, round(down, var(--rfs) / 2))))}
+.L8{opacity:calc(.18 + .82 * mod(round(down, var(--rcs) / 256), 2) * (1 - min(1, round(down, var(--rfs) / 2))))}
+.L9{opacity:calc(.18 + .82 * mod(round(down, var(--rcs) / 512), 2) * (1 - min(1, round(down, var(--rfs) / 2))))}
+.L10{opacity:calc(.18 + .82 * mod(round(down, var(--rcs) / 1024), 2) * (1 - min(1, round(down, var(--rfs) / 2))))}
+.L11{opacity:calc(.18 + .82 * mod(round(down, var(--rcs) / 2048), 2) * (1 - min(1, round(down, var(--rfs) / 2))))}
+.L12{opacity:calc(.18 + .82 * mod(round(down, var(--rcs) / 4096), 2) * (1 - min(1, round(down, var(--rfs) / 2))))}
+.L13{opacity:calc(.18 + .82 * mod(round(down, var(--rcs) / 8192), 2) * (1 - min(1, round(down, var(--rfs) / 2))))}
+.L14{opacity:calc(.18 + .82 * mod(round(down, var(--rcs) / 16384), 2) * (1 - min(1, round(down, var(--rfs) / 2))))}
+.L15{opacity:calc(.18 + .82 * mod(round(down, var(--rcs) / 32768), 2) * (1 - min(1, round(down, var(--rfs) / 2))))}
+.L16{opacity:calc(.18 + .82 * mod(round(down, var(--rcs) / 65536), 2) * (1 - min(1, round(down, var(--rfs) / 2))))}
+.L17{opacity:calc(.18 + .82 * mod(round(down, var(--rcs) / 131072), 2) * (1 - min(1, round(down, var(--rfs) / 2))))}
+.L18{opacity:calc(.18 + .82 * mod(round(down, var(--rcs) / 262144), 2) * (1 - min(1, round(down, var(--rfs) / 2))))}
+.L19{opacity:calc(.18 + .82 * mod(round(down, var(--rcs) / 524288), 2) * (1 - min(1, round(down, var(--rfs) / 2))))}
+.L20{opacity:calc(.18 + .82 * mod(round(down, var(--rcs) / 1048576), 2) * (1 - min(1, round(down, var(--rfs) / 2))))}
+.L21{opacity:calc(.18 + .82 * mod(round(down, var(--rcs) / 2097152), 2) * (1 - min(1, round(down, var(--rfs) / 2))))}
+.L22{opacity:calc(.18 + .82 * mod(round(down, var(--rcs) / 4194304), 2) * (1 - min(1, round(down, var(--rfs) / 2))))}
+.L23{opacity:calc(.18 + .82 * mod(round(down, var(--rcs) / 8388608), 2) * (1 - min(1, round(down, var(--rfs) / 2))))}
+.L24{opacity:calc(.18 + .82 * mod(round(down, var(--rcs) / 16777216), 2) * (1 - min(1, round(down, var(--rfs) / 2))))}
+.L25{opacity:calc(.18 + .82 * mod(round(down, var(--rcs) / 33554432), 2) * (1 - min(1, round(down, var(--rfs) / 2))))}
+.L26{opacity:calc(.18 + .82 * mod(round(down, var(--rcs) / 67108864), 2) * (1 - min(1, round(down, var(--rfs) / 2))))}
+.L27{opacity:calc(.18 + .82 * mod(round(down, var(--rcs) / 134217728), 2) * (1 - min(1, round(down, var(--rfs) / 2))))}
+.L28{opacity:calc(.18 + .82 * mod(round(down, var(--rcs) / 268435456), 2) * (1 - min(1, round(down, var(--rfs) / 2))))}
+.L29{opacity:calc(.18 + .82 * mod(round(down, var(--rcs) / 536870912), 2) * (1 - min(1, round(down, var(--rfs) / 2))))}
+.L30{opacity:calc(.18 + .82 * mod(round(down, var(--rcs) / 1073741824), 2) * (1 - min(1, round(down, var(--rfs) / 2))))}
+.L31{opacity:calc(.18 + .82 * mod(round(down, var(--rcs) / 2147483648), 2) * (1 - min(1, round(down, var(--rfs) / 2))))}
 .s0 use{transform:translateY(calc(mod(var(--rsx), 10) * -20px))}
 .q0 use{transform:translateY(calc(mod(var(--rqb), 10) * -20px))}
 .s1 use{transform:translateY(calc(mod(round(down, var(--rsx) / 10), 10) * -20px))}
@@ -177,13 +176,13 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
 .q2 use{transform:translateY(calc(mod(round(down, var(--rqb) / 100), 10) * -20px))}
 .s2{opacity:clamp(0, var(--rsx) - 99, 1)}
 .q2{opacity:clamp(0, var(--rqb) - 99, 1)}
-.st-run{opacity:calc((1 - min(1, var(--rfb))) * (1 - clamp(0, var(--rsx) - 119, 1)))}
-.st-end{opacity:calc((1 - min(1, var(--rfb))) * clamp(0, var(--rsx) - 119, 1))}
-.st-halt{opacity:mod(var(--rfb), 2)}
-.st-range{opacity:mod(round(down, var(--rfb) / 2), 2)}
-.st-trap{opacity:round(down, var(--rfb) / 4)}
-.st-err{opacity:min(1, round(down, var(--rfb) / 2))}
-.tot-q{opacity:mod(var(--rfb), 2)}.tot-n{opacity:calc(1 - mod(var(--rfb), 2))}
+.st-run{opacity:calc((1 - min(1, var(--rfs))) * (1 - clamp(0, var(--rsx) - 119, 1)))}
+.st-end{opacity:calc((1 - min(1, var(--rfs))) * clamp(0, var(--rsx) - 119, 1))}
+.st-halt{opacity:mod(var(--rfs), 2)}
+.st-range{opacity:mod(round(down, var(--rfs) / 2), 2)}
+.st-trap{opacity:round(down, var(--rfs) / 4)}
+.st-err{opacity:min(1, round(down, var(--rfs) / 2))}
+.tot-q{opacity:mod(var(--rfs), 2)}.tot-n{opacity:calc(1 - mod(var(--rfs), 2))}
 .x0 .z0 use{transform:translateY(calc(mod(var(--rx0), 10) * -20px))}
 .x0 .z0{opacity:clamp(0, 1000000 - var(--rx0), 1)}
 .x0 .z1 use{transform:translateY(calc(mod(round(down, var(--rx0) / 10), 10) * -20px))}
@@ -201,127 +200,127 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
 .x0{--rx0:max(var(--rxb), -1 * var(--rxb))}.x0 .zn{opacity:calc(clamp(0, -1 * var(--rxb), 1) * clamp(0, 1000000 - var(--rx0), 1));transform:translateX(calc((6 - (1 + clamp(0, var(--rx0) - 9, 1) + clamp(0, var(--rx0) - 99, 1) + clamp(0, var(--rx0) - 999, 1) + clamp(0, var(--rx0) - 9999, 1) + clamp(0, var(--rx0) - 99999, 1) + clamp(0, var(--rx0) - 999999, 1))) * 10px))}
 .x0 .zr{opacity:calc(1 - clamp(0, 1000000 - var(--rx0), 1))}
 ]]></style>
-<defs><clipPath id="cb"><rect width="30" height="52"/></clipPath><clipPath id="cs"><rect width="11" height="20"/></clipPath><g id="db" class="big" text-anchor="middle"><text x="15" y="40.56">0</text><text x="15" y="92.56">1</text><text x="15" y="144.56">2</text><text x="15" y="196.56">3</text><text x="15" y="248.56">4</text><text x="15" y="300.56">5</text><text x="15" y="352.56">6</text><text x="15" y="404.56">7</text><text x="15" y="456.56">8</text><text x="15" y="508.56">9</text></g><g id="ds" class="sm" text-anchor="middle"><text x="5.5" y="15.6">0</text><text x="5.5" y="35.6">1</text><text x="5.5" y="55.6">2</text><text x="5.5" y="75.6">3</text><text x="5.5" y="95.6">4</text><text x="5.5" y="115.6">5</text><text x="5.5" y="135.6">6</text><text x="5.5" y="155.6">7</text><text x="5.5" y="175.6">8</text><text x="5.5" y="195.6">9</text></g><g id="col"><rect class="j0" x="320" y="224.3529" width="2.7686" height="7.6471"/><rect class="j1" x="320" y="215.7059" width="2.7686" height="7.6471"/><rect class="j2" x="320" y="207.0588" width="2.7686" height="7.6471"/><rect class="j3" x="320" y="198.4118" width="2.7686" height="7.6471"/><rect class="j4" x="320" y="189.7647" width="2.7686" height="7.6471"/><rect class="j5" x="320" y="181.1176" width="2.7686" height="7.6471"/><rect class="j6" x="320" y="172.4706" width="2.7686" height="7.6471"/><rect class="j7" x="320" y="163.8235" width="2.7686" height="7.6471"/><rect class="j8" x="320" y="155.1765" width="2.7686" height="7.6471"/><rect class="j9" x="320" y="146.5294" width="2.7686" height="7.6471"/><rect class="j10" x="320" y="137.8824" width="2.7686" height="7.6471"/><rect class="j11" x="320" y="129.2353" width="2.7686" height="7.6471"/><rect class="j12" x="320" y="120.5882" width="2.7686" height="7.6471"/><rect class="j13" x="320" y="111.9412" width="2.7686" height="7.6471"/><rect class="j14" x="320" y="103.2941" width="2.7686" height="7.6471"/><rect class="j15" x="320" y="94.6471" width="2.7686" height="7.6471"/><rect class="js" x="320" y="86" width="2.7686" height="7.6471"/><rect class="jo" x="320" y="86" width="2.7686" height="7.6471"/><rect class="jm" x="320" y="234" width="2.7686" height="3"/></g></defs>
+<defs><clipPath id="cb"><rect width="30" height="52"/></clipPath><clipPath id="cs"><rect width="11" height="20"/></clipPath><g id="db" class="big" text-anchor="middle"><text x="15" y="40.56">0</text><text x="15" y="92.56">1</text><text x="15" y="144.56">2</text><text x="15" y="196.56">3</text><text x="15" y="248.56">4</text><text x="15" y="300.56">5</text><text x="15" y="352.56">6</text><text x="15" y="404.56">7</text><text x="15" y="456.56">8</text><text x="15" y="508.56">9</text></g><g id="ds" class="sm" text-anchor="middle"><text x="5.5" y="15.6">0</text><text x="5.5" y="35.6">1</text><text x="5.5" y="55.6">2</text><text x="5.5" y="75.6">3</text><text x="5.5" y="95.6">4</text><text x="5.5" y="115.6">5</text><text x="5.5" y="135.6">6</text><text x="5.5" y="155.6">7</text><text x="5.5" y="175.6">8</text><text x="5.5" y="195.6">9</text></g><g id="col"><rect class="j0" x="320" y="224.3529" width="2.7686" height="7.6471"/><rect class="j1" x="320" y="215.7059" width="2.7686" height="7.6471"/><rect class="j2" x="320" y="207.0588" width="2.7686" height="7.6471"/><rect class="j3" x="320" y="198.4118" width="2.7686" height="7.6471"/><rect class="j4" x="320" y="189.7647" width="2.7686" height="7.6471"/><rect class="j5" x="320" y="181.1176" width="2.7686" height="7.6471"/><rect class="j6" x="320" y="172.4706" width="2.7686" height="7.6471"/><rect class="j7" x="320" y="163.8235" width="2.7686" height="7.6471"/><rect class="j8" x="320" y="155.1765" width="2.7686" height="7.6471"/><rect class="j9" x="320" y="146.5294" width="2.7686" height="7.6471"/><rect class="j10" x="320" y="137.8824" width="2.7686" height="7.6471"/><rect class="j11" x="320" y="129.2353" width="2.7686" height="7.6471"/><rect class="j12" x="320" y="120.5882" width="2.7686" height="7.6471"/><rect class="j13" x="320" y="111.9412" width="2.7686" height="7.6471"/><rect class="j14" x="320" y="103.2941" width="2.7686" height="7.6471"/><rect class="j15" x="320" y="94.6471" width="2.7686" height="7.6471"/><rect class="js" x="320" y="86" width="2.7686" height="7.6471"/><rect class="jo" x="320" y="86" width="2.7686" height="7.6471"/><rect class="jm" x="320" y="234" width="2.7686" height="3"/></g><clipPath id="tmc"><rect x="320" y="85" width="457" height="152"/></clipPath></defs>
 <rect class="bg" x=".5" y=".5" width="799" height="299" rx="10"/><text x="20" y="29" font-size="15" font-weight="600">16-bit LFSR (Rust)</text><text x="189" y="29" class="mono mut" font-size="12">lfsr.wasm · step(i32) → i32</text><circle class="live pulse" cx="668" cy="25" r="4"/><text x="678" y="29" class="lbl" font-size="11">LIVE · CSS RUNTIME</text><line x1="0" y1="44" x2="800" y2="44" stroke="var(--line)"/><text x="40" y="70" class="lbl">STATE</text><text x="320" y="70" class="lbl">TRACE · ONE COLUMN PER step() CALL · BITS OF THE STATE</text><rect class="pn" x="314" y="80" width="468" height="159" rx="6"/><text x="320" y="255" class="mono mut" font-size="11">0</text><text x="776" y="255" class="mono mut" font-size="11" text-anchor="end">120</text><text x="548" y="255" class="mut" font-size="11" text-anchor="middle">step →</text><line x1="0" y1="260" x2="800" y2="260" stroke="var(--line)"/><text x="20" y="285" class="mono mut" font-size="11">step() in CSS → --rxa: calc(var(--rv0) + (round(down, var(--rxb) / 2) + clamp(0, -1 * var(--rxb), 1) * 21474836…</text>
 <g class="R" style="--rxb:1"><use href="#col" class="col"/><g class="x0"><text x="40" y="233" class="lbl">INPUT x₀</text><text class="zn mono" x="104" y="234" font-size="15" font-weight="600">−</text><g class="dg sm z0" transform="translate(174 219)" clip-path="url(#cs)"><use href="#ds"/></g><g class="dg sm z1" transform="translate(164 219)" clip-path="url(#cs)"><use href="#ds"/></g><g class="dg sm z2" transform="translate(154 219)" clip-path="url(#cs)"><use href="#ds"/></g><g class="dg sm z3" transform="translate(144 219)" clip-path="url(#cs)"><use href="#ds"/></g><g class="dg sm z4" transform="translate(134 219)" clip-path="url(#cs)"><use href="#ds"/></g><g class="dg sm z5" transform="translate(124 219)" clip-path="url(#cs)"><use href="#ds"/></g><g class="dg sm z6" transform="translate(114 219)" clip-path="url(#cs)"><use href="#ds"/></g><text class="zr" x="114" y="233" font-size="11" style="fill:var(--red)">out of range</text><text x="196" y="233" class="mut" font-size="11">← the only input</text></g>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/>
-<g class="A"><use href="#col" class="col"/>
-<g class="B"><use href="#col" class="col"/><g class="D"><g class="num"><text class="neg mono" x="38" y="116.47999999999999" font-size="40" font-weight="600">−</text><g class="dg d0" transform="translate(242 78)" clip-path="url(#cb)"><use href="#db"/></g><g class="dg d1" transform="translate(212 78)" clip-path="url(#cb)"><use href="#db"/></g><g class="dg d2" transform="translate(182 78)" clip-path="url(#cb)"><use href="#db"/></g><g class="dg d3" transform="translate(152 78)" clip-path="url(#cb)"><use href="#db"/></g><g class="dg d4" transform="translate(122 78)" clip-path="url(#cb)"><use href="#db"/></g><g class="dg d5" transform="translate(92 78)" clip-path="url(#cb)"><use href="#db"/></g><g class="dg d6" transform="translate(62 78)" clip-path="url(#cb)"><use href="#db"/></g></g><text class="st-range" x="40" y="112" font-size="22" font-weight="600" style="fill:var(--red)">OUT OF RANGE</text><text class="st-trap" x="40" y="112" font-size="22" font-weight="600" style="fill:var(--red)">TRAP</text><rect class="L0" x="272" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L1" x="265" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L2" x="258" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L3" x="251" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L4" x="244" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L5" x="237" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L6" x="230" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L7" x="223" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L8" x="211" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L9" x="204" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L10" x="197" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L11" x="190" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L12" x="183" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L13" x="176" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L14" x="169" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L15" x="162" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L16" x="150" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L17" x="143" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L18" x="136" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L19" x="129" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L20" x="122" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L21" x="115" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L22" x="108" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L23" x="101" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L24" x="89" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L25" x="82" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L26" x="75" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L27" x="68" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L28" x="61" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L29" x="54" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L30" x="47" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L31" x="40" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><text x="40" y="176" class="mono mut" font-size="10">i32 register · bit 31 … 0</text><text x="40" y="203" class="lbl">STEP</text><g class="dg sm s0" transform="translate(104 188)" clip-path="url(#cs)"><use href="#ds"/></g><g class="dg sm s1" transform="translate(94 188)" clip-path="url(#cs)"><use href="#ds"/></g><g class="dg sm s2" transform="translate(84 188)" clip-path="url(#cs)"><use href="#ds"/></g><text x="122" y="203" class="mono mut" font-size="15">/</text><g class="tot-q"><g class="dg sm q0" transform="translate(156 188)" clip-path="url(#cs)"><use href="#ds"/></g><g class="dg sm q1" transform="translate(146 188)" clip-path="url(#cs)"><use href="#ds"/></g><g class="dg sm q2" transform="translate(136 188)" clip-path="url(#cs)"><use href="#ds"/></g></g><text class="tot-n mono mut" x="136" y="203" font-size="15">120</text><g class="st-run"><circle class="pulse" cx="190" cy="198" r="7" style="fill:var(--acc);fill-opacity:.35"/><circle cx="190" cy="198" r="4" style="fill:var(--acc)"/><text x="200" y="203" class="lbl" style="fill:var(--acc)">RUNNING</text></g><g class="st-end"><circle cx="190" cy="198" r="4" style="fill:var(--mut)"/><text x="200" y="203" class="lbl">END</text></g><g class="st-halt"><circle cx="190" cy="198" r="4" style="fill:var(--blue)"/><text x="200" y="203" class="lbl" style="fill:var(--blue)">HALTED</text></g><g class="st-err"><circle cx="190" cy="198" r="4" style="fill:var(--red)"/><text x="200" y="203" class="lbl" style="fill:var(--red)">STOPPED</text></g><rect class="hl" x="319" y="83" width="4.7686" height="150" rx="1" fill="none" stroke="var(--fg)" stroke-opacity=".55"/></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g>
+<g class="A" style="--rS1:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS2:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS3:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS4:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS5:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS6:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS7:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS8:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS9:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS10:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS11:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS12:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS13:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS14:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS15:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS16:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS17:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS18:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS19:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS20:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS21:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS22:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS23:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS24:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS25:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS26:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS27:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS28:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS29:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS30:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS31:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS32:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS33:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS34:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS35:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS36:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS37:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS38:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS39:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS40:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS41:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS42:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS43:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS44:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS45:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS46:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS47:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS48:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS49:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS50:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS51:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS52:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS53:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS54:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS55:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS56:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS57:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS58:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS59:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS60:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS61:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS62:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS63:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS64:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS65:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS66:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS67:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS68:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS69:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS70:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS71:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS72:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS73:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS74:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS75:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS76:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS77:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS78:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS79:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS80:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS81:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS82:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS83:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS84:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS85:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS86:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS87:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS88:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS89:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS90:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS91:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS92:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS93:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS94:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS95:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS96:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS97:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS98:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS99:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS100:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS101:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS102:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS103:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS104:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS105:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS106:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS107:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS108:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS109:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS110:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS111:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS112:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS113:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS114:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS115:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS116:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS117:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS118:var(--rx)"><use href="#col" class="col"/>
+<g class="A" style="--rS119:var(--rx)"><use href="#col" class="col"/>
+<g class="B" style="--rS120:var(--rx)"><use href="#col" class="col"/><g class="C"><g class="D"><g clip-path="url(#tmc)"><rect class="tm" x="320" y="85" width="457" height="152" style="fill:var(--panel)"/></g><g class="num"><text class="neg mono" x="38" y="116.47999999999999" font-size="40" font-weight="600">−</text><g class="dg d0" transform="translate(242 78)" clip-path="url(#cb)"><use href="#db"/></g><g class="dg d1" transform="translate(212 78)" clip-path="url(#cb)"><use href="#db"/></g><g class="dg d2" transform="translate(182 78)" clip-path="url(#cb)"><use href="#db"/></g><g class="dg d3" transform="translate(152 78)" clip-path="url(#cb)"><use href="#db"/></g><g class="dg d4" transform="translate(122 78)" clip-path="url(#cb)"><use href="#db"/></g><g class="dg d5" transform="translate(92 78)" clip-path="url(#cb)"><use href="#db"/></g><g class="dg d6" transform="translate(62 78)" clip-path="url(#cb)"><use href="#db"/></g></g><text class="st-range" x="40" y="112" font-size="22" font-weight="600" style="fill:var(--red)">OUT OF RANGE</text><text class="st-trap" x="40" y="112" font-size="22" font-weight="600" style="fill:var(--red)">TRAP</text><rect class="L0" x="272" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L1" x="265" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L2" x="258" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L3" x="251" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L4" x="244" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L5" x="237" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L6" x="230" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L7" x="223" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L8" x="211" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L9" x="204" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L10" x="197" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L11" x="190" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L12" x="183" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L13" x="176" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L14" x="169" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L15" x="162" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L16" x="150" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L17" x="143" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L18" x="136" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L19" x="129" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L20" x="122" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L21" x="115" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L22" x="108" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L23" x="101" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L24" x="89" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L25" x="82" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L26" x="75" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L27" x="68" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L28" x="61" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L29" x="54" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L30" x="47" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><rect class="L31" x="40" y="150" width="5" height="9" rx="1" style="fill:var(--led)"/><text x="40" y="176" class="mono mut" font-size="10">i32 register · bit 31 … 0</text><text x="40" y="203" class="lbl">STEP</text><g class="dg sm s0" transform="translate(104 188)" clip-path="url(#cs)"><use href="#ds"/></g><g class="dg sm s1" transform="translate(94 188)" clip-path="url(#cs)"><use href="#ds"/></g><g class="dg sm s2" transform="translate(84 188)" clip-path="url(#cs)"><use href="#ds"/></g><text x="122" y="203" class="mono mut" font-size="15">/</text><g class="tot-q"><g class="dg sm q0" transform="translate(156 188)" clip-path="url(#cs)"><use href="#ds"/></g><g class="dg sm q1" transform="translate(146 188)" clip-path="url(#cs)"><use href="#ds"/></g><g class="dg sm q2" transform="translate(136 188)" clip-path="url(#cs)"><use href="#ds"/></g></g><text class="tot-n mono mut" x="136" y="203" font-size="15">120</text><g class="st-run"><circle class="pulse" cx="190" cy="198" r="7" style="fill:var(--acc);fill-opacity:.35"/><circle cx="190" cy="198" r="4" style="fill:var(--acc)"/><text x="200" y="203" class="lbl" style="fill:var(--acc)">RUNNING</text></g><g class="st-end"><circle cx="190" cy="198" r="4" style="fill:var(--mut)"/><text x="200" y="203" class="lbl">END</text></g><g class="st-halt"><circle cx="190" cy="198" r="4" style="fill:var(--blue)"/><text x="200" y="203" class="lbl" style="fill:var(--blue)">HALTED</text></g><g class="st-err"><circle cx="190" cy="198" r="4" style="fill:var(--red)"/><text x="200" y="203" class="lbl" style="fill:var(--red)">STOPPED</text></g><rect class="hl" x="319" y="83" width="4.7686" height="150" rx="1" fill="none" stroke="var(--fg)" stroke-opacity=".55"/></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g>
 </svg>

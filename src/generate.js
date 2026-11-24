@@ -46,7 +46,7 @@ export async function generate(wasmBytes, opts) {
   const machine = buildMachine(program, { init: o.init, steps: o.steps, hold: o.hold, haltValue: o.haltValue ?? null });
   // Browsers silently drop calc() trees nested too deeply; the translation splits
   // expressions, and this makes sure nothing slipped through.
-  for (const d of [...machine.root, ...machine.level.A, ...machine.level.B, ...machine.display]) {
+  for (const d of [...machine.root, ...machine.level.A, ...machine.level.B, ...machine.select, ...machine.display]) {
     const depth = textDepth(toCss(d.ast));
     if (depth > MAX_DECL_DEPTH) throw new Error(`internal: --${d.name} is nested ${depth} levels deep (limit ${MAX_DECL_DEPTH})`);
   }

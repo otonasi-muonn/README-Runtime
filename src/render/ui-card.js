@@ -1,6 +1,6 @@
 // SVG card whose body is the project's own UI (static markup + CSS bindings), driven by
 // the CSS machine. The machine is the same as for trace cards; only the display differs.
-import { declarations } from '../runtime/machine.js';
+import { declarations, levelStyle } from '../runtime/machine.js';
 import { toCss, V, absV } from '../compiler/css.js';
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -20,17 +20,19 @@ export function renderUiCard(machine, meta, ui) {
 
   let css = '';
   for (const [name, inherits] of machine.props) css += `@property --${name}{syntax:'<integer>';inherits:${inherits};initial-value:0}\n`;
-  for (const name of ['rsx', 'rok']) css += `@property --${name}{syntax:'<integer>';inherits:true;initial-value:0}\n`;
+  for (const name of ['rok']) css += `@property --${name}{syntax:'<integer>';inherits:true;initial-value:0}\n`;
   // the project's stylesheet first, so the card chrome below wins any overlap
   css += `${ui.css}\n`;
-  css += `.R{\n${declarations(machine.root.filter((d) => !d.literal), ' ')}\n animation:rrclk ${(machine.T + 1) * meta.stepMs}ms steps(${machine.T + 1},jump-none) infinite}\n`;
+  css += `.R{\n${declarations(machine.root.filter((d) => !d.literal), ' ')}\n}\n`;
+  // the step clock is the only animation of the card and runs on .C around the display (see
+  // render/card.js); "reduce motion" (after .C's rule, which it overrides) stops it and any
+  // animation or transition of the project's own stylesheet in the UI
+  css += `.C{animation:rrclk ${(machine.T + 1) * meta.stepMs}ms steps(${machine.T + 1},jump-none) infinite}\n`;
   css += `@keyframes rrclk{from{--rt:0}to{--rt:${machine.T}}}\n`;
-  // the step clock is the only animation of the card (see render/card.js); "reduce motion"
-  // stops it and any animation or transition of the project's own stylesheet in the UI
-  css += `@media (prefers-reduced-motion:reduce){.R{animation:none;--rt:${machine.T}}.rr-ui *,.rr-ui *::before,.rr-ui *::after{animation:none!important;transition:none!important}}\n`;
+  css += `@media (prefers-reduced-motion:reduce){.C{animation:none;--rt:${machine.T}}.rr-ui *,.rr-ui *::before,.rr-ui *::after{animation:none!important;transition:none!important}}\n`;
   css += `.A{\n${declarations(machine.level.A, ' ')}\n}\n.B{\n${declarations(machine.level.B, ' ')}\n}\n`;
   // display: view values for the shown state, the step counter, the health of the run
-  css += `.D{\n${declarations(machine.display, ' ')}\n --rsx: var(--${out.s});\n --rok: calc(1 - min(1, max(round(down, ${F} / 2), var(--rvf))));\n}\n`;
+  css += `.D{\n${declarations([...machine.select, ...machine.display], ' ')}\n --rok: calc(1 - min(1, max(round(down, ${F} / 2), var(--rvf))));\n}\n`;
   css += `${ui.bindingCss}`;
   css += `
 svg{--rr-bg:#0d1117;--rr-line:#30363d;--rr-fg:#e6edf3;--rr-mut:#7d8590;--rr-acc:#3fb950;--rr-blue:#58a6ff;--rr-red:#f85149}
@@ -52,7 +54,7 @@ svg{--rr-bg:#0d1117;--rr-line:#30363d;--rr-fg:#e6edf3;--rr-mut:#7d8590;--rr-acc:
   }
 
   const sy = H - L.foot + 14;
-  let disp = '<g class="D">';
+  let disp = '<g class="C"><g class="D">';
   disp += `<foreignObject x="${L.uiX}" y="${L.uiY}" width="${ui.width}" height="${ui.height}">`;
   // Firefox re-matches @container style() rules (the variant switches) only when the change
   // does not come from an animation alone; a size container whose width follows the step
@@ -70,7 +72,7 @@ svg{--rr-bg:#0d1117;--rr-line:#30363d;--rr-fg:#e6edf3;--rr-mut:#7d8590;--rr-acc:
   const room = Math.floor((W - 24 - 270) / 6.7);
   const credit = meta.credit.length > room ? `${meta.credit.slice(0, room - 1)}…` : meta.credit;
   disp += `<text x="${W - 24}" y="${sy + 14}" class="rr-m" font-size="11" text-anchor="end">${esc(credit)}</text>`;
-  disp += '</g>';
+  disp += '</g></g>';
 
   let defs = '<clipPath id="rrcs"><rect width="9" height="18"/></clipPath><g id="rrds" class="rr-sd" text-anchor="middle">';
   for (let i = 0; i < 10; i++) defs += `<text x="4.5" y="${i * 18 + 14}">${i}</text>`;
@@ -84,7 +86,7 @@ svg{--rr-bg:#0d1117;--rr-line:#30363d;--rr-fg:#e6edf3;--rr-mut:#7d8590;--rr-acc:
 
   let levels = `<g class="R" style="--${machine.initProp}:${machine.init}">`;
   let close = '</g>';
-  for (let k = 1; k <= steps; k++) { levels += `<g class="${k % 2 === 1 ? 'A' : 'B'}">`; close += '</g>'; }
+  for (let k = 1; k <= steps; k++) { levels += `<g class="${k % 2 === 1 ? 'A' : 'B'}" style="${levelStyle(k)}">`; close += '</g>'; }
   levels += disp + close;
 
   const header = `<!-- README Runtime ${meta.toolVersion} - generated card, wasm sha256:${meta.wasmSha256.slice(0, 16)}.

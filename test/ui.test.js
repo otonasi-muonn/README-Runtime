@@ -196,7 +196,10 @@ test('the step clock is the only animation of a card, so "reduce motion" stops a
     const own = svg.slice(svg.indexOf('.R{\n'));
     assert.deepEqual([...own.matchAll(/@keyframes (\w+)/g)].map((m) => m[1]), ['rrclk'], f);
     assert.deepEqual([...own.matchAll(/animation:(?!none)[^;}]*/g)].map((m) => m[0].split(' ')[0]), ['animation:rrclk'], f);
-    assert.match(svg, /@media \(prefers-reduced-motion:reduce\)\{\.R\{animation:none;/, f);
+    // the reduced-motion rule has the same specificity as the clock's, so it must come later
+    const clock = own.indexOf('.C{animation:rrclk ');
+    const reduce = own.search(/@media \(prefers-reduced-motion:reduce\)\{\.C\{animation:none;/);
+    assert.ok(clock >= 0 && reduce > clock, `${f}: the reduced-motion rule must follow .C's animation`);
     if (svg.includes('class="rr-ui"')) assert.match(svg, /\.rr-ui \*,\.rr-ui \*::before,\.rr-ui \*::after\{animation:none!important;transition:none!important\}/, f);
   }
 });

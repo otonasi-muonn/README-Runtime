@@ -53,6 +53,43 @@ test('changing only the initial value reproduces the Wasm trajectory in every br
   }
 });
 
+test('the clock drives only the display: levels never read it, so a tick does not restyle the run', async () => {
+  const r = await generate(collatz, opts);
+  const rule = (sel) => r.svg.match(new RegExp(`\\n\\${sel}\\{\\n([^}]*)\\}`))[1];
+  for (const sel of ['.R', '.A', '.B']) assert.ok(!rule(sel).includes('var(--rt)'), `${sel} reads the clock`);
+  assert.ok(rule('.D').includes('var(--rt)'), 'the display reads the clock');
+  assert.match(r.svg, /\n\.C\{animation:rrclk \d+ms steps\(\d+,jump-none\) infinite\}/);
+  // the clock element wraps the display, inside the innermost level
+  const opened = r.svg.match(/<g class="[AB]"[^>]*>/g);
+  assert.equal(opened.length, opts.steps);
+  opened.forEach((g, i) => assert.equal(g, `<g class="${(i + 1) % 2 ? 'A' : 'B'}" style="--rS${i + 1}:var(--rx)">`));
+  const tail = r.svg.slice(r.svg.lastIndexOf('<g class="B" style="--rS120:var(--rx)">'));
+  assert.ok(tail.includes('<g class="C"><g class="D">') && r.svg.split('class="C"').length === 2);
+});
+
+test('the display shows the Wasm run at every clock time, also for edited initial values', async () => {
+  const r = await generate(collatz, opts);
+  const T = r.machine.T;
+  // 77671 leaves the exact range at step 14; -17 cycles forever; 27 halts at 111
+  for (const init of [27, 97, 1, 77671, -17, 6171]) {
+    const tr = await referenceTrace(collatz, { exportName: 'step', haltValue: 1, init, steps: 120, rangeLimit: STORED_LIMIT });
+    const stop = tr.end.at;
+    const flags = { steps: 0, halt: 1, range: 2, trap: 4 }[tr.end.kind];
+    assert.ok(flags !== undefined && stop <= 120, `${init}: ${JSON.stringify(tr.end)}`);
+    for (const [name, model] of Object.entries(MODELS)) {
+      for (const t of new Set([0, 1, 2, 13, 14, 15, 60, stop - 1, stop, stop + 1, 120, T])) {
+        if (t < 0 || t > T) continue;
+        const inner = simulateMachine(r.machine, { model, init, t }).levels[120];
+        const shown = Math.min(t, stop);
+        const at = `init=${init} t=${t} model=${name}`;
+        assert.equal(inner.get('rsx'), shown, `step ${at}`);
+        if (tr.end.kind !== 'range' || shown < stop) assert.equal(inner.get('rcs'), tr.values[shown], `value ${at}`);
+        assert.equal(inner.get('rfs'), shown === stop ? flags : 0, `flags ${at}`);
+      }
+    }
+  }
+});
+
 test('values beyond the CSS-exact range are refused with an explanation', async () => {
   await assert.rejects(generate(collatz, { ...opts, init: 77671 }), (e) => e instanceof VerifyError && /outside the CSS-exact range/.test(e.message) && /step 14/.test(e.message));
 });

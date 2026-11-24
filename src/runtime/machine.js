@@ -7,7 +7,7 @@
 // level to a plain number before the next level reads it.
 
 import { compileStep } from '../compiler/program.js';
-import { MODELS, N, V, absV, add, clamp, evalAst, fn, max, mul, storeInteger, sub, toCss, translate, STORED_LIMIT } from '../compiler/css.js';
+import { MODELS, N, V, absV, add, clamp, evalAst, fn, max, min, mul, storeInteger, sub, toCss, translate, STORED_LIMIT } from '../compiler/css.js';
 import { analyzeRanges } from '../compiler/range.js';
 
 export const MAX_STEPS = 400; // WebKit stops resolving styles beyond ~510 nested levels (measured)
@@ -16,10 +16,17 @@ const P = { A: 'a', B: 'b' };
 const other = (p) => (p === 'A' ? 'B' : 'A');
 
 // Carried per-level values (each exists as --r<x>a and --r<x>b).
-//   x state | k depth | h halted | e error | c shown value | s shown step | f shown flags
-//   q halt step | a "active" (level reached by the clock and inside the run)
-const CARRIED = ['x', 'k', 'h', 'e', 'c', 's', 'f', 'q', 'a'];
+//   x state | k depth | h halted | e error | f flags of the step where the run stopped
+//   q halt step | z last step of the run (levels after a halt or an error are not run)
+// None of them depends on the clock: the chain is computed once, when the card is first
+// styled, and the clock only drives the display (see `select`), so a tick restyles the
+// display and nothing above it.
+const CARRIED = ['x', 'k', 'h', 'e', 'f', 'q', 'z'];
 const n = (name, parity) => `r${name}${P[parity]}`;
+// Each level also exports its state under a name of its own (an unregistered property set in
+// the level's style attribute), which the display selects by the clock.
+export const exportProp = (k) => `rS${k}`;
+export const levelStyle = (k) => `--${exportProp(k)}:var(--rx)`;
 
 export function buildMachine(program, { init, steps, hold = 0, haltValue = null }) {
   if (!Number.isInteger(init)) throw new RangeError('init must be an integer');
@@ -78,19 +85,16 @@ export function buildMachine(program, { init, steps, hold = 0, haltValue = null 
     out.push({ name: 'rrg', ast: flags.length === 1 ? flags[0] : fn('max', ...flags) });
     const err = usesTrap ? max(V('rtr'), V('rrg')) : V('rrg');
     const live = V('rlv');
-    const act = V(n('a', p));
-    out.push({ name: n('a', p), ast: mul(live, clamp(N(0), add(sub(V('rt'), V(n('k', p))), N(1)), N(1))) });
     out.push({ name: n('e', p), ast: max(V(n('e', q)), mul(live, err)) });
     out.push({ name: n('h', p), ast: max(V(n('h', q)), mul(live, hz)) });
-    const pick = (mine, parents) => add(mul(mine, act), mul(parents, sub(N(1), act)));
-    out.push({ name: n('c', p), ast: pick(xNew, V(n('c', q))) });
-    out.push({ name: n('s', p), ast: pick(V(n('k', p)), V(n('s', q))) });
-    // flags of the shown step: halted + 2*out-of-range + 4*trap
-    const shownFlags = add(add(hz, mul(N(2), V('rrg'))), usesTrap ? mul(N(4), V('rtr')) : N(0));
-    out.push({ name: n('f', p), ast: pick(shownFlags, V(n('f', q))) });
+    // flags of this step: halted + 2*out-of-range + 4*trap. Only the step where the run stops
+    // has any, and later levels are not live, so the sum is the flags of that step.
+    const stepFlags = add(add(hz, mul(N(2), V('rrg'))), usesTrap ? mul(N(4), V('rtr')) : N(0));
+    out.push({ name: n('f', p), ast: add(V(n('f', q)), mul(live, stepFlags)) });
     out.push({ name: n('q', p), ast: add(V(n('q', q)), mul(mul(live, hz), V(n('k', p)))) });
-    // trace column visibility: reached, and the value itself is valid
-    out.push({ name: 'rx', ast: xNew }, { name: 'rk', ast: V(n('k', p)) }, { name: 'ra', ast: mul(act, sub(N(1), err)) });
+    out.push({ name: n('z', p), ast: add(V(n('z', q)), live) });
+    // trace column of this step (shown once the clock reaches it): run, and the value is valid
+    out.push({ name: 'rx', ast: xNew }, { name: 'rk', ast: V(n('k', p)) }, { name: 'ra', ast: mul(live, sub(N(1), err)) });
     props.set('rlv', false); props.set('rrg', false);
   }
 
@@ -115,16 +119,30 @@ export function buildMachine(program, { init, steps, hold = 0, haltValue = null 
   root.push({ name: 'rrg', ast: flags0.length === 1 ? flags0[0] : fn('max', ...flags0) });
   root.push({ name: n('h', 'B'), ast: hz0 });
   root.push({ name: n('e', 'B'), ast: V('rrg') });
-  root.push({ name: n('c', 'B'), ast: X0 });
-  root.push({ name: n('s', 'B'), ast: N(0) });
   root.push({ name: n('f', 'B'), ast: add(hz0, mul(N(2), V('rrg'))) });
   root.push({ name: n('q', 'B'), ast: N(0) });
-  root.push({ name: n('a', 'B'), ast: N(1) });
+  root.push({ name: n('z', 'B'), ast: N(0) });
   root.push({ name: 'rx', ast: X0 }, { name: 'rk', ast: N(0) }, { name: 'ra', ast: sub(N(1), V('rrg')) });
+  // the root exports its state like the levels do, from its rule (its style attribute is the input)
+  root.push({ name: exportProp(0), ast: V('rx'), unregistered: true });
 
   const innermost = steps % 2 === 1 ? 'A' : 'B';
+  // The clock: the display (innermost) shows step min(t, z) of the run. Its state is picked
+  // from the exports of all levels, a sum in which exactly one term is non-zero.
+  const S = V('rsx');
+  const Z = V(n('z', innermost));
+  const isStep = (k) => (k === 0 ? max(N(0), sub(N(1), S)) : max(N(0), min(sub(N(k + 1), S), sub(S, N(k - 1)))));
+  let shown = mul(V(exportProp(0)), isStep(0));
+  for (let k = 1; k <= steps; k++) shown = add(shown, mul(V(exportProp(k)), isStep(k)));
+  const select = [
+    { name: 'rsx', ast: min(V('rt'), Z) },
+    { name: 'rcs', ast: shown },
+    // the flags of the step the run stopped at, once that step is shown
+    { name: 'rfs', ast: mul(V(n('f', innermost)), clamp(N(0), add(sub(S, Z), N(1)), N(1))) },
+  ];
+  for (const s of select) props.set(s.name, true);
   // names readable by the display at the innermost level
-  const out = { c: n('c', innermost), s: n('s', innermost), f: n('f', innermost), q: n('q', innermost), h: n('h', innermost), e: n('e', innermost) };
+  const out = { c: 'rcs', s: 'rsx', f: 'rfs', q: n('q', innermost), h: n('h', innermost), e: n('e', innermost) };
 
   // View functions run once, on the shown state, where the display lives. Their values are
   // inherited registered properties, so the reused UI markup below can read them.
@@ -150,7 +168,7 @@ export function buildMachine(program, { init, steps, hold = 0, haltValue = null 
   }
   return {
     props, root, level, steps, T, hold, init, haltKind, haltValue, guardCount,
-    out, display, viewProps, viewRanges,
+    out, select, display, viewProps, viewRanges,
     initProp: n('x', 'B'),
   };
 }
@@ -206,8 +224,14 @@ export function simulateMachine(machine, { t = machine.T, model = MODELS.exact, 
   levels.push(parent);
   for (let k = 1; k <= machine.steps; k++) {
     parent = run(machine.level[k % 2 === 1 ? 'A' : 'B']);
+    // the level's style attribute: an unregistered copy of its (already stored) state
+    parent.set(exportProp(k), parent.get('rx'));
     levels.push(parent);
   }
+  // the display: the clock and what it selects, merged into the innermost level
+  const shown = run(machine.select);
+  levels[machine.steps] = shown;
+  stats.levels.pop();
   return { levels, stats };
 }
 

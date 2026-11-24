@@ -2,7 +2,7 @@
 // Everything that depends on the program's values is driven by CSS custom properties that
 // the browser computes at view time; the markup only holds layout.
 import { N, V, toCss, signBit, absV, STORED_LIMIT } from '../compiler/css.js';
-import { declarations } from '../runtime/machine.js';
+import { declarations, levelStyle } from '../runtime/machine.js';
 
 export const TEMPLATE_VERSION = 1;
 
@@ -40,19 +40,24 @@ export function renderCard(machine, meta, opts = {}) {
   const steps = machine.steps;
 
   // ---------------------------------------------------------------- registered properties
-  const extra = ['rdv', 'rsx', 'rx0'];
+  const extra = ['rdv', 'rx0'];
   let css = '';
   for (const [name, inherits] of machine.props) css += `@property --${name}{syntax:'<integer>';inherits:${inherits};initial-value:0}\n`;
   for (const name of extra) css += `@property --${name}{syntax:'<integer>';inherits:true;initial-value:0}\n`;
 
   // ---------------------------------------------------------------- machine
   const rootDefs = machine.root.filter((d) => !d.literal);
-  css += `.R{\n${declarations(rootDefs, ' ')}\n animation:rrclk ${(machine.T + 1) * meta.stepMs}ms steps(${machine.T + 1},jump-none) infinite}\n`;
+  css += `.R{\n${declarations(rootDefs, ' ')}\n}\n`;
+  // The step clock is the only animation. It runs on .C, which wraps the display (.D) at the
+  // innermost level: a tick restyles the display only, never the levels that compute the run,
+  // and on a frame where the step does not change .C's style comes out the same, so nothing
+  // inside it is restyled. Any other animated element in an <img> SVG makes the browser
+  // re-rasterize the whole image every frame (a pulsing dot cost ~20% of a CPU core on a
+  // static card), and "reduce motion" stops the clock, i.e. everything (this rule comes
+  // after .C's, which it overrides).
+  css += `.C{animation:rrclk ${(machine.T + 1) * meta.stepMs}ms steps(${machine.T + 1},jump-none) infinite}\n`;
   css += `@keyframes rrclk{from{--rt:0}to{--rt:${machine.T}}}\n`;
-  // The step clock is the only animation: any other animated element in an <img> SVG makes
-  // the browser re-rasterize the whole image every frame (a pulsing dot cost ~20% of a CPU
-  // core on a static card), and "reduce motion" stops the clock, i.e. everything.
-  css += `@media (prefers-reduced-motion:reduce){.R{animation:none;--rt:${machine.T}}}\n`;
+  css += `@media (prefers-reduced-motion:reduce){.C{animation:none;--rt:${machine.T}}}\n`;
   css += `.A{\n${declarations(machine.level.A, ' ')}\n}\n`;
   css += `.B{\n${declarations(machine.level.B, ' ')}\n}\n`;
 
@@ -77,7 +82,9 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
   css += `.jo{fill:#d29922;opacity:calc(clamp(0, max(var(--rx) - ${2 ** bits - 1}, -1 * var(--rx) - ${2 ** bits}), 1) * var(--ra))}\n`;
   css += `.jm{fill:var(--mut);opacity:var(--ra)}\n`;
   // display (innermost level)
-  css += `.D{--rdv:${toCss(absV(V(out.c)))};--rsx:var(--${out.s})}\n`;
+  css += `.D{\n${declarations(machine.select, ' ')}\n --rdv:${toCss(absV(V(out.c)))}}\n`;
+  // the trace columns are not restyled by the clock: a cover hides the steps not reached yet
+  css += `.tm{transform:translateX(calc((var(--rsx) + 1) * ${r4(cw)}px))}\n`;
   css += `.hl{transform:translateX(calc(var(--${out.s}) * ${r4(cw)}px))}\n`;
   for (let d = 0; d < L.digits.n; d++) {
     const p = 10 ** d;
@@ -130,6 +137,7 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
   col += `<rect class="jm" x="${tr.x}" y="${tr.y + tr.h + 1}" width="${r4(Math.max(0.8, cw - (cw > 3 ? 1 : 0)))}" height="3"/>`;
   col += '</g>';
   defs += col;
+  defs += `<clipPath id="tmc"><rect x="${tr.x}" y="${tr.y - 1}" width="${tr.w + 1}" height="${tr.h + 5}"/></clipPath>`;
 
   // ---------------------------------------------------------------- static chrome
   const title = esc(meta.title);
@@ -151,7 +159,8 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
   body += `<text x="20" y="${H - 15}" class="mono mut" font-size="11">${esc(snippet)}</text>`;
 
   // ---------------------------------------------------------------- display (innermost)
-  let disp = '<g class="D">';
+  let disp = '<g class="C"><g class="D">';
+  disp += `<g clip-path="url(#tmc)"><rect class="tm" x="${tr.x}" y="${tr.y - 1}" width="${tr.w + 1}" height="${tr.h + 5}" style="fill:var(--panel)"/></g>`;
   const dg = L.digits;
   disp += '<g class="num">';
   disp += `<text class="neg mono" x="${dg.x - 2}" y="${dg.y + dg.h * 0.74}" font-size="40" font-weight="600">−</text>`;
@@ -182,7 +191,7 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
   disp += `<g class="st-err"><circle cx="${stx}" cy="${sy + 10}" r="4" style="fill:var(--red)"/><text x="${stx + 10}" y="${sy + 15}" class="lbl" style="fill:var(--red)">STOPPED</text></g>`;
   // highlight of the current trace column
   disp += `<rect class="hl" x="${r4(tr.x - 1)}" y="${tr.y - 3}" width="${r4(Math.max(2, cw + 1))}" height="${tr.h + 3}" rx="1" fill="none" stroke="var(--fg)" stroke-opacity=".55"/>`; // ends above the marker row
-  disp += '</g>';
+  disp += '</g></g>';
 
   // x0 label (lives in the root level, reads the init value directly)
   let x0 = `<g class="x0"><text x="40" y="${sy + 45}" class="lbl">INPUT x₀</text>`;
@@ -195,7 +204,7 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
   let levels = `<g class="R" style="--${machine.initProp}:${machine.init}"><use href="#col" class="col"/>${x0}`;
   let close = '</g>';
   for (let k = 1; k <= steps; k++) {
-    levels += `\n<g class="${k % 2 === 1 ? 'A' : 'B'}"><use href="#col" class="col"/>`;
+    levels += `\n<g class="${k % 2 === 1 ? 'A' : 'B'}" style="${levelStyle(k)}"><use href="#col" class="col"/>`;
     close += '</g>';
   }
   levels += disp + close;
