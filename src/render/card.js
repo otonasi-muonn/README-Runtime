@@ -49,6 +49,9 @@ export function renderCard(machine, meta, opts = {}) {
   const rootDefs = machine.root.filter((d) => !d.literal);
   css += `.R{\n${declarations(rootDefs, ' ')}\n animation:rrclk ${(machine.T + 1) * meta.stepMs}ms steps(${machine.T + 1},jump-none) infinite}\n`;
   css += `@keyframes rrclk{from{--rt:0}to{--rt:${machine.T}}}\n`;
+  // The step clock is the only animation: any other animated element in an <img> SVG makes
+  // the browser re-rasterize the whole image every frame (a pulsing dot cost ~20% of a CPU
+  // core on a static card), and "reduce motion" stops the clock, i.e. everything.
   css += `@media (prefers-reduced-motion:reduce){.R{animation:none;--rt:${machine.T}}}\n`;
   css += `.A{\n${declarations(machine.level.A, ' ')}\n}\n`;
   css += `.B{\n${declarations(machine.level.B, ' ')}\n}\n`;
@@ -62,8 +65,7 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
 .bg{fill:var(--bg);stroke:var(--line)}.pn{fill:var(--panel);stroke:var(--line)}
 .mut{fill:var(--mut)}.lbl{font-size:11px;letter-spacing:.08em;fill:var(--mut);font-weight:600}
 .big text{font-size:44px;font-weight:600}.sm text{font-size:15px;font-weight:600}
-.live{fill:var(--acc)}.pulse{animation:rrpulse 1.2s ease-in-out infinite}
-@keyframes rrpulse{50%{opacity:.25}}
+.live{fill:var(--acc)}
 `;
   // trace columns
   css += `.col{transform:translateX(calc(var(--rk) * ${r4(cw)}px))}\n`;

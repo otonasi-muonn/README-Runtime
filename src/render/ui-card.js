@@ -25,7 +25,9 @@ export function renderUiCard(machine, meta, ui) {
   css += `${ui.css}\n`;
   css += `.R{\n${declarations(machine.root.filter((d) => !d.literal), ' ')}\n animation:rrclk ${(machine.T + 1) * meta.stepMs}ms steps(${machine.T + 1},jump-none) infinite}\n`;
   css += `@keyframes rrclk{from{--rt:0}to{--rt:${machine.T}}}\n`;
-  css += `@media (prefers-reduced-motion:reduce){.R{animation:none;--rt:${machine.T}}}\n`;
+  // the step clock is the only animation of the card (see render/card.js); "reduce motion"
+  // stops it and any animation or transition of the project's own stylesheet in the UI
+  css += `@media (prefers-reduced-motion:reduce){.R{animation:none;--rt:${machine.T}}.rr-ui *,.rr-ui *::before,.rr-ui *::after{animation:none!important;transition:none!important}}\n`;
   css += `.A{\n${declarations(machine.level.A, ' ')}\n}\n.B{\n${declarations(machine.level.B, ' ')}\n}\n`;
   // display: view values for the shown state, the step counter, the health of the run
   css += `.D{\n${declarations(machine.display, ' ')}\n --rsx: var(--${out.s});\n --rok: calc(1 - min(1, max(round(down, ${F} / 2), var(--rvf))));\n}\n`;
@@ -37,7 +39,6 @@ svg{--rr-bg:#0d1117;--rr-line:#30363d;--rr-fg:#e6edf3;--rr-mut:#7d8590;--rr-acc:
 .rr-m{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;fill:var(--rr-mut)}
 .rr-bg{fill:var(--rr-bg);stroke:var(--rr-line)}
 .rr-l{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;font-size:11px;letter-spacing:.08em;font-weight:600;fill:var(--rr-mut)}
-.rr-pulse{animation:rrpulse 1.2s ease-in-out infinite}@keyframes rrpulse{50%{opacity:.25}}
 .rr-sd text{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;font-weight:600;fill:var(--rr-fg)}
 .rr-ui{opacity:calc(.25 + .75 * var(--rok));background:transparent}
 .st-run{opacity:calc((1 - min(1, ${F})) * (1 - clamp(0, var(--rsx) - ${steps - 1}, 1)) * var(--rok))}

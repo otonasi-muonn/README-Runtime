@@ -112,7 +112,7 @@ body.admin .card .del { display:block; }
  --ra: calc(1 - var(--rrg));
  animation:rrclk 10100ms steps(202,jump-none) infinite}
 @keyframes rrclk{from{--rt:0}to{--rt:201}}
-@media (prefers-reduced-motion:reduce){.R{animation:none;--rt:201}}
+@media (prefers-reduced-motion:reduce){.R{animation:none;--rt:201}.rr-ui *,.rr-ui *::before,.rr-ui *::after{animation:none!important;transition:none!important}}
 .A{
  --rxa: calc(var(--rxb) + 1);
  --rka: calc(var(--rkb) + 1);
@@ -360,7 +360,6 @@ svg{--rr-bg:#0d1117;--rr-line:#30363d;--rr-fg:#e6edf3;--rr-mut:#7d8590;--rr-acc:
 .rr-m{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;fill:var(--rr-mut)}
 .rr-bg{fill:var(--rr-bg);stroke:var(--rr-line)}
 .rr-l{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;font-size:11px;letter-spacing:.08em;font-weight:600;fill:var(--rr-mut)}
-.rr-pulse{animation:rrpulse 1.2s ease-in-out infinite}@keyframes rrpulse{50%{opacity:.25}}
 .rr-sd text{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;font-weight:600;fill:var(--rr-fg)}
 .rr-ui{opacity:calc(.25 + .75 * var(--rok));background:transparent}
 .st-run{opacity:calc((1 - min(1, var(--rfa))) * (1 - clamp(0, var(--rsx) - 176, 1)) * var(--rok))}

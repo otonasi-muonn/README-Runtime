@@ -187,6 +187,20 @@ test('numbers inside SVG text become variants of the <svg> element', async () =>
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
+test('the step clock is the only animation of a card, so "reduce motion" stops all motion', () => {
+  // any other animated element in an <img> SVG makes browsers re-rasterize the whole image
+  // every frame: a pulsing dot kept ~20% of a CPU core busy on a static card (bench/)
+  for (const f of fs.readdirSync(path.join(root, 'readme-runtime')).filter((x) => x.endsWith('.svg'))) {
+    const svg = fs.readFileSync(path.join(root, 'readme-runtime', f), 'utf8');
+    // the card's own CSS comes after the project's stylesheet (which may define animations)
+    const own = svg.slice(svg.indexOf('.R{\n'));
+    assert.deepEqual([...own.matchAll(/@keyframes (\w+)/g)].map((m) => m[1]), ['rrclk'], f);
+    assert.deepEqual([...own.matchAll(/animation:(?!none)[^;}]*/g)].map((m) => m[0].split(' ')[0]), ['animation:rrclk'], f);
+    assert.match(svg, /@media \(prefers-reduced-motion:reduce\)\{\.R\{animation:none;/, f);
+    if (svg.includes('class="rr-ui"')) assert.match(svg, /\.rr-ui \*,\.rr-ui \*::before,\.rr-ui \*::after\{animation:none!important;transition:none!important\}/, f);
+  }
+});
+
 test('inference refuses a non-affine dependence on a wide view', async () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rr-ui-'));
   try {
