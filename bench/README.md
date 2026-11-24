@@ -4,10 +4,10 @@ README に動くデモを載せるとき、README Runtime のSVGカードと、�
 
 ## 条件
 
-- **同じUI**: mockcraft カード（UIdesign の実コンポーネント、[`examples/mockcraft`](../examples/mockcraft)）。録画は、同じWasmで各状態を計算し、同じReactコンポーネントと同じCSSをヘッドレスChromiumのページに描画してスクリーンショットします（アプリを録画するのと同じ方法、[`record.mjs`](record.mjs)）。カードの枠（タイトル・STEP表示）は同じ配置のHTMLです。
+- **同じUI**: mockcraft カード（UIdesign の実コンポーネント、[`examples/mockcraft`](../examples/mockcraft)）。録画は、同じWasmで各状態を計算し、同じReactコンポーネントと同じCSSをヘッドレスChromiumのページに描画してスクリーンショットします（アプリを録画するのと同じ方法、[`record.mjs`](record.mjs)）。UI 部分は同じで、Firefox・WebKit では画素単位で一致します。カードの枠（タイトルと STEP 表示）は簡略化した HTML です。
 - **同じ状態遷移と再生時間**: 1ステップ150ms、最後に12ステップ保持してループ。40・80・160・320ステップ（53〜333フレーム、8〜50秒）。録画は1ステップ1フレームです。
-- **画質**: SVGはベクターで、どの倍率でも正確です。録画は WebP lossless（ソースと完全一致）、WebP lossy q80、MP4 H.264 CRF18・CRF28（yuv420p）、MP4 AV1（SVT-AV1 CRF35）。ソースフレームに対するSSIM・PSNRを実測します。
-- **ビルド**: README Runtime は `readme-runtime build`（AssemblyScriptのコンパイル、バンドル、UIの推定、Wasmとの照合）。録画は全フレームの描画とffmpegでのエンコード。キャッシュは、README Runtime がロックファイル、録画が入力のハッシュとフレームのキャッシュ（表示内容が同じフレームを再利用）です。各値は3回の中央値です。
+- **画質**: SVGはベクターで、拡大すると再描画されます。録画は WebP lossless（ソースと完全一致）、WebP lossy q80、MP4 H.264 CRF18・CRF28（yuv420p）、MP4 AV1（SVT-AV1 CRF35）。ソースフレームに対するSSIM・PSNRを実測します。
+- **ビルド**: README Runtime は `readme-runtime build`（AssemblyScriptのコンパイル、バンドル、UIの推定、Wasmとの照合）。録画は全フレームの描画とffmpegでのエンコード。キャッシュは、README Runtime がロックファイル、録画が入力のハッシュとフレームのキャッシュ（表示内容が同じフレームを再利用）です。ビルド時間とエンコード時間は3回の中央値で、CPU・メモリ・初回描画は各1回の計測です。
 
 ## 再現
 
@@ -15,6 +15,7 @@ README に動くデモを載せるとき、README Runtime のSVGカードと、�
 npm ci                       # Playwright のブラウザも必要: npx playwright install chromium firefox webkit
 node bench/pipeline.mjs      # ビルド時間・サイズ・画質（ffmpeg 7以上がPATHに必要）
 node bench/playback.mjs      # 各ブラウザでの再生の正しさ・CPU・メモリ・Chromiumのトレース
+node bench/loop.mjs          # 1周したあとも再生が続くか
 node bench/offscreen.mjs     # 画面外・「動きを減らす」設定での負荷
 node bench/nesting.mjs       # 400ステップを超える深いネスト
 node bench/githistory.mjs    # リポジトリの増え方
@@ -26,46 +27,49 @@ node bench/report.mjs        # 下の表を生成
 
 ## 結論（測定結果から）
 
-数値はすべて下の「結果」の表から取っています。
+数値はすべて下の「結果」の表から取っています。CPU・メモリ・初回描画は各1回の計測で、数ポイントの差は区別できません。
 
 | 観点 | README Runtime の SVG | 録画（アニメーション WebP / MP4） |
 |---|---|---|
 | GitHub の README に置けるか | 置ける（`<img>`、自動再生・ループ） | WebP は置ける。MP4 はリポジトリのファイルでは再生できない（`<video>` は除去され、`application/octet-stream` で配信され、CSP の `media-src` の外） |
-| 転送量 | **8.6 KB で一定**（40〜320ステップ、gzip） | ステップ数に比例する。WebP 177 KB〜1.54 MB、MP4 24〜226 KB |
-| 2倍の画面 | そのまま鮮明 | 2倍の解像度が要る（160ステップで WebP lossless 1.67 MB、MP4 311 KB） |
-| 初回ビルド | 4.4〜5.7 秒（ステップ数にほぼ依存しない） | MP4 2.2〜11.3 秒、WebP lossless 3.0〜17.9 秒（ステップ数に比例）。**80ステップ以下は録画（MP4）が速く、160ステップ以上は README Runtime が速い** |
-| デザインの変更 | 2.9〜4.4 秒 | 1.9〜18.8 秒（全フレームを描き直す） |
-| CI での一致確認 | `check` 3.0〜4.4 秒で、カードがソースと一致することを確かめられる | 手段がない |
-| Git 履歴（変更1回あたり） | **+0.6〜0.7 KiB** | WebP +0.65〜1.5 MB、MP4 +112〜218 KiB |
-| 表示中の CPU（1コア＝100%） | **ステップ数に比例して重い**。40ステップで 19〜23%、80で 20〜39%、160で 43〜75%、320で 83〜112% | 0〜14% |
-| 表示中のメモリ | Chromium ではステップ数とともに増える（+47〜+201 MB）。Firefox では録画より少ない（+33〜+40 MB） | Chromium で MP4 +28 MB、WebP +70〜+118 MB |
-| 画面外・動きを減らす設定 | 画面外では Chromium と Firefox は止まるが、WebKit は止まらない（68%）。「動きを減らす」では静止する（Chromium・Firefox で確認） | 画面外では止まる。「動きを減らす」でも動き続ける。WebKit は MP4 のループを1回で止める |
-| ステップ数の上限 | 400。超えると WebKit は 512 段で表示が壊れ、Chromium は 1024 段でクラッシュする。Chromium は 320ステップで更新が 1秒あたり 5.8 回に落ち、約13%のステップを飛ばす | 実質なし（ファイルが大きくなるだけ） |
-| 表せる内容 | 整数の状態から計算できる UI（固定小数点、64値以内の切り替え、一次式の数値） | 何でも（Canvas、WebGL、動画、写真、Webフォント、実際の操作） |
+| 転送量 | **約 8.6 KB で一定**（40〜320ステップ、gzip -9。GitHub の実配信は 160ステップで 8,960 B） | ステップ数に比例する。WebP 177 KB〜1.54 MB、MP4 24〜226 KB |
+| 2倍の画面 | ベクターなので再描画される（2倍での画質比較は未実施） | 2倍の解像度で作るとサイズが増える（160ステップで WebP lossless 1.67 MB、MP4 311 KB） |
+| 初回ビルド（コンパイル込み） | 4.2〜5.6 秒（ステップ数にあまり依存しない） | MP4 3.4〜12.7 秒、WebP lossless 4.2〜19.2 秒（ステップ数に比例）。**40ステップは録画（MP4）が速く、80ステップはほぼ同じ（実行ごとの揺れの範囲内）、160ステップ以上は README Runtime が速い** |
+| デザインの変更 | 3.0〜4.5 秒 | 1.7〜17.7 秒（全フレームを描き直す） |
+| CI での一致確認 | 標準の `check`（3.1〜4.6 秒）で、カードがソースと一致することを確かめられる | 今回の録画パイプラインには実装していない。再描画して比べれば実装はできるが、エンコーダーのバイト再現性は未確認 |
+| Git 履歴（アクセントカラーの変更1回あたり） | **+0.6〜0.7 KiB** | WebP +0.65〜1.5 MB、MP4 +112〜218 KiB |
+| 表示中の CPU（1コア＝100%） | **ステップ数に比例して重い**。40ステップで 16〜24%、80で 28〜39%、160で 41〜75%、320で 85〜112% | ほとんど 0〜10%。Playwright の WebKit では 21% まで |
+| 表示中のメモリ | Chromium ではステップ数とともに増える（+47〜+191 MB）。Firefox では録画と同程度か少ない（+36〜+38 MB） | Chromium で MP4 +27〜+37 MB、WebP +70〜+124 MB |
+| 画面外・動きを減らす設定 | 画面外では Chromium と Firefox は止まるが、Windows 上の Playwright WebKit は止まらない（68%）。「動きを減らす」では静止する（Chromium と Firefox で確認） | 画面外では止まる。「動きを減らす」でも動き続ける |
+| ループ | 全エンジンでループする | WebP は全エンジンでループする。Windows 上の Playwright WebKit は MP4 を1周で止め、AV1 は再生しない |
+| ステップ数の上限 | 400。超えると WebKit は 512 段で表示が壊れ、Chromium は 1024 段でクラッシュした。Chromium は 320ステップで更新が 1秒あたり約 6 回に落ちる（目標は 6.7 回） | 実質なし（ファイルが大きくなるだけ） |
+| 表せる内容 | 整数の状態から計算できる UI（固定小数点、64値以内の切り替え、一次式の数値） | 画面に映るものなら何でも（Canvas、WebGL、動画、写真、Webフォント、実際の操作） |
 
 **README Runtime を選ぶべきプロジェクト**
 
-- GitHub の README に動くデモを置き、UI やロジックを今後も直していく。カードは変更のたびに数秒で作り直せる。CI の `check` がソースとの一致を保証し、Git 履歴もほとんど増えない。録画では、変更のたびに WebP なら 0.7〜1.5 MB ずつ増える。
-- 状態遷移が長い（100ステップ以上）。転送量は 8.6 KB のままで、160ステップ以上ではビルドも録画より速い。
-- 2倍の画面での鮮明さ、「動きを減らす」設定への対応、SVG の初期値を書き換えて別の状態を見せることに価値がある。
-- 条件: 表示中の CPU を許容できること。CPU は「ステップ数 × 1秒あたりのステップ数」に比例する。Chromium では1ステップの更新ごとに、入れ子1段あたり約 0.47 ms かかる。40〜80ステップを 150 ms 間隔で進めると、1コアの 19〜39%。ステップを減らすか、間隔を長くすると下がる。
+- GitHub の README に動くデモを置き、UI やロジックを今後も直していく。カードは変更のたびに数秒で作り直せる。標準の `check` が CI でソースとの一致を保証し、Git 履歴もほとんど増えない。WebP の録画では、色を変えただけでも 1回ごとに 0.65〜1.5 MB 増える。
+- 状態遷移が長い（測ったのは 160ステップ以上）。転送量は約 8.6 KB のままで、ビルドも録画より速い。
+- 拡大表示での鮮明さ、「動きを減らす」設定への対応、SVG の初期値を書き換えて別の状態を見せることに価値がある。
+- 条件: 表示中の CPU を許容できること。CPU は、ステップの更新回数と入れ子の段数（ステップ数）の積に比例する。Chromium では、更新1回・入れ子1段あたり約 0.47 ms。40〜80ステップを 150 ms 間隔で進めると、1コアの 16〜39%。間隔を 300 ms、600 ms にすると、320ステップでも 1コアの約 60%、約 31% に下がった（Critic の追加計測）。
 
 **録画を選ぶべき場合**
 
-- 閲覧者の CPU や電池を優先する。録画は表示中 0〜14% だが、README Runtime は 160ステップ以上で 1コアの半分〜1コア分を使う。Safari（WebKit）では画面外でも止まらない。
-- 短いデモ（80ステップ以下）で、ビルドの速さを優先する（MP4 2.2〜3.8 秒、README Runtime 4.4 秒）。
-- README 以外（ドキュメントサイト、SNS、スライド、Issue のコメント）にも載せる。MP4 は小さく、どこでも再生できる。ただし GitHub の README に置けるのは WebP（または GIF）。
-- README Runtime で表せない内容がある。Canvas・WebGL・動画・写真・Webフォント、浮動小数点の物理、400ステップを超える長さ、60fps の滑らかな動き、実際の操作の記録。
+- 閲覧者の CPU を優先する（電池は未測定）。録画は表示中ほとんど 0〜10% だが、README Runtime は 160ステップ以上で 1コアの半分〜1コア分を使う。Windows 上の Playwright WebKit では画面外でも止まらない。
+- 短いデモ（40ステップ程度）で、ビルドの速さを優先する（MP4 3.4 秒、README Runtime 4.2 秒）。
+- README 以外の配信先（ドキュメントサイト、SNS、スライド、Issue のコメント）にも載せる。MP4 は小さく、対応する環境で再生できる。ただし AV1 は WebKit で再生されず、Windows 上の Playwright WebKit は MP4 のループを止めた。GitHub の README に置けるのは WebP（または GIF、未測定）。
+- README Runtime で表せない内容がある。Canvas・WebGL・動画・写真・Webフォント、浮動小数点の物理、400ステップを超える長さ、実際の操作の記録。短い間隔の長いアニメーションも、CPU がステップ数に比例して増えるので録画が向く（60fps 相当の可否は測っていない）。
 
 この比較の途中で、README Runtime の不具合を1件見つけて修正しました。装飾用の点滅アニメーションのせいで、静止中のカードでも毎フレーム全体を描き直していました（Chromium で 1コアの約 20%）。この点滅は「動きを減らす」設定にも従っていませんでした（134f97e）。
 
-**測っていないこと**: 実機の Safari（macOS/iOS）、スマートフォン、電池の消費（CPU 時間で代用）、GPU を使う通常の画面表示（計測はすべてヘッドレス）、ネットワークの遅延、Web UI でアップロードした動画（user-attachments）、GIF。
+独立した Critic（Codex）が、40・80・320ステップの再計測と追加の検証を行いました。サイズと画質は完全に一致し、SVG の CPU 負荷は Chrome の CDP による測定と GPU を有効にした Chrome でも再現しました。録画側の初回ビルドにコンパイルを含めていなかった点、CI 確認についての断言、ベースラインの偏り、トレースの二重計上、録画の入力ハッシュの漏れ、ループの判定は、指摘を受けて直してから測り直しています。
+
+**測っていないこと**: 実機の Safari（macOS/iOS）、スマートフォンと低性能の端末、電池の消費、headful の画面表示（Chromium は SwiftShader、Chrome は GPU を使うヘッドレス）、ネットワークの遅延、Web UI でアップロードした動画（user-attachments）、GIF、アクセシビリティ（代替テキスト・読み上げ・一時停止）、ダークモード、複数のカードの同時表示、README 以外のレンダラー（npm、IDE、メール）、ほかの UI でのサイズと CPU。
 
 **計測の限界**:
 - 録画パイプラインは、コンポーネントを直接描画している。実際のアプリの起動や操作の自動化を含まないので、録画側に有利な条件。
-- CPU は Windows のプロセス CPU 時間の 8 秒間の差分で、数ポイント揺れる。
+- CPU は Windows のプロセス CPU 時間の差分で、採取に約 1 秒かかる。同じ SVG を測り直すと 14 ポイント違ったこともある（Firefox、80ステップ）。
 - ビルド時間は、全体の再実行どうしで最大 2 割ほど違う。
-- Playwright の「動きを減らす」の再現は `<img>` の中の SVG に届かないので、Chromium と Firefox はブラウザの設定で切り替えて測った。WebKit は未確認。
+- 録画の枠は、カードの枠（タイトルとステップ表示）を簡略化したもの。UI 部分は Firefox・WebKit で画素単位で一致する。
 
 ## 結果
 
@@ -75,7 +79,7 @@ node bench/report.mjs        # 下の表を生成
 
 ### サイズ（閲覧者がダウンロードするバイト数）
 
-GitHub は SVG を gzip で配信し、WebP と MP4 は圧縮せずに配信します（実測: [`github.json`](results/github.json)）。太字が実際の転送量です。
+GitHub は SVG を gzip で配信し、WebP と MP4 は圧縮せずに配信します（実測: [`github.json`](results/github.json)）。太字は転送量の目安で、SVG は gzip -9 のサイズ、WebP と MP4 はファイルサイズです。GitHub が実際に配信した 160 ステップの SVG は、gzip で 8,960 B でした。
 
 | ステップ（フレーム数、再生時間） | SVG | WebP lossless | WebP q80 | MP4 H.264 CRF18 | MP4 H.264 CRF28 | MP4 AV1 |
 |---|---|---|---|---|---|---|
@@ -84,128 +88,143 @@ GitHub は SVG を gzip で配信し、WebP と MP4 は圧縮せずに配信し�
 | 160（173、25.9 秒） | **8.6 KB**（非圧縮 63.5 KB） | **796.4 KB** | **683.9 KB** | **114.4 KB** | **69.5 KB** | **72.3 KB** |
 | 320（333、50.0 秒） | **8.6 KB**（非圧縮 66.1 KB） | **1.54 MB** | **1.31 MB** | **225.8 KB** | **136.2 KB** | **137.7 KB** |
 
-画質（ソースのフレームに対する SSIM / PSNR、320 ステップ、等倍）: SVG はベクターでどの倍率でも正確。webp-lossless 1 / ∞、webp-q80 0.982602 / 35.9 dB、mp4-h264-crf18 0.990004 / 36.4 dB、mp4-h264-crf28 0.987502 / 35.8 dB、mp4-av1-crf35 0.988464 / 36.2 dB。H.264 は yuv420p の色の間引きで、文字の色の縁が PSNR 35 dB 付近で頭打ちになります。
+画質（ソースのフレームに対する SSIM / PSNR、320 ステップ、等倍。全画面の値なので、背景が広いほど高く出ます）: SVG はベクターで、拡大しても再描画されます（2倍の画面での画質比較はしていません）。webp-lossless 1 / ∞、webp-q80 0.982602 / 35.9 dB、mp4-h264-crf18 0.990004 / 36.4 dB、mp4-h264-crf28 0.987502 / 35.8 dB、mp4-av1-crf35 0.988464 / 36.2 dB。H.264 は yuv420p の色の間引きで、文字の色の縁が PSNR 35 dB 付近で頭打ちになります。
 
-2倍の画面: SVG はそのまま鮮明です。録画を同じ鮮明さにするには2倍の解像度が要ります（160 ステップ）: webp-lossless 1.67 MB（等倍 796.4 KB）、webp-q80 1.45 MB（等倍 683.9 KB）、mp4-h264-crf18 311.1 KB（等倍 114.4 KB）。
+2倍の画面: 録画を2倍の解像度で作るとサイズが増えます（160 ステップ）: webp-lossless 1.67 MB（等倍 796.4 KB）、webp-q80 1.45 MB（等倍 683.9 KB）、mp4-h264-crf18 311.1 KB（等倍 114.4 KB）。
 
 ### ビルド時間（3回の中央値）
 
-README Runtime（RR）は `readme-runtime build`（CLI の起動、AssemblyScript のコンパイル、バンドル、UIの推定、Wasm との照合を含む）。録画（Rec）は全フレームの描画（ブラウザの起動を含む）とエンコード。ロジックの変更では両方とも同じ AssemblyScript を再コンパイルします。録画のフレームキャッシュは、表示内容が同じフレームを前の版から再利用します。
+README Runtime（RR）は `readme-runtime build`（CLI の起動、AssemblyScript のコンパイル、バンドル、UIの推定、Wasm との照合を含む）。録画（Rec）は全フレームの描画（ブラウザの起動を含む）とエンコードで、初回とロジックの変更には RR と同じ AssemblyScript のコンパイルを加えています。録画のスタイル変更とロジック変更のエンコード時間は、元の版のエンコード時間の中央値で代用しています（推計）。録画のフレームキャッシュは、表示内容が同じフレームを前の版から再利用します。「変更なし（キャッシュ）」は、RR が CLI の起動を含み、録画はプロセス内のハッシュ計算だけです。同じ条件で全体を再実行すると、ビルド時間は最大 2 割ほど変わります。
 
-| ステップ | RR 初回 | RR 変更なし（キャッシュ） | RR 変更なし（キャッシュなし） | RR スタイル変更 | RR ロジック変更 | RR check（CI） | Rec 初回（MP4 〜 WebP lossless） | Rec 変更なし（キャッシュ） | Rec スタイル変更 | Rec ロジック変更（フレームキャッシュあり / なし） |
+| ステップ | RR 初回 | RR 変更なし（キャッシュ） | RR 変更なし（キャッシュなし） | RR スタイル変更 | RR ロジック変更 | RR check（CI） | Rec 初回（コンパイル込み、MP4 〜 WebP lossless） | Rec 変更なし（キャッシュ） | Rec スタイル変更 | Rec ロジック変更（フレームキャッシュあり / なし） |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 40 | 4.4 s | 180 ms | 4.2 s | 2.9 s | 4.1 s | 3.0 s | 2.2 s 〜 3.0 s | 2 ms | 1.9 s 〜 2.7 s | 2.4 s（22 フレーム再利用） / 3.4 s |
-| 80 | 4.4 s | 165 ms | 4.6 s | 3.8 s | 4.5 s | 3.2 s | 3.8 s 〜 5.5 s | 2 ms | 3.2 s 〜 4.9 s | 3.7 s（22 フレーム再利用） / 4.4 s |
-| 160 | 4.9 s | 154 ms | 4.7 s | 3.7 s | 4.7 s | 3.6 s | 6.4 s 〜 9.6 s | 2 ms | 6.1 s 〜 9.3 s | 6.8 s（22 フレーム再利用） / 7.0 s |
-| 320 | 5.7 s | 154 ms | 5.7 s | 4.4 s | 5.6 s | 4.4 s | 11.3 s 〜 17.9 s | 3 ms | 12.1 s 〜 18.8 s | 12.3 s（22 フレーム再利用） / 12.7 s |
+| 40 | 4.2 s | 144 ms | 4.2 s | 3.0 s | 4.2 s | 3.1 s | 3.4 s 〜 4.2 s | 6 ms | 1.7 s 〜 2.5 s | 2.3 s（22 フレーム再利用） / 3.2 s |
+| 80 | 4.5 s | 146 ms | 4.8 s | 3.2 s | 4.5 s | 3.2 s | 4.5 s 〜 6.1 s | 6 ms | 3.2 s 〜 4.8 s | 3.9 s（22 フレーム再利用） / 4.7 s |
+| 160 | 5.3 s | 140 ms | 4.9 s | 3.6 s | 4.8 s | 3.5 s | 7.6 s 〜 10.8 s | 6 ms | 6.4 s 〜 9.6 s | 6.4 s（22 フレーム再利用） / 7.1 s |
+| 320 | 5.6 s | 149 ms | 5.6 s | 4.5 s | 5.9 s | 4.6 s | 12.7 s 〜 19.2 s | 5 ms | 11.3 s 〜 17.7 s | 11.9 s（22 フレーム再利用） / 12.0 s |
 
-録画の時間は MP4（エンコードが最速）〜 WebP lossless（最遅）の幅です。録画には CI で「生成物がソースと一致するか」を確かめる手段がなく、RR の `check` に当たる列はありません。
+録画の時間は MP4（エンコードが最速）〜 WebP lossless（最遅）の幅です。RR の `check` は、カードがソースと一致することを CI で確かめる標準の機能です。今回の録画パイプラインには同等の確認を実装していません。再描画して比べれば実装はできますが、エンコーダーの出力が環境をまたいで同じバイトになるかは確かめていません。
 
-### リポジトリの増え方（デザインを 8 回変更してコミット、git gc 後の pack サイズ）
+### リポジトリの増え方（最初の版と、アクセントカラーだけを変えた 7 回の変更をコミット、git gc 後の pack サイズ）
+
+レイアウトやロジックの変更、依存の更新、Git LFS、浅い clone は試していません。
 
 | ステップ | README Runtime（SVG＋ロック＋wasm） | WebP lossless | WebP q80 | MP4 H.264 CRF18 |
 |---|---|---|---|---|
 | 160 | 15 KiB（1回あたり +0.6 KiB） | 6197 KiB（1回あたり +775.3 KiB） | 5317 KiB（1回あたり +664.6 KiB） | 897 KiB（1回あたり +112.3 KiB） |
 | 320 | 16 KiB（1回あたり +0.7 KiB） | 12245 KiB（1回あたり +1531.9 KiB） | 10448 KiB（1回あたり +1306.1 KiB） | 1742 KiB（1回あたり +217.9 KiB） |
 
-### 再生（ヘッドレス、表示中の 8 秒間、空ページとの差）
+### 再生（ヘッドレス、表示中の約 8 秒間、各1回の計測）
 
-CPU はブラウザのプロセス全体の CPU 時間（1コア＝100%）、メモリはワーキングセットの増分です。正しさは、表示中のフレームがソースのどれかと一致し、150 ms ごとに1ステップ進むことで判定します。Chromium の列は、トレースから求めた1秒あたりの処理時間（ms）です。
+CPU はブラウザのプロセス全体の CPU 時間（1コア＝100%）から、前後に測った空ページの平均を引いた値です（負の値もそのまま表示）。CPU の採取（Windows の CIM 問い合わせ）には約 1 秒以上かかるため、数ポイントの差は区別できません。メモリはワーキングセットの増分で、共有ページを重複して数えます。「サンプル」は、約 4 秒間に撮った 14 枚の画面が、それぞれソースのどれかのフレームと一致し、平均して 150 ms に1ステップ進むことを表します。途中のステップが飛んでも平均が合えば ○ になり、色の正しさの確認でもありません（画素単位の正しさは `test/browser/ui.js` で確認）。ループの正しさは次の表です。Chromium の列は、トレースから求めた1秒あたりの処理時間（ms、同じスレッドで重なる区間は1回だけ数える）です。
 
-| ブラウザ | ステップ | 形式 | 正しく再生 | CPU | メモリ | Chromium のトレース（ms/秒） |
+| ブラウザ | ステップ | 形式 | サンプルの一致と平均速度 | CPU | メモリ | Chromium のトレース（ms/秒） |
 |---|---|---|---|---|---|---|
-| chromium 159.0.8154.6 | 40 | SVG | ○（0.97） | 23.4 % | +47 MB | style 130.9（6.5 回/秒 × 19.3 ms）、paint 4.7、raster 6.6、video 0 |
-| chromium 159.0.8154.6 | 40 | webp-lossless | ○（0.98） | 5.6 % | +71 MB | style 0、paint 0、raster 1.8、video 0 |
-| chromium 159.0.8154.6 | 40 | webp-q80 | ○（1.01） | 3.7 % | +70 MB | style 0、paint 0、raster 1.8、video 0 |
-| chromium 159.0.8154.6 | 40 | mp4-h264-crf18 | ○（0.97） | 3.0 % | +28 MB | style 0、paint 0.1、raster 0、video 0 |
-| chromium 159.0.8154.6 | 40 | mp4-av1-crf35 | ○（1.01） | 2.3 % | +37 MB | style 0、paint 0.1、raster 0、video 0 |
-| chromium 159.0.8154.6 | 80 | SVG | ○（0.98） | 36.3 % | +71 MB | style 243（6.5 回/秒 × 36.7 ms）、paint 5.8、raster 8.3、video 0 |
-| chromium 159.0.8154.6 | 80 | webp-lossless | ○（1.04） | 8.6 % | +115 MB | style 0、paint 0、raster 2.8、video 0 |
-| chromium 159.0.8154.6 | 80 | webp-q80 | ○（0.9） | 4.2 % | +114 MB | style 0、paint 0、raster 3.5、video 0 |
-| chromium 159.0.8154.6 | 80 | mp4-h264-crf18 | ○（1.03） | 2.1 % | +27 MB | style 0、paint 0、raster 0、video 0 |
-| chromium 159.0.8154.6 | 80 | mp4-av1-crf35 | ○（1.02） | 1.8 % | +36 MB | style 0、paint 0、raster 0、video 0 |
-| chromium 159.0.8154.6 | 160 | SVG | ○（1.03） | 65.8 % | +127 MB | style 494.7（6.5 回/秒 × 75.7 ms）、paint 6.8、raster 9.1、video 0 |
-| chromium 159.0.8154.6 | 160 | webp-lossless | ○（1） | 4.9 % | +115 MB | style 0、paint 0、raster 2.5、video 0 |
-| chromium 159.0.8154.6 | 160 | webp-q80 | ○（0.97） | 5.6 % | +114 MB | style 0、paint 0、raster 2.6、video 0 |
-| chromium 159.0.8154.6 | 160 | mp4-h264-crf18 | ○（1.03） | 3.2 % | +28 MB | style 0、paint 0、raster 0、video 0 |
-| chromium 159.0.8154.6 | 160 | mp4-av1-crf35 | ○（1） | 3.9 % | +37 MB | style 0、paint 0、raster 0、video 0 |
-| chromium 159.0.8154.6 | 320 | SVG | ○（1.01） | 111.6 % | +201 MB | style 865.9（5.8 回/秒 × 150.6 ms）、paint 8.5、raster 9.5、video 0 |
-| chromium 159.0.8154.6 | 320 | webp-lossless | ○（0.98） | 7.4 % | +117 MB | style 0、paint 0、raster 2.7、video 0 |
-| chromium 159.0.8154.6 | 320 | webp-q80 | ○（1.01） | 8.1 % | +118 MB | style 0、paint 0、raster 2.6、video 0 |
-| chromium 159.0.8154.6 | 320 | mp4-h264-crf18 | ○（1.01） | 1.1 % | +28 MB | style 0、paint 0、raster 0、video 0 |
-| chromium 159.0.8154.6 | 320 | mp4-av1-crf35 | ○（1.01） | 0.9 % | +38 MB | style 0、paint 0、raster 0、video 0 |
-| firefox 159.0 | 40 | SVG | ○（1） | 21.5 % | +36 MB | – |
-| firefox 159.0 | 40 | webp-lossless | ○（1.02） | 5.3 % | +54 MB | – |
-| firefox 159.0 | 40 | webp-q80 | ○（1） | 3.4 % | +54 MB | – |
-| firefox 159.0 | 40 | mp4-h264-crf18 | ○（0.97） | 0.0 % | +48 MB | – |
-| firefox 159.0 | 40 | mp4-av1-crf35 | ○（0.97） | 6.1 % | +45 MB | – |
-| firefox 159.0 | 80 | SVG | ○（1.05） | 20.0 % | +33 MB | – |
-| firefox 159.0 | 80 | webp-lossless | ○（0.89） | 0.0 % | +57 MB | – |
-| firefox 159.0 | 80 | webp-q80 | ○（0.9） | 2.8 % | +54 MB | – |
-| firefox 159.0 | 80 | mp4-h264-crf18 | ○（1.07） | 4.6 % | +45 MB | – |
-| firefox 159.0 | 80 | mp4-av1-crf35 | ○（1.06） | 3.0 % | +51 MB | – |
-| firefox 159.0 | 160 | SVG | ○（0.99） | 43.0 % | +34 MB | – |
-| firefox 159.0 | 160 | webp-lossless | ○（0.97） | 0.6 % | +56 MB | – |
-| firefox 159.0 | 160 | webp-q80 | ○（1.04） | 2.3 % | +56 MB | – |
-| firefox 159.0 | 160 | mp4-h264-crf18 | ○（0.98） | 3.4 % | +46 MB | – |
-| firefox 159.0 | 160 | mp4-av1-crf35 | ○（1.02） | 1.7 % | +44 MB | – |
-| firefox 159.0 | 320 | SVG | ○（1.02） | 82.6 % | +40 MB | – |
-| firefox 159.0 | 320 | webp-lossless | ○（1.03） | 4.0 % | +59 MB | – |
-| firefox 159.0 | 320 | webp-q80 | ○（1.03） | 0.9 % | +57 MB | – |
-| firefox 159.0 | 320 | mp4-h264-crf18 | ○（0.99） | 1.1 % | +50 MB | – |
-| firefox 159.0 | 320 | mp4-av1-crf35 | ○（0.99） | 2.4 % | +53 MB | – |
-| webkit 27.2 | 40 | SVG | ○（1.01） | 21.6 % | +42 MB | – |
-| webkit 27.2 | 40 | webp-lossless | ○（1.04） | 6.5 % | +93 MB | – |
-| webkit 27.2 | 40 | webp-q80 | ○（1.02） | 12.7 % | +93 MB | – |
-| webkit 27.2 | 40 | mp4-h264-crf18 | × 止まる（ループ後に再生されない） | 9.5 % | +72 MB | – |
+| chromium 159.0.8154.6 | 40 | SVG | ○（1.02） | 24.1 % | +47 MB | style 125.6（6.5 回/秒 × 18.5 ms）、paint 3.1、raster 6.5、video 0 |
+| chromium 159.0.8154.6 | 40 | webp-lossless | ○（1.01） | 3.3 % | +71 MB | style 0、paint 0、raster 1.8、video 0 |
+| chromium 159.0.8154.6 | 40 | webp-q80 | ○（1） | 5.9 % | +70 MB | style 0、paint 0、raster 1.8、video 0 |
+| chromium 159.0.8154.6 | 40 | mp4-h264-crf18 | ○（0.95） | 0.5 % | +27 MB | style 0、paint 0.1、raster 0、video 未観測 |
+| chromium 159.0.8154.6 | 40 | mp4-av1-crf35 | ○（1.01） | 1.5 % | +36 MB | style 0、paint 0.1、raster 0、video 未観測 |
+| chromium 159.0.8154.6 | 80 | SVG | ○（1.01） | 33.9 % | +63 MB | style 241.7（6.5 回/秒 × 36.5 ms）、paint 3.9、raster 8.3、video 0 |
+| chromium 159.0.8154.6 | 80 | webp-lossless | ○（0.95） | 7.2 % | +113 MB | style 0、paint 0、raster 2.6、video 0 |
+| chromium 159.0.8154.6 | 80 | webp-q80 | ○（1.03） | 6.4 % | +112 MB | style 0、paint 0、raster 2.5、video 0 |
+| chromium 159.0.8154.6 | 80 | mp4-h264-crf18 | ○（0.97） | 1.7 % | +27 MB | style 0、paint 0、raster 0、video 未観測 |
+| chromium 159.0.8154.6 | 80 | mp4-av1-crf35 | ○（1.03） | 5.5 % | +36 MB | style 0、paint 0、raster 0、video 未観測 |
+| chromium 159.0.8154.6 | 160 | SVG | ○（0.97） | 65.5 % | +126 MB | style 494.6（6.8 回/秒 × 72.8 ms）、paint 4.5、raster 9、video 0 |
+| chromium 159.0.8154.6 | 160 | webp-lossless | ○（1.01） | 7.9 % | +115 MB | style 0、paint 0、raster 2.7、video 0 |
+| chromium 159.0.8154.6 | 160 | webp-q80 | ○（1） | 8.9 % | +124 MB | style 0、paint 0、raster 2.7、video 0 |
+| chromium 159.0.8154.6 | 160 | mp4-h264-crf18 | ○（1） | 0.8 % | +28 MB | style 0、paint 0、raster 0、video 未観測 |
+| chromium 159.0.8154.6 | 160 | mp4-av1-crf35 | ○（1.01） | 1.3 % | +37 MB | style 0、paint 0、raster 0、video 未観測 |
+| chromium 159.0.8154.6 | 320 | SVG | ○（1） | 105.5 % | +191 MB | style 882.7（6 回/秒 × 147.1 ms）、paint 4.9、raster 8.5、video 0 |
+| chromium 159.0.8154.6 | 320 | webp-lossless | ○（0.99） | 8.4 % | +117 MB | style 0、paint 0、raster 2.6、video 0 |
+| chromium 159.0.8154.6 | 320 | webp-q80 | ○（1.03） | 7.9 % | +117 MB | style 0、paint 0、raster 2.7、video 0 |
+| chromium 159.0.8154.6 | 320 | mp4-h264-crf18 | ○（1.01） | 3.2 % | +28 MB | style 0、paint 0、raster 0、video 未観測 |
+| chromium 159.0.8154.6 | 320 | mp4-av1-crf35 | ○（1.01） | 2.3 % | +36 MB | style 0、paint 0、raster 0、video 未観測 |
+| firefox 159.0 | 40 | SVG | ○（1.02） | 16.1 % | +37 MB | – |
+| firefox 159.0 | 40 | webp-lossless | ○（1） | 9.5 % | +56 MB | – |
+| firefox 159.0 | 40 | webp-q80 | ○（0.99） | 5.4 % | +55 MB | – |
+| firefox 159.0 | 40 | mp4-h264-crf18 | ○（1.02） | 6.4 % | +51 MB | – |
+| firefox 159.0 | 40 | mp4-av1-crf35 | ○（1.02） | 4.3 % | +53 MB | – |
+| firefox 159.0 | 80 | SVG | ○（1） | 28.1 % | +36 MB | – |
+| firefox 159.0 | 80 | webp-lossless | ○（0.91） | 4.9 % | +59 MB | – |
+| firefox 159.0 | 80 | webp-q80 | ○（0.92） | 5.8 % | +56 MB | – |
+| firefox 159.0 | 80 | mp4-h264-crf18 | ○（0.89） | 0.3 % | +50 MB | – |
+| firefox 159.0 | 80 | mp4-av1-crf35 | ○（0.88） | 5.8 % | +53 MB | – |
+| firefox 159.0 | 160 | SVG | ○（1） | 41.1 % | +37 MB | – |
+| firefox 159.0 | 160 | webp-lossless | ○（1.01） | 5.3 % | +59 MB | – |
+| firefox 159.0 | 160 | webp-q80 | ○（1.04） | 0.3 % | +57 MB | – |
+| firefox 159.0 | 160 | mp4-h264-crf18 | ○（0.97） | 1.4 % | +49 MB | – |
+| firefox 159.0 | 160 | mp4-av1-crf35 | ○（0.98） | 2.9 % | +53 MB | – |
+| firefox 159.0 | 320 | SVG | ○（0.98） | 85.3 % | +38 MB | – |
+| firefox 159.0 | 320 | webp-lossless | ○（1.01） | 2.1 % | +61 MB | – |
+| firefox 159.0 | 320 | webp-q80 | ○（0.99） | 1.2 % | +59 MB | – |
+| firefox 159.0 | 320 | mp4-h264-crf18 | ○（1.05） | 1.1 % | +52 MB | – |
+| firefox 159.0 | 320 | mp4-av1-crf35 | ○（1.02） | 4.8 % | +49 MB | – |
+| webkit 27.2 | 40 | SVG | ○（1） | 20.3 % | +41 MB | – |
+| webkit 27.2 | 40 | webp-lossless | ○（1） | 4.6 % | +93 MB | – |
+| webkit 27.2 | 40 | webp-q80 | ○（1.01） | 8.2 % | +92 MB | – |
+| webkit 27.2 | 40 | mp4-h264-crf18 | × 止まる（ループ後に再生されない） | 9.7 % | +72 MB | – |
 | webkit 27.2 | 40 | mp4-av1-crf35 | × 再生されない | 未測定 | 未測定 | – |
-| webkit 27.2 | 80 | SVG | ○（0.98） | 39.0 % | +59 MB | – |
-| webkit 27.2 | 80 | webp-lossless | ○（0.96） | 0.0 % | +37 MB | – |
-| webkit 27.2 | 80 | webp-q80 | ○（1.03） | 0.0 % | +32 MB | – |
-| webkit 27.2 | 80 | mp4-h264-crf18 | × 止まる（ループ後に再生されない） | 11.9 % | +73 MB | – |
+| webkit 27.2 | 80 | SVG | ○（0.98） | 39.1 % | +60 MB | – |
+| webkit 27.2 | 80 | webp-lossless | ○（0.94） | 0.8 % | +37 MB | – |
+| webkit 27.2 | 80 | webp-q80 | ○（1.02） | 10.2 % | +32 MB | – |
+| webkit 27.2 | 80 | mp4-h264-crf18 | × 止まる（ループ後に再生されない） | 17.2 % | +73 MB | – |
 | webkit 27.2 | 80 | mp4-av1-crf35 | × 再生されない | 未測定 | 未測定 | – |
-| webkit 27.2 | 160 | SVG | ○（1.05） | 75.2 % | +90 MB | – |
-| webkit 27.2 | 160 | webp-lossless | ○（1.01） | 12.8 % | +33 MB | – |
-| webkit 27.2 | 160 | webp-q80 | ○（1） | 0.2 % | +33 MB | – |
-| webkit 27.2 | 160 | mp4-h264-crf18 | ○（0.97） | 14.1 % | +73 MB | – |
+| webkit 27.2 | 160 | SVG | ○（1.04） | 74.5 % | +89 MB | – |
+| webkit 27.2 | 160 | webp-lossless | ○（1.01） | 2.1 % | +35 MB | – |
+| webkit 27.2 | 160 | webp-q80 | ○（1.01） | 6.7 % | +37 MB | – |
+| webkit 27.2 | 160 | mp4-h264-crf18 | ○（1.01） | 16.0 % | +73 MB | – |
 | webkit 27.2 | 160 | mp4-av1-crf35 | × 再生されない | 未測定 | 未測定 | – |
-| webkit 27.2 | 320 | SVG | ○（1.01） | 98.4 % | +109 MB | – |
-| webkit 27.2 | 320 | webp-lossless | ○（1.03） | 8.8 % | +35 MB | – |
-| webkit 27.2 | 320 | webp-q80 | ○（1.01） | 8.4 % | +35 MB | – |
-| webkit 27.2 | 320 | mp4-h264-crf18 | ○（1） | 13.0 % | +74 MB | – |
+| webkit 27.2 | 320 | SVG | ○（1.01） | 99.7 % | +111 MB | – |
+| webkit 27.2 | 320 | webp-lossless | ○（0.98） | 20.6 % | +38 MB | – |
+| webkit 27.2 | 320 | webp-q80 | ○（1.01） | 2.1 % | +35 MB | – |
+| webkit 27.2 | 320 | mp4-h264-crf18 | ○（1.01） | 13.2 % | +73 MB | – |
 | webkit 27.2 | 320 | mp4-av1-crf35 | × 再生されない | 未測定 | 未測定 | – |
-| chrome 157.0.8103.79 | 40 | SVG | ○（0.99） | 18.6 % | +53 MB | style 128.5（6.8 回/秒 × 18.3 ms）、paint 3.9、raster 1、video 0 |
-| chrome 157.0.8103.79 | 40 | webp-lossless | ○（1.02） | 0.0 % | +18 MB | style 0、paint 0、raster 0.3、video 0 |
-| chrome 157.0.8103.79 | 40 | mp4-h264-crf18 | ○（1） | 0.0 % | +56 MB | style 0、paint 0.1、raster 0、video 3 |
-| chrome 157.0.8103.79 | 80 | SVG | ○（0.95） | 29.8 % | +78 MB | style 241（6.5 回/秒 × 36.4 ms）、paint 5、raster 1.1、video 0 |
-| chrome 157.0.8103.79 | 80 | webp-lossless | ○（0.88） | 0.0 % | +22 MB | style 0、paint 0、raster 0.4、video 0 |
-| chrome 157.0.8103.79 | 80 | mp4-h264-crf18 | ○（1.18） | 0.0 % | +50 MB | style 0、paint 0、raster 0、video 21.3 |
-| chrome 157.0.8103.79 | 160 | SVG | ○（1） | 55.9 % | +127 MB | style 482.3（6.5 回/秒 × 73.7 ms）、paint 5.8、raster 1.2、video 0 |
-| chrome 157.0.8103.79 | 160 | webp-lossless | ○（0.97） | 0.0 % | +23 MB | style 0、paint 0、raster 0.5、video 0 |
-| chrome 157.0.8103.79 | 160 | mp4-h264-crf18 | ○（0.97） | 0.0 % | +50 MB | style 0、paint 0、raster 0、video 2.2 |
-| chrome 157.0.8103.79 | 320 | SVG | ○（1.02） | 102.7 % | +168 MB | style 869.2（6 回/秒 × 144.9 ms）、paint 6.8、raster 1、video 0 |
-| chrome 157.0.8103.79 | 320 | webp-lossless | ○（1） | 0.0 % | +26 MB | style 0、paint 0、raster 0.5、video 0 |
-| chrome 157.0.8103.79 | 320 | mp4-h264-crf18 | ○（0.99） | 0.0 % | +49 MB | style 0、paint 0、raster 0、video 2.7 |
-| msedge 158.0.4370.33 | 40 | mp4-h264-crf18 | ○（0.93） | 0.0 % | +76 MB | – |
-| msedge 158.0.4370.33 | 80 | mp4-h264-crf18 | ○（1.17） | 2.1 % | +78 MB | – |
-| msedge 158.0.4370.33 | 160 | mp4-h264-crf18 | ○（1.02） | 1.4 % | +70 MB | – |
-| msedge 158.0.4370.33 | 320 | mp4-h264-crf18 | ○（1.04） | 1.0 % | +72 MB | – |
+| chrome 157.0.8103.79 | 40 | SVG | ○（0.99） | 21.9 % | +55 MB | style 125（6.5 回/秒 × 18.5 ms）、paint 2.6、raster 0.9、video 0 |
+| chrome 157.0.8103.79 | 40 | webp-lossless | ○（1.03） | 1.4 % | +16 MB | style 0、paint 0、raster 0.3、video 0 |
+| chrome 157.0.8103.79 | 40 | mp4-h264-crf18 | ○（1.04） | 4.1 % | +60 MB | style 0、paint 0、raster 0、video 3.3 |
+| chrome 157.0.8103.79 | 80 | SVG | ○（1.01） | 34.0 % | +79 MB | style 251.4（6.8 回/秒 × 36.6 ms）、paint 3.6、raster 1.3、video 0 |
+| chrome 157.0.8103.79 | 80 | webp-lossless | ○（1.03） | 9.1 % | +22 MB | style 0、paint 0、raster 0.4、video 0 |
+| chrome 157.0.8103.79 | 80 | mp4-h264-crf18 | ○（0.9） | 1.8 % | +50 MB | style 0、paint 0、raster 0、video 3.1 |
+| chrome 157.0.8103.79 | 160 | SVG | ○（1） | 71.0 % | +129 MB | style 485.2（6.5 回/秒 × 74.2 ms）、paint 4、raster 1.2、video 0 |
+| chrome 157.0.8103.79 | 160 | webp-lossless | ○（0.99） | 2.1 % | +22 MB | style 0、paint 0、raster 0.5、video 0 |
+| chrome 157.0.8103.79 | 160 | mp4-h264-crf18 | ○（0.97） | 1.3 % | +50 MB | style 0、paint 0、raster 0、video 2.5 |
+| chrome 157.0.8103.79 | 320 | SVG | ○（1.01） | 111.8 % | +168 MB | style 859.7（5.8 回/秒 × 149.5 ms）、paint 4.4、raster 1、video 0 |
+| chrome 157.0.8103.79 | 320 | webp-lossless | ○（0.96） | 7.7 % | +25 MB | style 0、paint 0、raster 0.5、video 0 |
+| chrome 157.0.8103.79 | 320 | mp4-h264-crf18 | ○（1.02） | 1.0 % | +59 MB | style 0、paint 0、raster 0、video 2.6 |
+| msedge 158.0.4370.33 | 40 | mp4-h264-crf18 | ○（1） | 2.8 % | +78 MB | – |
+| msedge 158.0.4370.33 | 80 | mp4-h264-crf18 | ○（0.95） | 3.3 % | +74 MB | – |
+| msedge 158.0.4370.33 | 160 | mp4-h264-crf18 | ○（1.03） | 4.2 % | +74 MB | – |
+| msedge 158.0.4370.33 | 320 | mp4-h264-crf18 | ○（1.01） | 3.3 % | +71 MB | – |
 
-### 見ていないときの負荷（160 ステップ、CPU の空ページとの差）
+ループ（40 ステップ、約 8 秒を1周以上見て、2周目に入っても進むか）:
+
+|  | svg | webp-lossless | mp4-h264-crf18 | mp4-av1-crf35 |
+|---|---|---|---|---|
+| chromium 159.0.8154.6 | ループする | ループする | ループする | ループする |
+| firefox 159.0 | ループする | ループする | ループする | ループする |
+| webkit 27.2 | ループする | ループする | **1周で止まる** | 再生されない |
+| chrome 157.0.8103.79 | ループする | ループする | ループする | ループする |
+
+### 見ていないときの負荷（160 ステップ、CPU の空ページとの差、各1回）
+
+「動きを減らす」は Chromium と Firefox ではブラウザの設定で切り替えています。Playwright の WebKit（Windows）では、ページ単位の再現が `<img>` の中の SVG に届かないため、確かめられていません。
 
 |  | chromium 159.0.8154.6 | firefox 159.0 | webkit 27.2 |
 |---|---|---|---|
 | svg visible | 69.3 %（動く） | 42.1 %（動く） | 75.8 %（動く） |
-| svg scrolled out of view | 0.0 % | 0.0 % | 67.9 % |
+| svg scrolled out of view | -0.2 % | -2.0 % | 67.9 % |
 | webp-lossless visible | 7.4 %（動く） | 3.0 %（動く） | 16.5 %（動く） |
-| webp-lossless scrolled out of view | 0.0 % | 2.4 % | 0.0 % |
+| webp-lossless scrolled out of view | -0.2 % | 2.4 % | -0.2 % |
 | mp4-h264-crf18 visible | 1.0 %（動く） | 8.0 %（動く） | 15.8 %（動く） |
-| mp4-h264-crf18 scrolled out of view | 0.2 % | 0.0 % | 1.2 % |
-| svg reduced motion | 0.0 %（静止） | 0.0 %（静止） | 73.9 %（動く） |
+| mp4-h264-crf18 scrolled out of view | 0.2 % | -2.1 % | 1.2 % |
+| svg reduced motion | -0.2 %（静止） | -0.2 %（静止） | 73.9 %（動く） |
 | webp-lossless reduced motion | 4.7 %（動く） | 1.9 %（動く） | 6.0 %（動く） |
 | mp4-h264-crf18 reduced motion | 2.4 %（動く） | 6.6 %（動く） | 18.8 %（動く） |
 
 ### 深いネスト（1ステップ＝入れ子1段。製品は 400 ステップで打ち切り）
+
+「最深の状態」は、時計を最後のステップに固定したカードの UI が、同じ状態を描いたページと一致するか（Chromium は CSS カウンタの字送りのため 150 px まで許容）。「初回描画」は `img.decode()` と 2 フレーム待ちまでの時間で、1 回の計測です。クラッシュは、この UI とこのマシンでの観測です。
 
 | ステップ | カード | 生成 | chromium: 最深の状態 | chromium: 初回描画 | chromium: 再生中の CPU | firefox: 最深の状態 | firefox: 初回描画 | firefox: 再生中の CPU | webkit: 最深の状態 | webkit: 初回描画 | webkit: 再生中の CPU |
 |---|---|---|---|---|---|---|---|---|---|---|---|

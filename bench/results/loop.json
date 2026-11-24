@@ -1,0 +1,627 @@
+{
+ "environment": {
+  "date": "2026-11-24T07:00:43.046Z",
+  "os": "Windows_NT 10.0.26200 x64",
+  "cpu": "AMD Ryzen 5 PRO 4650G with Radeon Graphics (12 threads)",
+  "ramGB": 47.4,
+  "node": "v22.21.0",
+  "ffmpeg": "ffmpeg version 9.0.1-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+  "git": "git version 2.51.0.windows.2"
+ },
+ "steps": 40,
+ "durationMs": 7950,
+ "engines": {
+  "chromium": {
+   "version": "159.0.8154.6",
+   "artifacts": {
+    "svg": {
+     "plays": true,
+     "loops": true,
+     "frames": [
+      10,
+      16
+     ]
+    },
+    "webp-lossless": {
+     "plays": true,
+     "loops": true,
+     "frames": [
+      10,
+      15
+     ]
+    },
+    "mp4-h264-crf18": {
+     "plays": true,
+     "loops": true,
+     "samples": [
+      [
+       1.01,
+       false,
+       null
+      ],
+      [
+       2.02,
+       false,
+       null
+      ],
+      [
+       3.04,
+       false,
+       null
+      ],
+      [
+       4.05,
+       false,
+       null
+      ],
+      [
+       5.07,
+       false,
+       null
+      ],
+      [
+       6.09,
+       false,
+       null
+      ],
+      [
+       7.1,
+       false,
+       null
+      ],
+      [
+       0.14,
+       false,
+       null
+      ],
+      [
+       1.15,
+       false,
+       null
+      ],
+      [
+       2.15,
+       false,
+       null
+      ],
+      [
+       3.16,
+       false,
+       null
+      ],
+      [
+       4.17,
+       false,
+       null
+      ]
+     ]
+    },
+    "mp4-av1-crf35": {
+     "plays": true,
+     "loops": true,
+     "samples": [
+      [
+       1.02,
+       false,
+       null
+      ],
+      [
+       2.03,
+       false,
+       null
+      ],
+      [
+       3.04,
+       false,
+       null
+      ],
+      [
+       4.05,
+       false,
+       null
+      ],
+      [
+       5.06,
+       false,
+       null
+      ],
+      [
+       6.08,
+       false,
+       null
+      ],
+      [
+       7.09,
+       false,
+       null
+      ],
+      [
+       0.15,
+       false,
+       null
+      ],
+      [
+       1.17,
+       false,
+       null
+      ],
+      [
+       2.18,
+       false,
+       null
+      ],
+      [
+       3.19,
+       false,
+       null
+      ],
+      [
+       4.19,
+       false,
+       null
+      ]
+     ]
+    }
+   }
+  },
+  "firefox": {
+   "version": "159.0",
+   "artifacts": {
+    "svg": {
+     "plays": true,
+     "loops": true,
+     "frames": [
+      10,
+      16
+     ]
+    },
+    "webp-lossless": {
+     "plays": true,
+     "loops": true,
+     "frames": [
+      10,
+      15
+     ]
+    },
+    "mp4-h264-crf18": {
+     "plays": true,
+     "loops": true,
+     "samples": [
+      [
+       0.97,
+       false,
+       null
+      ],
+      [
+       1.97,
+       false,
+       null
+      ],
+      [
+       2.98,
+       false,
+       null
+      ],
+      [
+       4.03,
+       false,
+       null
+      ],
+      [
+       5.04,
+       false,
+       null
+      ],
+      [
+       6.04,
+       false,
+       null
+      ],
+      [
+       7.05,
+       false,
+       null
+      ],
+      [
+       0.11,
+       false,
+       null
+      ],
+      [
+       1.12,
+       false,
+       null
+      ],
+      [
+       2.16,
+       false,
+       null
+      ],
+      [
+       3.17,
+       false,
+       null
+      ],
+      [
+       4.18,
+       false,
+       null
+      ]
+     ]
+    },
+    "mp4-av1-crf35": {
+     "plays": true,
+     "loops": true,
+     "samples": [
+      [
+       1.01,
+       false,
+       null
+      ],
+      [
+       2.02,
+       false,
+       null
+      ],
+      [
+       3.02,
+       false,
+       null
+      ],
+      [
+       4.03,
+       false,
+       null
+      ],
+      [
+       5.03,
+       false,
+       null
+      ],
+      [
+       6.08,
+       false,
+       null
+      ],
+      [
+       7.05,
+       false,
+       null
+      ],
+      [
+       0.14,
+       false,
+       null
+      ],
+      [
+       1.15,
+       false,
+       null
+      ],
+      [
+       2.16,
+       false,
+       null
+      ],
+      [
+       3.17,
+       false,
+       null
+      ],
+      [
+       4.17,
+       false,
+       null
+      ]
+     ]
+    }
+   }
+  },
+  "webkit": {
+   "version": "27.2",
+   "artifacts": {
+    "svg": {
+     "plays": true,
+     "loops": true,
+     "frames": [
+      11,
+      16
+     ]
+    },
+    "webp-lossless": {
+     "plays": true,
+     "loops": true,
+     "frames": [
+      11,
+      17
+     ]
+    },
+    "mp4-h264-crf18": {
+     "plays": true,
+     "loops": false,
+     "samples": [
+      [
+       0.98,
+       false,
+       null
+      ],
+      [
+       1.99,
+       false,
+       null
+      ],
+      [
+       2.99,
+       false,
+       null
+      ],
+      [
+       4.01,
+       false,
+       null
+      ],
+      [
+       5.02,
+       false,
+       null
+      ],
+      [
+       6.03,
+       false,
+       null
+      ],
+      [
+       7.03,
+       false,
+       null
+      ],
+      [
+       0.02,
+       true,
+       null
+      ],
+      [
+       0.02,
+       true,
+       null
+      ],
+      [
+       0.02,
+       true,
+       null
+      ],
+      [
+       0.02,
+       true,
+       null
+      ],
+      [
+       0.02,
+       true,
+       null
+      ]
+     ]
+    },
+    "mp4-av1-crf35": {
+     "plays": false,
+     "loops": false,
+     "samples": [
+      [
+       1.02,
+       false,
+       3
+      ],
+      [
+       2.03,
+       false,
+       3
+      ],
+      [
+       3.04,
+       false,
+       3
+      ],
+      [
+       4.06,
+       false,
+       3
+      ],
+      [
+       5.07,
+       false,
+       3
+      ],
+      [
+       6.08,
+       false,
+       3
+      ],
+      [
+       7.09,
+       false,
+       3
+      ],
+      [
+       0,
+       false,
+       3
+      ],
+      [
+       0,
+       false,
+       3
+      ],
+      [
+       0,
+       false,
+       3
+      ],
+      [
+       0,
+       false,
+       3
+      ],
+      [
+       0,
+       false,
+       3
+      ]
+     ]
+    }
+   }
+  },
+  "chrome": {
+   "version": "157.0.8103.79",
+   "artifacts": {
+    "svg": {
+     "plays": true,
+     "loops": true,
+     "frames": [
+      10,
+      15
+     ]
+    },
+    "webp-lossless": {
+     "plays": true,
+     "loops": true,
+     "frames": [
+      10,
+      16
+     ]
+    },
+    "mp4-h264-crf18": {
+     "plays": true,
+     "loops": true,
+     "samples": [
+      [
+       1.01,
+       false,
+       null
+      ],
+      [
+       2.02,
+       false,
+       null
+      ],
+      [
+       3.04,
+       false,
+       null
+      ],
+      [
+       4.05,
+       false,
+       null
+      ],
+      [
+       5.06,
+       false,
+       null
+      ],
+      [
+       6.08,
+       false,
+       null
+      ],
+      [
+       7.08,
+       false,
+       null
+      ],
+      [
+       0.14,
+       false,
+       null
+      ],
+      [
+       1.15,
+       false,
+       null
+      ],
+      [
+       2.15,
+       false,
+       null
+      ],
+      [
+       3.16,
+       false,
+       null
+      ],
+      [
+       4.17,
+       false,
+       null
+      ]
+     ]
+    },
+    "mp4-av1-crf35": {
+     "plays": true,
+     "loops": true,
+     "samples": [
+      [
+       1.01,
+       false,
+       null
+      ],
+      [
+       2.03,
+       false,
+       null
+      ],
+      [
+       3.04,
+       false,
+       null
+      ],
+      [
+       4.06,
+       false,
+       null
+      ],
+      [
+       5.07,
+       false,
+       null
+      ],
+      [
+       6.07,
+       false,
+       null
+      ],
+      [
+       7.08,
+       false,
+       null
+      ],
+      [
+       0.12,
+       false,
+       null
+      ],
+      [
+       1.14,
+       false,
+       null
+      ],
+      [
+       2.15,
+       false,
+       null
+      ],
+      [
+       3.16,
+       false,
+       null
+      ],
+      [
+       4.17,
+       false,
+       null
+      ]
+     ]
+    }
+   }
+  }
+ }
+}
