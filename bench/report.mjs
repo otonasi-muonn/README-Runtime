@@ -8,6 +8,7 @@ const load = (f) => { try { return JSON.parse(fs.readFileSync(path.join(RESULTS,
 const kb = (b) => (b == null ? '–' : b >= 1024 * 1024 ? `${(b / 2 ** 20).toFixed(2)} MB` : `${(b / 1024).toFixed(1)} KB`);
 const s = (ms) => (ms == null ? '–' : ms >= 1000 ? `${(ms / 1000).toFixed(1)} s` : `${Math.round(ms)} ms`);
 const table = (head, rows) => [`| ${head.join(' | ')} |`, `|${head.map(() => '---').join('|')}|`, ...rows.map((r) => `| ${r.join(' | ')} |`)].join('\n');
+const round1 = (x) => Number(x.toFixed(1));
 const label = (name) => name.replace(/^card-n(\d+)\.svg$/, 'SVG').replace(/^n\d+\.(.+)\.\w+$/, '$1');
 const stepsOf = (name) => Number(/n(\d+)/.exec(name)[1]);
 const out = [];
@@ -20,35 +21,36 @@ if (p) {
   const Ns = Object.keys(p.n).map(Number);
   const enc = (n, f) => p.n[n].rec.encode[f];
   out.push('### サイズ（閲覧者がダウンロードするバイト数）', '',
-    'GitHub は SVG を gzip で配信し、WebP と MP4 は圧縮せずに配信します（実測: [`github.json`](results/github.json)）。太字が実際の転送量です。', '',
+    'GitHub は SVG を gzip で配信し、WebP と MP4 は圧縮せずに配信します（実測: [`github.json`](results/github.json)）。太字は転送量の目安で、SVG は gzip -9 のサイズ、WebP と MP4 はファイルサイズです。GitHub が実際に配信した 160 ステップの SVG は、gzip で 8,960 B でした。', '',
     table(['ステップ（フレーム数、再生時間）', 'SVG', 'WebP lossless', 'WebP q80', 'MP4 H.264 CRF18', 'MP4 H.264 CRF28', 'MP4 AV1'], Ns.map((n) => [
       `${n}（${p.n[n].frames}、${(p.n[n].durationMs / 1000).toFixed(1)} 秒）`, `**${kb(p.n[n].rr.size.gzip)}**（非圧縮 ${kb(p.n[n].rr.size.raw)}）`,
       ...['webp-lossless', 'webp-q80', 'mp4-h264-crf18', 'mp4-h264-crf28', 'mp4-av1-crf35'].map((f) => `**${kb(enc(n, f).size.raw)}**`),
     ])), '');
   const n0 = Ns[Ns.length - 1];
-  out.push(`画質（ソースのフレームに対する SSIM / PSNR、${n0} ステップ、等倍）: SVG はベクターでどの倍率でも正確。` +
+  out.push(`画質（ソースのフレームに対する SSIM / PSNR、${n0} ステップ、等倍。全画面の値なので、背景が広いほど高く出ます）: SVG はベクターで、拡大しても再描画されます（2倍の画面での画質比較はしていません）。` +
     ['webp-lossless', 'webp-q80', 'mp4-h264-crf18', 'mp4-h264-crf28', 'mp4-av1-crf35'].map((f) => `${f} ${enc(n0, f).ssim} / ${enc(n0, f).psnr === 'inf' ? '∞' : `${enc(n0, f).psnr.toFixed(1)} dB`}`).join('、') +
     '。H.264 は yuv420p の色の間引きで、文字の色の縁が PSNR 35 dB 付近で頭打ちになります。', '');
   if (p.hidpi) {
     const h = p.hidpi;
-    out.push(`2倍の画面: SVG はそのまま鮮明です。録画を同じ鮮明さにするには2倍の解像度が要ります（${h.n} ステップ）: ` +
+    out.push(`2倍の画面: 録画を2倍の解像度で作るとサイズが増えます（${h.n} ステップ）: ` +
       Object.entries(h.encode).map(([f, e]) => `${f} ${kb(e.size.raw)}（等倍 ${kb(enc(h.n, f).size.raw)}）`).join('、') + '。', '');
   }
   out.push('### ビルド時間（3回の中央値）', '',
-    'README Runtime（RR）は `readme-runtime build`（CLI の起動、AssemblyScript のコンパイル、バンドル、UIの推定、Wasm との照合を含む）。録画（Rec）は全フレームの描画（ブラウザの起動を含む）とエンコード。ロジックの変更では両方とも同じ AssemblyScript を再コンパイルします。録画のフレームキャッシュは、表示内容が同じフレームを前の版から再利用します。', '',
-    table(['ステップ', 'RR 初回', 'RR 変更なし（キャッシュ）', 'RR 変更なし（キャッシュなし）', 'RR スタイル変更', 'RR ロジック変更', 'RR check（CI）', 'Rec 初回（MP4 〜 WebP lossless）', 'Rec 変更なし（キャッシュ）', 'Rec スタイル変更', 'Rec ロジック変更（フレームキャッシュあり / なし）'], Ns.map((n) => {
+    'README Runtime（RR）は `readme-runtime build`（CLI の起動、AssemblyScript のコンパイル、バンドル、UIの推定、Wasm との照合を含む）。録画（Rec）は全フレームの描画（ブラウザの起動を含む）とエンコードで、初回とロジックの変更には RR と同じ AssemblyScript のコンパイルを加えています。録画のスタイル変更とロジック変更のエンコード時間は、元の版のエンコード時間の中央値で代用しています（推計）。録画のフレームキャッシュは、表示内容が同じフレームを前の版から再利用します。「変更なし（キャッシュ）」は、RR が CLI の起動を含み、録画はプロセス内のハッシュ計算だけです。同じ条件で全体を再実行すると、ビルド時間は最大 2 割ほど変わります。', '',
+    table(['ステップ', 'RR 初回', 'RR 変更なし（キャッシュ）', 'RR 変更なし（キャッシュなし）', 'RR スタイル変更', 'RR ロジック変更', 'RR check（CI）', 'Rec 初回（コンパイル込み、MP4 〜 WebP lossless）', 'Rec 変更なし（キャッシュ）', 'Rec スタイル変更', 'Rec ロジック変更（フレームキャッシュあり / なし）'], Ns.map((n) => {
       const rr = p.n[n].rr, rec = p.n[n].rec;
       const w = enc(n, 'webp-lossless').ms, m = enc(n, 'mp4-h264-crf18').ms;
       return [n, s(rr.coldMs), s(rr.noopCachedMs), s(rr.noopForcedMs), s(rr.styleEditMs), s(rr.logicEditMs), s(rr.checkMs),
-        `${s(rec.framesColdMs + m)} 〜 ${s(rec.framesColdMs + w)}`, s(rec.noopCachedMs), `${s(rec.styleFramesMs + m)} 〜 ${s(rec.styleFramesMs + w)}`,
+        `${s(rec.ascMs + rec.framesColdMs + m)} 〜 ${s(rec.ascMs + rec.framesColdMs + w)}`, s(rec.noopCachedMs), `${s(rec.styleFramesMs + m)} 〜 ${s(rec.styleFramesMs + w)}`,
         `${s(rec.ascMs + rec.logicFramesCachedMs + m)}（${rec.logicFramesReused} フレーム再利用） / ${s(rec.ascMs + rec.logicFramesUncachedMs + m)}`];
     })), '',
-    '録画の時間は MP4（エンコードが最速）〜 WebP lossless（最遅）の幅です。録画には CI で「生成物がソースと一致するか」を確かめる手段がなく、RR の `check` に当たる列はありません。', '');
+    '録画の時間は MP4（エンコードが最速）〜 WebP lossless（最遅）の幅です。RR の `check` は、カードがソースと一致することを CI で確かめる標準の機能です。今回の録画パイプラインには同等の確認を実装していません。再描画して比べれば実装はできますが、エンコーダーの出力が環境をまたいで同じバイトになるかは確かめていません。', '');
 }
 
 const g = load('git.json');
 if (g) {
-  out.push(`### リポジトリの増え方（デザインを ${g.revisions} 回変更してコミット、git gc 後の pack サイズ）`, '',
+  out.push(`### リポジトリの増え方（最初の版と、アクセントカラーだけを変えた ${g.revisions - 1} 回の変更をコミット、git gc 後の pack サイズ）`, '',
+    'レイアウトやロジックの変更、依存の更新、Git LFS、浅い clone は試していません。', '',
     table(['ステップ', 'README Runtime（SVG＋ロック＋wasm）', 'WebP lossless', 'WebP q80', 'MP4 H.264 CRF18'], Object.entries(g.n).map(([n, r]) => [n,
       ...['svg', 'webp-lossless', 'webp-q80', 'mp4-h264-crf18'].map((k) => `${r[k].afterKiB} KiB（1回あたり +${r[k].perRevisionKiB} KiB）`)])), '');
 }
@@ -68,23 +70,31 @@ if (pb) {
       const ok = a.error ? `計測失敗（${a.error}）` : !a.plays ? '× 再生されない' : stuck ? '× 止まる（ループ後に再生されない）' : rate == null ? '？（保持中のみ観測）'
         : rate > 0.75 && rate < 1.25 && a.match.maxDistance < 6 ? `○（${rate}）` : `△（速度 ${rate}）`;
       const measured = a.cpu && a.baseline;
+      const delta = a.cpuDelta ?? (measured ? round1(a.cpu.cpuPercent - a.baseline.cpuPercent) : null);
       rows.push([`${engine} ${e.version}`, stepsOf(name), label(name), ok,
-        measured ? `${Math.max(0, a.cpu.cpuPercent - a.baseline.cpuPercent).toFixed(1)} %` : '未測定', measured ? `+${a.cpu.workingSetMB - a.baseline.workingSetMB} MB` : '未測定',
-        tr ? `style ${tr.msPerSecond.style}${tr.styleUpdates?.perSecond ? `（${tr.styleUpdates.perSecond} 回/秒 × ${tr.styleUpdates.meanMs} ms）` : ''}、paint ${tr.msPerSecond.paint}、raster ${tr.msPerSecond.raster}、video ${tr.msPerSecond.videoDecode}` : '–']);
+        delta == null ? '未測定' : `${delta.toFixed(1)} %`, measured ? `+${a.cpu.workingSetMB - a.baseline.workingSetMB} MB` : '未測定',
+        tr ? `style ${tr.msPerSecond.style ?? 0}${tr.styleUpdates?.perSecond ? `（${tr.styleUpdates.perSecond} 回/秒 × ${tr.styleUpdates.meanMs} ms）` : ''}、paint ${tr.msPerSecond.paint ?? 0}、raster ${tr.msPerSecond.raster ?? 0}、video ${tr.msPerSecond.videoDecode ?? (/mp4/.test(name) ? '未観測' : 0)}` : '–']);
     }
   }
-  out.push(`### 再生（ヘッドレス、表示中の ${pb.windowMs / 1000} 秒間、空ページとの差）`, '',
-    'CPU はブラウザのプロセス全体の CPU 時間（1コア＝100%）、メモリはワーキングセットの増分です。正しさは、表示中のフレームがソースのどれかと一致し、150 ms ごとに1ステップ進むことで判定します。Chromium の列は、トレースから求めた1秒あたりの処理時間（ms）です。', '',
-    table(['ブラウザ', 'ステップ', '形式', '正しく再生', 'CPU', 'メモリ', 'Chromium のトレース（ms/秒）'], rows), '');
+  out.push(`### 再生（ヘッドレス、表示中の約 ${pb.windowMs / 1000} 秒間、各1回の計測）`, '',
+    'CPU はブラウザのプロセス全体の CPU 時間（1コア＝100%）から、前後に測った空ページの平均を引いた値です（負の値もそのまま表示）。CPU の採取（Windows の CIM 問い合わせ）には約 1 秒以上かかるため、数ポイントの差は区別できません。メモリはワーキングセットの増分で、共有ページを重複して数えます。「サンプル」は、約 4 秒間に撮った 14 枚の画面が、それぞれソースのどれかのフレームと一致し、平均して 150 ms に1ステップ進むことを表します。途中のステップが飛んでも平均が合えば ○ になり、色の正しさの確認でもありません（画素単位の正しさは `test/browser/ui.js` で確認）。ループの正しさは次の表です。Chromium の列は、トレースから求めた1秒あたりの処理時間（ms、同じスレッドで重なる区間は1回だけ数える）です。', '',
+    table(['ブラウザ', 'ステップ', '形式', 'サンプルの一致と平均速度', 'CPU', 'メモリ', 'Chromium のトレース（ms/秒）'], rows), '');
+  const lp = load('loop.json');
+  if (lp) {
+    const kinds = Object.keys(Object.values(lp.engines)[0].artifacts);
+    out.push(`ループ（${lp.steps} ステップ、約 ${(lp.durationMs / 1000).toFixed(0)} 秒を1周以上見て、2周目に入っても進むか）:`, '',
+      table(['', ...kinds], Object.entries(lp.engines).map(([e, v]) => [`${e} ${v.version}`, ...kinds.map((k) => (!v.artifacts[k].plays ? '再生されない' : v.artifacts[k].loops ? 'ループする' : '**1周で止まる**'))])), '');
+  }
 }
 
 const off = load('offscreen.json');
 if (off) {
   const cases = [...new Set(Object.values(off.engines).flatMap((e) => Object.keys(e.cases)))];
-  out.push(`### 見ていないときの負荷（${off.steps} ステップ、CPU の空ページとの差）`, '',
+  out.push(`### 見ていないときの負荷（${off.steps} ステップ、CPU の空ページとの差、各1回）`, '',
+    '「動きを減らす」は Chromium と Firefox ではブラウザの設定で切り替えています。Playwright の WebKit（Windows）では、ページ単位の再現が `<img>` の中の SVG に届かないため、確かめられていません。', '',
     table(['', ...Object.entries(off.engines).map(([k, e]) => `${k} ${e.version}`)], cases.map((c) => [c, ...Object.values(off.engines).map((e) => {
       const v = e.cases[c];
-      return v == null ? '–' : `${Math.max(0, v.cpuPercent).toFixed(1)} %${v.moving == null ? '' : v.moving ? '（動く）' : '（静止）'}`;
+      return v == null ? '–' : `${v.cpuPercent.toFixed(1)} %${v.moving == null ? '' : v.moving ? '（動く）' : '（静止）'}`;
     })])), '');
 }
 
@@ -99,6 +109,7 @@ if (ne) {
       `${d.animation.cpuPercent} %${d.animation.style ? `（style ${d.animation.style.updatesPerS} 回/秒 × ${d.animation.style.meanMs} ms）` : ''}`];
   };
   out.push(`### 深いネスト（1ステップ＝入れ子1段。製品は ${ne.maxSteps} ステップで打ち切り）`, '',
+    '「最深の状態」は、時計を最後のステップに固定したカードの UI が、同じ状態を描いたページと一致するか（Chromium は CSS カウンタの字送りのため 150 px まで許容）。「初回描画」は `img.decode()` と 2 フレーム待ちまでの時間で、1 回の計測です。クラッシュは、この UI とこのマシンでの観測です。', '',
     table(['ステップ', 'カード', '生成', ...Object.keys(ne.engines).flatMap((e) => [`${e}: 最深の状態`, `${e}: 初回描画`, `${e}: 再生中の CPU`])],
       Ns.map((n) => [n, `${(ne.cards[n].bytes / 1024).toFixed(0)} KB`, s(ne.cards[n].generateMs), ...Object.values(ne.engines).flatMap((e) => cell(e.depths[n]))])), '');
 }

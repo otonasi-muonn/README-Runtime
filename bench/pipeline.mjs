@@ -8,9 +8,20 @@ import { WORK, STEPS, REPEAT, STEP_MS, HOLD, run, sizes, median, round, sha, wri
 import { renderFrames, encode, quality, FORMATS } from './record.mjs';
 import { CLI, ASC, ASC_ARGS, makeProject, rrBuild, edit } from './project.mjs';
 
-// The recorder's own no-op check: a hash of everything the frames depend on.
-const recInputs = (dir, N) => sha(['mc/demo.tsx', 'mc/logic.wasm', 'mc/upstream/src/app/globals.css', 'mc/upstream/src/components/board/ElementView.tsx', 'mc/upstream/src/lib/elementStyle.ts']
-  .map((f) => fs.readFileSync(path.join(dir, f))).join('|') + N);
+// The recorder's own no-op check: every file of the example (raw bytes, so a changed .wasm
+// is seen), the run length and the encoder settings, as README Runtime's lock records its
+// inputs. It runs in-process, so unlike `readme-runtime build` it has no process start-up.
+function recInputs(dir, N) {
+  const files = [];
+  const walk = (d) => {
+    for (const e of fs.readdirSync(d, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+      const p = path.join(d, e.name);
+      if (e.isDirectory()) walk(p); else files.push(p);
+    }
+  };
+  walk(path.join(dir, 'mc'));
+  return sha(`${files.map((f) => `${path.relative(dir, f)}:${sha(fs.readFileSync(f))}`).join('\n')}|${N}|${JSON.stringify(FORMATS)}`);
+}
 
 const ms = (xs) => round(median(xs), 0);
 

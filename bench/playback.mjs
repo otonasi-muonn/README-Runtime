@@ -78,13 +78,14 @@ function identify(png, N) {
   return { frame: best, d: bestD };
 }
 
-// Chromium trace: total duration per group of the rendering work, per second.
-// One outermost event per kind of work (UpdateLayoutTree already contains Document::updateStyle
-// and recalcStyle; Paint contains PaintImage), so nothing is counted twice.
+// Chromium trace: time per group of rendering work, per second. Within a thread the intervals
+// of a group are merged (a nested or overlapping event, e.g. Decode Image inside
+// ImageDecodeTask, is not counted twice). A group without any matching event is reported as
+// null ("not observed"): e.g. Playwright's Chromium decodes video without such events.
 const GROUPS = [
   ['style', /^UpdateLayoutTree$/],
   ['layout', /^Layout$/],
-  ['paint', /^(Paint|PrePaint)$/],
+  ['paint', /^(Paint|PrePaint|PaintImage)$/],
   ['raster', /^RasterTask$/],
   ['imageDecode', /^(ImageDecodeTask|Decode Image)$/],
   ['videoDecode', /^(D3DVideoDecoder::DoDecode|D3D11VideoDecoder::Decode|FFmpegVideoDecoder::Decode|Dav1dVideoDecoder::Decode|VpxVideoDecoder::Decode)$/],
@@ -93,9 +94,24 @@ function traceGroups(json, seconds) {
   const events = JSON.parse(json).traceEvents ?? [];
   const byName = new Map();
   for (const e of events) if (e.ph === 'X' && e.dur) byName.set(e.name, (byName.get(e.name) ?? 0) + e.dur);
-  const groups = Object.fromEntries(GROUPS.map(([g]) => [g, 0]));
-  for (const [name, dur] of byName) for (const [g, re] of GROUPS) if (re.test(name)) { groups[g] += dur; break; }
-  const per = Object.fromEntries(Object.entries(groups).map(([g, us]) => [g, round(us / 1000 / seconds, 1)])); // ms per second
+  const per = {};
+  for (const [g, re] of GROUPS) {
+    const byThread = new Map();
+    for (const e of events) {
+      if (e.ph !== 'X' || !e.dur || !re.test(e.name)) continue;
+      const k = `${e.pid}:${e.tid}`;
+      if (!byThread.has(k)) byThread.set(k, []);
+      byThread.get(k).push([e.ts, e.ts + e.dur]);
+    }
+    let us = 0;
+    for (const list of byThread.values()) {
+      list.sort((a, b) => a[0] - b[0]);
+      let [s0, e0] = list[0];
+      for (const [s1, e1] of list.slice(1)) { if (s1 <= e0) e0 = Math.max(e0, e1); else { us += e0 - s0; [s0, e0] = [s1, e1]; } }
+      us += e0 - s0;
+    }
+    per[g] = byThread.size ? round(us / 1000 / seconds, 1) : null; // ms per second
+  }
   const top = [...byName].sort((a, b) => b[1] - a[1]).slice(0, 12).map(([n, us]) => [n, round(us / 1000 / seconds, 1)]);
   // style recalculations that do real work (> 1 ms): how often the card updates, and each cost
   const big = events.filter((e) => e.ph === 'X' && e.name === 'UpdateLayoutTree' && e.dur > 1000);
@@ -118,16 +134,16 @@ async function measureArtifact(engine, N, name) {
     const browser = await type.connect(launched.wsEndpoint());
     const pid = launched.process().pid;
     const page = await (await browser.newContext({ viewport: { width: CARD.W + 40, height: CARD.H + 40 }, deviceScaleFactor: 1, reducedMotion: 'no-preference' })).newPage();
+    const sample = () => { const t0 = performance.now(); const tree = treeTotals(processTree(pid)); return { tree, at: (t0 + performance.now()) / 2, queryMs: round(performance.now() - t0, 0) }; };
     const measure = async () => {
-      const a = treeTotals(processTree(pid));
-      const t0 = performance.now();
+      const a = sample();
       await page.waitForTimeout(WINDOW_MS);
-      const b = treeTotals(processTree(pid));
-      const secs = (performance.now() - t0) / 1000;
-      return a && b ? { cpuPercent: round((b.cpuMs - a.cpuMs) / 10 / secs, 1), workingSetMB: round(b.ws / 2 ** 20, 0), processes: b.processes } : null;
+      const b = sample();
+      const secs = (b.at - a.at) / 1000;
+      return a.tree && b.tree ? { cpuPercent: round((b.tree.cpuMs - a.tree.cpuMs) / 10 / secs, 1), workingSetMB: round(b.tree.ws / 2 ** 20, 0), processes: b.tree.processes, windowS: round(secs, 1), queryMs: [a.queryMs, b.queryMs] } : null;
     };
     await page.goto(`${origin}/page`);
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(3000); // warm-up after the launch
     const r = { version: browser.version(), baseline: await measure() };
     await page.goto(`${origin}/page?f=${name}`);
     await page.waitForTimeout(1200);
@@ -161,6 +177,11 @@ async function measureArtifact(engine, N, name) {
       await page.waitForTimeout(4000);
       r.trace = traceGroups((await browser.stopTracing()).toString(), 4);
     }
+    // the empty page again: the baseline is the mean of before and after
+    await page.goto(`${origin}/page`);
+    await page.waitForTimeout(1000);
+    r.baselineAfter = await measure();
+    if (r.cpu && r.baseline && r.baselineAfter) r.cpuDelta = round(r.cpu.cpuPercent - (r.baseline.cpuPercent + r.baselineAfter.cpuPercent) / 2, 1);
     return r;
   })();
   try {

@@ -14,7 +14,7 @@
     "test": "node --test \"test/**/*.test.js\"",
     "test:browser": "node test/browser/run.js",
     "test:browser:ui": "node test/browser/ui.js && node test/browser/ui.js --card air-drawing",
-    "bench": "node bench/pipeline.mjs && node bench/playback.mjs && node bench/offscreen.mjs && node bench/nesting.mjs && node bench/githistory.mjs && node bench/github.mjs && node bench/report.mjs"
+    "bench": "node bench/pipeline.mjs && node bench/playback.mjs && node bench/loop.mjs && node bench/offscreen.mjs && node bench/nesting.mjs && node bench/githistory.mjs && node bench/github.mjs && node bench/report.mjs"
   },
   "devDependencies": {
     "@yowasp/clang": "21.1.4-3",
