@@ -2,3 +2,5 @@
 * text=auto eol=lf
 *.wasm binary
 *.png binary
+# The commit, written into GitHub's archives (npx .../archive/<ref>.tar.gz) by git archive.
+src/commit.js export-subst

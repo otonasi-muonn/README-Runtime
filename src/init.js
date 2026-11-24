@@ -7,19 +7,25 @@ import { CONFIG_FILE } from './project.js';
 import { parseModule } from './wasm/reader.js';
 import { listExports, compileStep } from './compiler/program.js';
 import { CodedError } from './errors.js';
+import { ARCHIVE_COMMIT } from './commit.js';
 
-export const REPOSITORY = 'github:otonasi-muonn/README-Runtime';
+// README Runtime is installed from GitHub's archive of a commit (npm 10's git specs such as
+// github:owner/repo#ref fail under npx: "GitFetcher requires an Arborist constructor").
+export const REPOSITORY_URL = 'https://github.com/otonasi-muonn/README-Runtime';
+export const archiveSpec = (ref) => `${REPOSITORY_URL}/archive/${ref}.tar.gz`;
 const pkgRoot = path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), '..');
 
-// The commit this copy of README Runtime was installed from, so that CI runs exactly the
-// generator that built the cards (a newer one may write different, equally valid SVG):
-// npm and npx record it for an install from GitHub (node_modules/.package-lock.json), and a
-// git checkout knows it when its sources are unmodified. null when neither tells.
-export function installedCommit(root = pkgRoot) {
+// The commit this copy of README Runtime comes from, so that CI runs exactly the generator
+// that built the cards (a newer one may write different, equally valid SVG). In order: GitHub's
+// archive carries it (src/commit.js); npm and npx record where a package came from
+// (node_modules/.package-lock.json); a git checkout knows it when its sources are unmodified.
+// null when none of them tells.
+export function installedCommit(root = pkgRoot, archived = ARCHIVE_COMMIT) {
+  if (/^[0-9a-f]{40}$/.test(archived)) return archived;
   try {
     const lock = JSON.parse(fs.readFileSync(path.join(root, '..', '.package-lock.json'), 'utf8'));
     const key = path.relative(path.resolve(root, '..', '..'), root).split(path.sep).join('/');
-    const m = /README-Runtime(?:\.git)?#([0-9a-f]{40})$/i.exec(lock.packages?.[key]?.resolved ?? '');
+    const m = /README-Runtime(?:\.git)?(?:#|\/tar\.gz\/|\/archive\/)([0-9a-f]{40})(?:\.tar\.gz)?$/i.exec(lock.packages?.[key]?.resolved ?? '');
     if (m) return m[1].toLowerCase();
   } catch { /* not an npm install */ }
   if (!fs.existsSync(path.join(root, '.git'))) return null;
@@ -28,10 +34,11 @@ export function installedCommit(root = pkgRoot) {
   const dirty = git('status', '--porcelain', '--', 'src', 'bin', 'package.json');
   return head.status === 0 && dirty.status === 0 && !dirty.stdout.trim() ? head.stdout.trim() : null;
 }
-// The npx package spec of this version: pinned to its commit when known.
+// The npx package spec of this version: pinned to its commit when known, else the default
+// branch.
 export function toolSpec(root = pkgRoot) {
   const sha = installedCommit(root);
-  return { spec: sha ? `${REPOSITORY}#${sha}` : REPOSITORY, pinned: !!sha };
+  return { spec: archiveSpec(sha ?? 'HEAD'), pinned: !!sha };
 }
 
 export const workflow = (spec) => `# README Runtime: verify that the committed cards match a fresh, Wasm-verified build.
@@ -187,7 +194,7 @@ export function initProject(cwd, { wasm, exportName, init, configPath = CONFIG_F
   }
   const { tool, status } = ensureWorkflow(cwd);
   lines.push(`${status === 'kept' ? 'kept existing' : 'created'} ${WORKFLOW_FILE}${status === 'kept' ? '' : status.slice('created'.length)}`);
-  if (!tool.pinned) lines.push(`warning: could not tell which commit this README Runtime comes from, so the workflow runs the repository's default branch; pin it (${REPOSITORY}#<commit>) to the version you build with`);
+  if (!tool.pinned) lines.push(`warning: could not tell which commit this README Runtime comes from, so the workflow runs the repository's default branch; pin it (${archiveSpec('<commit>')}) to the version you build with`);
   lines.push('', 'Next (use this exact version locally too, so CI regenerates the same cards):', '  1. edit readme-runtime.json (wasm path, export, init; optional "build": {"command", "inputs"})',
     `  2. npx --yes ${tool.spec} build`, '  3. add ![demo](readme-runtime/<name>.svg) to README.md and commit');
   return { lines, tool };

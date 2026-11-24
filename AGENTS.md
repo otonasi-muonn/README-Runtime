@@ -6,7 +6,7 @@ README Runtime runs the project's build commands and renders its components in N
 `build` and `check`: use it on code you trust. It is a build tool, not a sandbox.
 
 ```sh
-RR="npx --yes github:otonasi-muonn/README-Runtime"   # or: node <checkout>/bin/readme-runtime.js
+RR="npx --yes https://github.com/otonasi-muonn/README-Runtime/archive/HEAD.tar.gz"   # or: node <checkout>/bin/readme-runtime.js
 $RR analyze --json                 # what can be reused: components[].reusable, warnings, nextSteps
 $RR init --ui src/components/X.tsx#X --name demo --json   # scaffold + CI workflow; returns "tool"
 $RR build --json                   # repeat until ok; only changed cards are rebuilt (cards[].reason)
@@ -14,7 +14,8 @@ $RR check --json                   # what CI runs; never writes
 ```
 
 `init` writes `.github/workflows/readme-runtime.yml`, pinned to the README Runtime commit you ran,
-and returns that command as `tool` (`npx --yes github:otonasi-muonn/README-Runtime#<commit>`).
+and returns that command as `tool` (`npx --yes https://github.com/otonasi-muonn/README-Runtime/archive/<commit>.tar.gz`;
+npm 10 cannot install the git spec `github:owner/repo#ref` with npx).
 Use `tool` for every later command: another version may write different SVG, which `check`
 then reports as out of date.
 

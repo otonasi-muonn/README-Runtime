@@ -22,7 +22,7 @@ const srcDir = path.dirname(url.fileURLToPath(import.meta.url));
 // Hash of the generator's own source: any change to the compiler or the template
 // invalidates every cached card, without relying on a manually bumped version. Files that
 // only drive the CLI (config, caching, scaffolding) cannot change a card and are left out.
-const NOT_GENERATOR = new Set(['project.js', 'init.js']);
+const NOT_GENERATOR = new Set(['project.js', 'init.js', 'commit.js']);
 let generatorHashCache;
 export function generatorHash() {
   if (generatorHashCache) return generatorHashCache;

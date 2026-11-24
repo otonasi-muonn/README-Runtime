@@ -42,19 +42,26 @@ test('init pins the CI workflow to the commit README Runtime was installed from'
   fs.copyFileSync(path.join(root, 'examples/collatz/collatz.wasm'), path.join(dir, 'c.wasm'));
   const { status, json } = run(['init', '--wasm', 'c.wasm', '--init', '27'], dir);
   assert.equal(status, 0);
-  assert.match(json.tool, /^npx --yes github:otonasi-muonn\/README-Runtime(#[0-9a-f]{40})?$/);
-  assert.equal(json.pinned, json.tool.includes('#'));
+  // GitHub's archive of a commit: npx cannot install git specs (github:owner/repo#ref) with npm 10
+  assert.match(json.tool, /^npx --yes https:\/\/github\.com\/otonasi-muonn\/README-Runtime\/archive\/([0-9a-f]{40}|HEAD)\.tar\.gz$/);
+  assert.equal(json.pinned, !json.tool.includes('/HEAD.'));
   const wf = fs.readFileSync(path.join(dir, '.github/workflows/readme-runtime.yml'), 'utf8');
   assert.ok(wf.includes(`- run: ${json.tool} check`), wf);
-  assert.ok(!wf.includes('#v0.'), 'no version tag: none is published');
-  // an install by npm or npx from GitHub records the commit in node_modules/.package-lock.json
+  assert.ok(!wf.includes('#v0.') && !wf.includes('github:'), 'no version tag (none is published), no git spec');
   const { installedCommit } = await import('../src/init.js');
+  const sha = 'dfafe10225cf3fd9a5b0011487af15b5ab1f26a3';
+  // 1. GitHub's archive writes the commit into src/commit.js (export-subst); a checkout keeps $Format:%H$
+  assert.equal(installedCommit(path.join(dir, 'nowhere'), sha), sha);
+  assert.equal((await import('../src/commit.js')).ARCHIVE_COMMIT, '$Format' + ':%H$');
+  // 2. npm and npx record where the package came from in node_modules/.package-lock.json
   const nm = path.join(dir, 'node_modules');
   fs.mkdirSync(path.join(nm, 'readme-runtime'), { recursive: true });
-  const sha = 'dfafe10225cf3fd9a5b0011487af15b5ab1f26a3';
-  fs.writeFileSync(path.join(nm, '.package-lock.json'), JSON.stringify({ lockfileVersion: 3, packages: { 'node_modules/readme-runtime': { version: '0.1.0', resolved: `git+ssh://git@github.com/otonasi-muonn/README-Runtime.git#${sha}` } } }));
-  assert.equal(installedCommit(path.join(nm, 'readme-runtime')), sha);
-  assert.equal(installedCommit(path.join(dir, 'nowhere')), null);
+  for (const resolved of [`git+ssh://git@github.com/otonasi-muonn/README-Runtime.git#${sha}`, `https://codeload.github.com/otonasi-muonn/README-Runtime/tar.gz/${sha}`, `https://github.com/otonasi-muonn/README-Runtime/archive/${sha}.tar.gz`]) {
+    fs.writeFileSync(path.join(nm, '.package-lock.json'), JSON.stringify({ lockfileVersion: 3, packages: { 'node_modules/readme-runtime': { version: '0.1.0', resolved } } }));
+    assert.equal(installedCommit(path.join(nm, 'readme-runtime'), '$Format' + ':%H$'), sha, resolved);
+  }
+  // 3. neither: not pinned
+  assert.equal(installedCommit(path.join(dir, 'nowhere'), '$Format' + ':%H$'), null);
 });
 
 test('check --json reports structured problems and never writes', () => {

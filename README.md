@@ -46,21 +46,21 @@
 
 ```sh
 # 1. 設定と、チェック専用の GitHub Actions ワークフローを作る（既存ファイルは上書きしない）
-npx --yes github:otonasi-muonn/README-Runtime init --wasm build/step.wasm --init 27
+npx --yes https://github.com/otonasi-muonn/README-Runtime/archive/HEAD.tar.gz init --wasm build/step.wasm --init 27
 
 # 2. カードを生成（本物の Wasm との照合つき）。init が表示した、コミットに固定したコマンドを使う
-npx --yes github:otonasi-muonn/README-Runtime#<commit> build
+npx --yes https://github.com/otonasi-muonn/README-Runtime/archive/<commit>.tar.gz build
 
 # 3. README.md に貼る（ファイル名は変わらないので、以後の再生成で README の更新は不要）
 #    ![demo](readme-runtime/step.svg)
 ```
 
-`init` は、いま実行した README Runtime のコミットを調べ、CI ワークフローをそのコミットに固定します（`init --json` の `tool` にも同じコマンドが入ります）。生成器の版が変わると SVG が変わり、CI の `check` が失敗するためです。npm にはまだ公開していません。
+npm にはまだ公開していないため、GitHub のアーカイブ（`archive/<ref>.tar.gz`）から実行します（npm 10 の `npx github:owner/repo#ref` は、git からのインストールで失敗します）。`init` は、いま実行した README Runtime のコミットを調べ、CI ワークフローをそのコミットに固定します（`init --json` の `tool` にも同じコマンドが入ります）。生成器の版が変わると SVG が変わり、CI の `check` が失敗するためです。
 
 使えるかどうかだけ確かめるには:
 
 ```sh
-npx --yes github:otonasi-muonn/README-Runtime inspect build/step.wasm
+npx --yes https://github.com/otonasi-muonn/README-Runtime/archive/HEAD.tar.gz inspect build/step.wasm
 # step(i32) -> i32                 OK: can run in CSS as a step function
 ```
 
