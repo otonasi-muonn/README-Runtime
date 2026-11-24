@@ -105,29 +105,69 @@ function traceGroups(json, seconds) {
 
 const TYPES_BY_ENGINE = { chromium, firefox, webkit, chrome: chromium, msedge: chromium };
 const results = { environment: environment(), windowMs: WINDOW_MS, engines: {} };
+const ARTIFACT_TIMEOUT_MS = 180000;
 // Every artifact gets a fresh browser, measured first on an empty page, so memory and CPU of
-// one artifact do not carry over into the next.
-async function session(engine) {
+// one artifact do not carry over into the next. The browser is always closed afterwards.
+async function measureArtifact(engine, N, name) {
   const type = TYPES_BY_ENGINE[engine];
   const opts = engine === 'chrome' || engine === 'msedge' ? { channel: engine } : {};
   if (engine === 'chromium' || opts.channel) opts.args = ['--autoplay-policy=no-user-gesture-required', '--force-prefers-no-reduced-motion'];
   if (engine === 'firefox') opts.firefoxUserPrefs = { 'media.autoplay.default': 0, 'ui.prefersReducedMotion': 0 };
   const launched = await type.launchServer(opts);
-  const browser = await type.connect(launched.wsEndpoint());
-  const pid = launched.process().pid;
-  const page = await (await browser.newContext({ viewport: { width: CARD.W + 40, height: CARD.H + 40 }, deviceScaleFactor: 1, reducedMotion: 'no-preference' })).newPage();
-  const measure = async () => {
-    const a = treeTotals(processTree(pid));
+  const work = (async () => {
+    const browser = await type.connect(launched.wsEndpoint());
+    const pid = launched.process().pid;
+    const page = await (await browser.newContext({ viewport: { width: CARD.W + 40, height: CARD.H + 40 }, deviceScaleFactor: 1, reducedMotion: 'no-preference' })).newPage();
+    const measure = async () => {
+      const a = treeTotals(processTree(pid));
+      const t0 = performance.now();
+      await page.waitForTimeout(WINDOW_MS);
+      const b = treeTotals(processTree(pid));
+      const secs = (performance.now() - t0) / 1000;
+      return a && b ? { cpuPercent: round((b.cpuMs - a.cpuMs) / 10 / secs, 1), workingSetMB: round(b.ws / 2 ** 20, 0), processes: b.processes } : null;
+    };
+    await page.goto(`${origin}/page`);
+    await page.waitForTimeout(1000);
+    const r = { version: browser.version(), baseline: await measure() };
+    await page.goto(`${origin}/page?f=${name}`);
+    await page.waitForTimeout(1200);
+    const state = await page.evaluate(() => {
+      const m = document.getElementById('m');
+      return m.tagName === 'VIDEO' ? { video: true, error: m.error?.code ?? null, readyState: m.readyState, time: m.currentTime } : { video: false, decoded: m.complete && m.naturalWidth > 0 };
+    });
+    r.plays = state.video ? state.error === null && state.readyState >= 2 && state.time > 0 : state.decoded;
+    if (!r.plays) { r.state = state; return r; }
+    // CPU and memory first, undisturbed by screenshots
+    r.cpu = await measure();
+    // which frame is shown over ~4 s: it must match a source frame and advance one step per
+    // STEP_MS. The 12 hold frames at the end look identical (they all identify as frame N), so
+    // pairs of samples that touch the hold or wrap around are left out of the rate.
+    const samples = [];
     const t0 = performance.now();
-    await page.waitForTimeout(WINDOW_MS);
-    const b = treeTotals(processTree(pid));
-    const secs = (performance.now() - t0) / 1000;
-    return a && b ? { cpuPercent: round((b.cpuMs - a.cpuMs) / 10 / secs, 1), workingSetMB: round(b.ws / 2 ** 20, 0), processes: b.processes } : null;
-  };
-  await page.goto(`${origin}/page`);
-  await page.waitForTimeout(1000);
-  const baseline = await measure();
-  return { browser, launched, page, measure, baseline, version: browser.version(), close: async () => { await browser.close(); await launched.close(); } };
+    for (let i = 0; i < 14; i++) {
+      const png = PNG.sync.read(await page.locator('#m').screenshot({ timeout: 20000 }));
+      samples.push({ at: round(performance.now() - t0, 0), ...identify(png, N) });
+      await page.waitForTimeout(150);
+    }
+    const pairs = samples.slice(1).map((x, i) => [samples[i], x]).filter(([a, b]) => a.frame < N && b.frame < N && b.frame >= a.frame);
+    const advance = pairs.map(([a, b]) => (b.frame - a.frame) / ((b.at - a.at) / STEP_MS));
+    r.match = {
+      maxDistance: round(Math.max(...samples.map((x) => x.d)), 2), framesSeen: new Set(samples.map((x) => x.frame)).size,
+      rate: advance.length ? round(advance.reduce((a, b) => a + b, 0) / advance.length, 2) : null, pairs: advance.length,
+      samples: samples.map((x) => [x.at, x.frame, round(x.d, 2)]),
+    };
+    if (engine === 'chromium' || engine === 'chrome') {
+      await browser.startTracing(page, { categories: ['devtools.timeline', 'disabled-by-default-devtools.timeline', 'blink', 'cc', 'gpu', 'media', 'viz'] });
+      await page.waitForTimeout(4000);
+      r.trace = traceGroups((await browser.stopTracing()).toString(), 4);
+    }
+    return r;
+  })();
+  try {
+    return await Promise.race([work, new Promise((_, rej) => setTimeout(() => rej(new Error(`no result within ${ARTIFACT_TIMEOUT_MS / 1000} s`)), ARTIFACT_TIMEOUT_MS))]);
+  } finally {
+    await launched.close().catch(() => {});
+  }
 }
 for (const engine of ENGINES) {
   const out = { version: null, artifacts: {} };
@@ -136,40 +176,12 @@ for (const engine of ENGINES) {
     if (ENGINE_FORMATS[engine] && !ENGINE_FORMATS[engine].includes(f)) continue;
     const name = artifact(N, f);
     if (!fs.existsSync(path.join(WORK, name))) continue;
-    let sess;
-    try { sess = await session(engine); } catch (e) { out.error = String(e.message).split('\n')[0]; break; }
-    const { browser, page, measure, baseline } = sess;
-    out.version = sess.version;
-    const r = { baseline };
-    await page.goto(`${origin}/page?f=${name}`);
-    await page.waitForTimeout(1200);
-    const state = await page.evaluate(() => {
-      const m = document.getElementById('m');
-      return m.tagName === 'VIDEO' ? { video: true, error: m.error?.code ?? null, readyState: m.readyState, time: m.currentTime } : { video: false, decoded: m.complete && m.naturalWidth > 0 };
-    });
-    r.plays = state.video ? state.error === null && state.readyState >= 2 && state.time > 0 : state.decoded;
-    if (!r.plays) { r.state = state; out.artifacts[name] = r; console.log(engine, name, 'does not play', JSON.stringify(state)); await sess.close(); continue; }
-    // CPU and memory first, undisturbed by screenshots
-    r.cpu = await measure();
-    // which frame is shown over ~3 s: it must match a source frame and advance one step per STEP_MS
-    const samples = [];
-    const t0 = performance.now();
-    for (let i = 0; i < 10; i++) {
-      const png = PNG.sync.read(await page.locator('#m').screenshot());
-      samples.push({ at: performance.now() - t0, ...identify(png, N) });
-      await page.waitForTimeout(150);
-    }
-    const n = N + 12 + 1;
-    const advance = samples.slice(1).map((x, i) => ((x.frame - samples[i].frame + n) % n) / ((x.at - samples[i].at) / STEP_MS));
-    r.match = { maxDistance: round(Math.max(...samples.map((x) => x.d)), 2), framesSeen: new Set(samples.map((x) => x.frame)).size, rate: round(advance.reduce((a, b) => a + b, 0) / advance.length, 2) };
-    if (engine === 'chromium' || engine === 'chrome') {
-      await browser.startTracing(page, { categories: ['devtools.timeline', 'disabled-by-default-devtools.timeline', 'blink', 'cc', 'gpu', 'media', 'viz'] });
-      await page.waitForTimeout(4000);
-      r.trace = traceGroups((await browser.stopTracing()).toString(), 4);
-    }
+    let r;
+    try { r = await measureArtifact(engine, N, name); } catch (e) { r = { error: String(e.message).split('\n')[0] }; }
+    out.version = r.version ?? out.version;
+    delete r.version;
     out.artifacts[name] = r;
-    console.log(engine, out.version, name, JSON.stringify({ match: r.match, cpu: r.cpu, base: baseline, trace: r.trace && { ...r.trace.msPerSecond, updates: r.trace.styleUpdates } }));
-    await sess.close();
+    console.log(engine, out.version, name, JSON.stringify({ plays: r.plays, error: r.error, match: r.match && { ...r.match, samples: undefined }, cpu: r.cpu, base: r.baseline, trace: r.trace && { ...r.trace.msPerSecond, updates: r.trace.styleUpdates } }));
     writeJson('playback.json', results);
   }
 }

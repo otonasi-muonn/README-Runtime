@@ -60,9 +60,16 @@ if (pb) {
     if (e.error && !Object.keys(e.artifacts ?? {}).length) { rows.push([engine, '–', '–', `起動できず: ${e.error}`, '', '', '']); continue; }
     for (const [name, a] of Object.entries(e.artifacts)) {
       const tr = a.trace;
-      const ok = a.plays ? (a.match.rate > 0.85 && a.match.maxDistance < 6 ? '○' : `△（速度 ${a.match.rate}）`) : '× 再生されない';
+      const rate = a.match?.rate;
+      // three samples (~0.8 s) on the same frame outside the hold: playback has stopped
+      const N = stepsOf(name);
+      const stuck = (a.match?.samples ?? []).some((x, i, all) => i >= 2 && x[1] < N && all[i - 1][1] === x[1] && all[i - 2][1] === x[1]);
+      // a screenshot lands up to ~1 frame late, so a rate from a few pairs is only good to ±25%
+      const ok = a.error ? `計測失敗（${a.error}）` : !a.plays ? '× 再生されない' : stuck ? '× 止まる（ループ後に再生されない）' : rate == null ? '？（保持中のみ観測）'
+        : rate > 0.75 && rate < 1.25 && a.match.maxDistance < 6 ? `○（${rate}）` : `△（速度 ${rate}）`;
+      const measured = a.cpu && a.baseline;
       rows.push([`${engine} ${e.version}`, stepsOf(name), label(name), ok,
-        a.cpu ? `${Math.max(0, a.cpu.cpuPercent - a.baseline.cpuPercent).toFixed(1)} %` : '–', a.cpu ? `+${a.cpu.workingSetMB - a.baseline.workingSetMB} MB` : '–',
+        measured ? `${Math.max(0, a.cpu.cpuPercent - a.baseline.cpuPercent).toFixed(1)} %` : '未測定', measured ? `+${a.cpu.workingSetMB - a.baseline.workingSetMB} MB` : '未測定',
         tr ? `style ${tr.msPerSecond.style}${tr.styleUpdates?.perSecond ? `（${tr.styleUpdates.perSecond} 回/秒 × ${tr.styleUpdates.meanMs} ms）` : ''}、paint ${tr.msPerSecond.paint}、raster ${tr.msPerSecond.raster}、video ${tr.msPerSecond.videoDecode}` : '–']);
     }
   }

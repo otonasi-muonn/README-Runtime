@@ -65,7 +65,12 @@ export function environment() {
 export function processTree(rootPid) {
   if (process.platform !== 'win32') return null;
   const ps = 'Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId,Name,KernelModeTime,UserModeTime,WorkingSetSize | ConvertTo-Json -Compress';
-  const all = JSON.parse(execFileSync('powershell', ['-NoProfile', '-NonInteractive', '-Command', ps], { encoding: 'utf8', maxBuffer: 1 << 26 }));
+  // CIM queries occasionally fail under load: retry, then report "not measured" (null)
+  let all = null;
+  for (let attempt = 0; attempt < 3 && !all; attempt++) {
+    try { all = JSON.parse(execFileSync('powershell', ['-NoProfile', '-NonInteractive', '-Command', ps], { encoding: 'utf8', maxBuffer: 1 << 26, timeout: 60000 })); } catch { /* retry */ }
+  }
+  if (!all) return null;
   const children = new Map();
   for (const p of all) { if (!children.has(p.ParentProcessId)) children.set(p.ParentProcessId, []); children.get(p.ParentProcessId).push(p); }
   const byPid = new Map(all.map((p) => [p.ProcessId, p]));
