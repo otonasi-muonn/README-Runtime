@@ -1,0 +1,606 @@
+{
+ "environment": {
+  "date": "2026-11-24T02:22:15.144Z",
+  "os": "Windows_NT 10.0.26200 x64",
+  "cpu": "AMD Ryzen 5 PRO 4650G with Radeon Graphics (12 threads)",
+  "ramGB": 47.4,
+  "node": "v22.21.0",
+  "ffmpeg": "ffmpeg version 9.0.1-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+  "git": "git version 2.51.0.windows.2"
+ },
+ "maxSteps": 400,
+ "cards": {
+  "160": {
+   "file": "deep-n160.svg",
+   "generateMs": 3620,
+   "bytes": 64544
+  },
+  "320": {
+   "file": "deep-n320.svg",
+   "generateMs": 4286,
+   "bytes": 67264
+  },
+  "400": {
+   "file": "deep-n400.svg",
+   "generateMs": 4268,
+   "bytes": 68624
+  },
+  "480": {
+   "file": "deep-n480.svg",
+   "generateMs": 5162,
+   "bytes": 69984
+  },
+  "512": {
+   "file": "deep-n512.svg",
+   "generateMs": 5194,
+   "bytes": 70528
+  },
+  "544": {
+   "file": "deep-n544.svg",
+   "generateMs": 5046,
+   "bytes": 71072
+  },
+  "640": {
+   "file": "deep-n640.svg",
+   "generateMs": 5513,
+   "bytes": 72704
+  },
+  "800": {
+   "file": "deep-n800.svg",
+   "generateMs": 6384,
+   "bytes": 75425
+  },
+  "1024": {
+   "file": "deep-n1024.svg",
+   "generateMs": 8787,
+   "bytes": 79239
+  }
+ },
+ "engines": {
+  "chromium": {
+   "version": "159.0.8154.6",
+   "depths": {
+    "160": {
+     "correct": {
+      "step1": {
+       "ok": true,
+       "differingPx": 100,
+       "firstRenderMs": 95
+      },
+      "deepest": {
+       "ok": true,
+       "differingPx": 0,
+       "firstRenderMs": 84
+      }
+     },
+     "animation": {
+      "cpuPercent": 81.4,
+      "workingSetMB": 453,
+      "style": {
+       "msPerS": 480,
+       "updatesPerS": 6.6,
+       "meanMs": 72.7
+      }
+     }
+    },
+    "320": {
+     "correct": {
+      "step1": {
+       "ok": true,
+       "differingPx": 100,
+       "firstRenderMs": 169
+      },
+      "deepest": {
+       "ok": true,
+       "differingPx": 0,
+       "firstRenderMs": 183
+      }
+     },
+     "animation": {
+      "cpuPercent": 112.5,
+      "workingSetMB": 529,
+      "style": {
+       "msPerS": 881,
+       "updatesPerS": 5.6,
+       "meanMs": 157.3
+      }
+     }
+    },
+    "400": {
+     "correct": {
+      "step1": {
+       "ok": true,
+       "differingPx": 100,
+       "firstRenderMs": 220
+      },
+      "deepest": {
+       "ok": true,
+       "differingPx": 0,
+       "firstRenderMs": 250
+      }
+     },
+     "animation": {
+      "cpuPercent": 117.5,
+      "workingSetMB": 561,
+      "style": {
+       "msPerS": 865,
+       "updatesPerS": 4.8,
+       "meanMs": 180.2
+      }
+     }
+    },
+    "480": {
+     "correct": {
+      "step1": {
+       "ok": true,
+       "differingPx": 100,
+       "firstRenderMs": 253
+      },
+      "deepest": {
+       "ok": true,
+       "differingPx": 0,
+       "firstRenderMs": 224
+      }
+     },
+     "animation": {
+      "cpuPercent": 120.6,
+      "workingSetMB": 612,
+      "style": {
+       "msPerS": 921,
+       "updatesPerS": 4.2,
+       "meanMs": 219.4
+      }
+     }
+    },
+    "512": {
+     "correct": {
+      "step1": {
+       "ok": true,
+       "differingPx": 100,
+       "firstRenderMs": 267
+      },
+      "deepest": {
+       "ok": true,
+       "differingPx": 0,
+       "firstRenderMs": 239
+      }
+     },
+     "animation": {
+      "cpuPercent": 116.6,
+      "workingSetMB": 602,
+      "style": {
+       "msPerS": 893,
+       "updatesPerS": 3.8,
+       "meanMs": 234.9
+      }
+     }
+    },
+    "544": {
+     "correct": {
+      "step1": {
+       "ok": true,
+       "differingPx": 100,
+       "firstRenderMs": 286
+      },
+      "deepest": {
+       "ok": true,
+       "differingPx": 72,
+       "firstRenderMs": 254
+      }
+     },
+     "animation": {
+      "cpuPercent": 110.4,
+      "workingSetMB": 631,
+      "style": {
+       "msPerS": 894,
+       "updatesPerS": 3.6,
+       "meanMs": 248.3
+      }
+     }
+    },
+    "640": {
+     "correct": {
+      "step1": {
+       "ok": true,
+       "differingPx": 100,
+       "firstRenderMs": 321
+      },
+      "deepest": {
+       "ok": true,
+       "differingPx": 6,
+       "firstRenderMs": 334
+      }
+     },
+     "animation": {
+      "cpuPercent": 112.1,
+      "workingSetMB": 595,
+      "style": {
+       "msPerS": 930,
+       "updatesPerS": 3.2,
+       "meanMs": 290.5
+      }
+     }
+    },
+    "800": {
+     "correct": {
+      "step1": {
+       "ok": true,
+       "differingPx": 100,
+       "firstRenderMs": 403
+      },
+      "deepest": {
+       "ok": true,
+       "differingPx": 0,
+       "firstRenderMs": 381
+      }
+     },
+     "animation": {
+      "cpuPercent": 111.3,
+      "workingSetMB": 685,
+      "style": {
+       "msPerS": 946,
+       "updatesPerS": 2.6,
+       "meanMs": 364
+      }
+     }
+    },
+    "1024": {
+     "correct": {},
+     "crashed": "page.evaluate: Target crashed "
+    }
+   }
+  },
+  "firefox": {
+   "version": "159.0",
+   "depths": {
+    "160": {
+     "correct": {
+      "step1": {
+       "ok": true,
+       "differingPx": 0,
+       "firstRenderMs": 177
+      },
+      "deepest": {
+       "ok": true,
+       "differingPx": 0,
+       "firstRenderMs": 128
+      }
+     },
+     "animation": {
+      "cpuPercent": 50.2,
+      "workingSetMB": 563,
+      "style": null
+     }
+    },
+    "320": {
+     "correct": {
+      "step1": {
+       "ok": true,
+       "differingPx": 0,
+       "firstRenderMs": 191
+      },
+      "deepest": {
+       "ok": true,
+       "differingPx": 0,
+       "firstRenderMs": 163
+      }
+     },
+     "animation": {
+      "cpuPercent": 92.9,
+      "workingSetMB": 562,
+      "style": null
+     }
+    },
+    "400": {
+     "correct": {
+      "step1": {
+       "ok": true,
+       "differingPx": 0,
+       "firstRenderMs": 223
+      },
+      "deepest": {
+       "ok": true,
+       "differingPx": 0,
+       "firstRenderMs": 216
+      }
+     },
+     "animation": {
+      "cpuPercent": 112.4,
+      "workingSetMB": 566,
+      "style": null
+     }
+    },
+    "480": {
+     "correct": {
+      "step1": {
+       "ok": true,
+       "differingPx": 0,
+       "firstRenderMs": 258
+      },
+      "deepest": {
+       "ok": true,
+       "differingPx": 0,
+       "firstRenderMs": 240
+      }
+     },
+     "animation": {
+      "cpuPercent": 112.9,
+      "workingSetMB": 567,
+      "style": null
+     }
+    },
+    "512": {
+     "correct": {
+      "step1": {
+       "ok": true,
+       "differingPx": 0,
+       "firstRenderMs": 248
+      },
+      "deepest": {
+       "ok": true,
+       "differingPx": 0,
+       "firstRenderMs": 218
+      }
+     },
+     "animation": {
+      "cpuPercent": 104.9,
+      "workingSetMB": 567,
+      "style": null
+     }
+    },
+    "544": {
+     "correct": {
+      "step1": {
+       "ok": true,
+       "differingPx": 0,
+       "firstRenderMs": 268
+      },
+      "deepest": {
+       "ok": true,
+       "differingPx": 0,
+       "firstRenderMs": 228
+      }
+     },
+     "animation": {
+      "cpuPercent": 105,
+      "workingSetMB": 565,
+      "style": null
+     }
+    },
+    "640": {
+     "correct": {
+      "step1": {
+       "ok": true,
+       "differingPx": 0,
+       "firstRenderMs": 318
+      },
+      "deepest": {
+       "ok": true,
+       "differingPx": 0,
+       "firstRenderMs": 307
+      }
+     },
+     "animation": {
+      "cpuPercent": 109,
+      "workingSetMB": 569,
+      "style": null
+     }
+    },
+    "800": {
+     "correct": {
+      "step1": {
+       "ok": true,
+       "differingPx": 0,
+       "firstRenderMs": 361
+      },
+      "deepest": {
+       "ok": true,
+       "differingPx": 0,
+       "firstRenderMs": 348
+      }
+     },
+     "animation": {
+      "cpuPercent": 103.8,
+      "workingSetMB": 573,
+      "style": null
+     }
+    },
+    "1024": {
+     "correct": {
+      "step1": {
+       "ok": true,
+       "differingPx": 0,
+       "firstRenderMs": 442
+      },
+      "deepest": {
+       "ok": true,
+       "differingPx": 0,
+       "firstRenderMs": 457
+      }
+     },
+     "animation": {
+      "cpuPercent": 103.5,
+      "workingSetMB": 577,
+      "style": null
+     }
+    }
+   }
+  },
+  "webkit": {
+   "version": "27.2",
+   "depths": {
+    "160": {
+     "correct": {
+      "step1": {
+       "ok": true,
+       "differingPx": 0,
+       "firstRenderMs": 162
+      },
+      "deepest": {
+       "ok": true,
+       "differingPx": 0,
+       "firstRenderMs": 138
+      }
+     },
+     "animation": {
+      "cpuPercent": 73.3,
+      "workingSetMB": 311,
+      "style": null
+     }
+    },
+    "320": {
+     "correct": {
+      "step1": {
+       "ok": true,
+       "differingPx": 0,
+       "firstRenderMs": 258
+      },
+      "deepest": {
+       "ok": true,
+       "differingPx": 0,
+       "firstRenderMs": 247
+      }
+     },
+     "animation": {
+      "cpuPercent": 99.9,
+      "workingSetMB": 326,
+      "style": null
+     }
+    },
+    "400": {
+     "correct": {
+      "step1": {
+       "ok": true,
+       "differingPx": 0,
+       "firstRenderMs": 331
+      },
+      "deepest": {
+       "ok": true,
+       "differingPx": 0,
+       "firstRenderMs": 288
+      }
+     },
+     "animation": {
+      "cpuPercent": 100.9,
+      "workingSetMB": 327,
+      "style": null
+     }
+    },
+    "480": {
+     "correct": {
+      "step1": {
+       "ok": true,
+       "differingPx": 0,
+       "firstRenderMs": 377
+      },
+      "deepest": {
+       "ok": true,
+       "differingPx": 0,
+       "firstRenderMs": 357
+      }
+     },
+     "animation": {
+      "cpuPercent": 100.6,
+      "workingSetMB": 328,
+      "style": null
+     }
+    },
+    "512": {
+     "correct": {
+      "step1": {
+       "ok": false,
+       "differingPx": 181287,
+       "firstRenderMs": 367
+      },
+      "deepest": {
+       "ok": false,
+       "differingPx": 181641,
+       "firstRenderMs": 361
+      }
+     },
+     "animation": {
+      "cpuPercent": 91.8,
+      "workingSetMB": 317,
+      "style": null
+     }
+    },
+    "544": {
+     "correct": {
+      "step1": {
+       "ok": false,
+       "differingPx": 181287,
+       "firstRenderMs": 389
+      },
+      "deepest": {
+       "ok": false,
+       "differingPx": 181843,
+       "firstRenderMs": 366
+      }
+     },
+     "animation": {
+      "cpuPercent": 96.3,
+      "workingSetMB": 318,
+      "style": null
+     }
+    },
+    "640": {
+     "correct": {
+      "step1": {
+       "ok": false,
+       "differingPx": 181287,
+       "firstRenderMs": 364
+      },
+      "deepest": {
+       "ok": false,
+       "differingPx": 181753,
+       "firstRenderMs": 352
+      }
+     },
+     "animation": {
+      "cpuPercent": 96.5,
+      "workingSetMB": 320,
+      "style": null
+     }
+    },
+    "800": {
+     "correct": {
+      "step1": {
+       "ok": false,
+       "differingPx": 181287,
+       "firstRenderMs": 370
+      },
+      "deepest": {
+       "ok": false,
+       "differingPx": 181261,
+       "firstRenderMs": 364
+      }
+     },
+     "animation": {
+      "cpuPercent": 93.7,
+      "workingSetMB": 320,
+      "style": null
+     }
+    },
+    "1024": {
+     "correct": {
+      "step1": {
+       "ok": false,
+       "differingPx": 181287,
+       "firstRenderMs": 365
+      },
+      "deepest": {
+       "ok": false,
+       "differingPx": 181772,
+       "firstRenderMs": 358
+      }
+     },
+     "animation": {
+      "cpuPercent": 93.9,
+      "workingSetMB": 318,
+      "style": null
+     }
+    }
+   }
+  }
+ }
+}

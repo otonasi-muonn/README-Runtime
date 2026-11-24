@@ -1,0 +1,138 @@
+{
+ "environment": {
+  "date": "2026-11-24T02:28:58.583Z",
+  "os": "Windows_NT 10.0.26200 x64",
+  "cpu": "AMD Ryzen 5 PRO 4650G with Radeon Graphics (12 threads)",
+  "ramGB": 47.4,
+  "node": "v22.21.0",
+  "ffmpeg": "ffmpeg version 9.0.1-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+  "git": "git version 2.51.0.windows.2"
+ },
+ "revisions": 8,
+ "n": {
+  "160": {
+   "svg": {
+    "packKiB": [
+     11,
+     11,
+     12,
+     13,
+     13,
+     14,
+     15,
+     15
+    ],
+    "firstKiB": 11,
+    "afterKiB": 15,
+    "perRevisionKiB": 0.6
+   },
+   "webp-lossless": {
+    "packKiB": [
+     770,
+     1543,
+     2321,
+     3095,
+     3867,
+     4645,
+     5420,
+     6197
+    ],
+    "firstKiB": 770,
+    "afterKiB": 6197,
+    "perRevisionKiB": 775.3
+   },
+   "webp-q80": {
+    "packKiB": [
+     665,
+     1332,
+     1996,
+     2664,
+     3328,
+     3995,
+     4658,
+     5317
+    ],
+    "firstKiB": 665,
+    "afterKiB": 5317,
+    "perRevisionKiB": 664.6
+   },
+   "mp4-h264-crf18": {
+    "packKiB": [
+     111,
+     223,
+     336,
+     451,
+     561,
+     674,
+     787,
+     897
+    ],
+    "firstKiB": 111,
+    "afterKiB": 897,
+    "perRevisionKiB": 112.3
+   }
+  },
+  "320": {
+   "svg": {
+    "packKiB": [
+     11,
+     11,
+     12,
+     13,
+     14,
+     14,
+     15,
+     16
+    ],
+    "firstKiB": 11,
+    "afterKiB": 16,
+    "perRevisionKiB": 0.7
+   },
+   "webp-lossless": {
+    "packKiB": [
+     1522,
+     3051,
+     4586,
+     6115,
+     7645,
+     9180,
+     10712,
+     12245
+    ],
+    "firstKiB": 1522,
+    "afterKiB": 12245,
+    "perRevisionKiB": 1531.9
+   },
+   "webp-q80": {
+    "packKiB": [
+     1305,
+     2615,
+     3921,
+     5233,
+     6537,
+     7848,
+     9152,
+     10448
+    ],
+    "firstKiB": 1305,
+    "afterKiB": 10448,
+    "perRevisionKiB": 1306.1
+   },
+   "mp4-h264-crf18": {
+    "packKiB": [
+     217,
+     437,
+     654,
+     875,
+     1091,
+     1310,
+     1529,
+     1742
+    ],
+    "firstKiB": 217,
+    "afterKiB": 1742,
+    "perRevisionKiB": 217.9
+   }
+  }
+ }
+}

@@ -1,0 +1,138 @@
+{
+ "environment": {
+  "date": "2026-11-24T02:14:42.131Z",
+  "os": "Windows_NT 10.0.26200 x64",
+  "cpu": "AMD Ryzen 5 PRO 4650G with Radeon Graphics (12 threads)",
+  "ramGB": 47.4,
+  "node": "v22.21.0",
+  "ffmpeg": "ffmpeg version 9.0.1-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+  "git": "git version 2.51.0.windows.2"
+ },
+ "steps": 160,
+ "windowMs": 8000,
+ "engines": {
+  "chromium": {
+   "version": "159.0.8154.6",
+   "cases": {
+    "svg visible": {
+     "cpuPercent": 69.3,
+     "moving": true
+    },
+    "svg scrolled out of view": {
+     "cpuPercent": -0.2,
+     "moving": null
+    },
+    "webp-lossless visible": {
+     "cpuPercent": 7.4,
+     "moving": true
+    },
+    "webp-lossless scrolled out of view": {
+     "cpuPercent": -0.2,
+     "moving": null
+    },
+    "mp4-h264-crf18 visible": {
+     "cpuPercent": 1,
+     "moving": true
+    },
+    "mp4-h264-crf18 scrolled out of view": {
+     "cpuPercent": 0.2,
+     "moving": null
+    },
+    "svg reduced motion": {
+     "cpuPercent": -0.2,
+     "moving": false
+    },
+    "webp-lossless reduced motion": {
+     "cpuPercent": 4.7,
+     "moving": true
+    },
+    "mp4-h264-crf18 reduced motion": {
+     "cpuPercent": 2.4,
+     "moving": true
+    }
+   }
+  },
+  "firefox": {
+   "version": "159.0",
+   "cases": {
+    "svg visible": {
+     "cpuPercent": 42.1,
+     "moving": true
+    },
+    "svg scrolled out of view": {
+     "cpuPercent": -2,
+     "moving": null
+    },
+    "webp-lossless visible": {
+     "cpuPercent": 3,
+     "moving": true
+    },
+    "webp-lossless scrolled out of view": {
+     "cpuPercent": 2.4,
+     "moving": null
+    },
+    "mp4-h264-crf18 visible": {
+     "cpuPercent": 8,
+     "moving": true
+    },
+    "mp4-h264-crf18 scrolled out of view": {
+     "cpuPercent": -2.1,
+     "moving": null
+    },
+    "svg reduced motion": {
+     "cpuPercent": -0.2,
+     "moving": false
+    },
+    "webp-lossless reduced motion": {
+     "cpuPercent": 1.9,
+     "moving": true
+    },
+    "mp4-h264-crf18 reduced motion": {
+     "cpuPercent": 6.6,
+     "moving": true
+    }
+   }
+  },
+  "webkit": {
+   "version": "27.2",
+   "cases": {
+    "svg visible": {
+     "cpuPercent": 75.8,
+     "moving": true
+    },
+    "svg scrolled out of view": {
+     "cpuPercent": 67.9,
+     "moving": null
+    },
+    "webp-lossless visible": {
+     "cpuPercent": 16.5,
+     "moving": true
+    },
+    "webp-lossless scrolled out of view": {
+     "cpuPercent": -0.2,
+     "moving": null
+    },
+    "mp4-h264-crf18 visible": {
+     "cpuPercent": 15.8,
+     "moving": true
+    },
+    "mp4-h264-crf18 scrolled out of view": {
+     "cpuPercent": 1.2,
+     "moving": null
+    },
+    "svg reduced motion": {
+     "cpuPercent": 73.9,
+     "moving": true
+    },
+    "webp-lossless reduced motion": {
+     "cpuPercent": 6,
+     "moving": true
+    },
+    "mp4-h264-crf18 reduced motion": {
+     "cpuPercent": 18.8,
+     "moving": true
+    }
+   }
+  }
+ }
+}

@@ -1,0 +1,88 @@
+{
+ "date": "2026-11-24T02:35:30.994Z",
+ "svgTransfer": {
+  "identity": {
+   "status": 200,
+   "contentEncoding": null,
+   "bytesOnWire": 64991
+  },
+  "gzip": {
+   "status": 200,
+   "contentEncoding": "gzip",
+   "bytesOnWire": 8960
+  },
+  "br": {
+   "status": 200,
+   "contentEncoding": null,
+   "bytesOnWire": 64991
+  },
+  "gzip, deflate, br, zstd": {
+   "status": 200,
+   "contentEncoding": "gzip",
+   "bytesOnWire": 8960
+  }
+ },
+ "contentTypes": {
+  "svg": {
+   "url": "https://raw.githubusercontent.com/otonasi-muonn/README-Runtime/dev/readme-runtime-mvp/readme-runtime/mockcraft.svg",
+   "contentType": "image/svg+xml",
+   "contentEncoding": "gzip",
+   "cacheControl": "max-age=300"
+  },
+  "webp": {
+   "url": "https://raw.githubusercontent.com/webmproject/libwebp/main/examples/test.webp",
+   "contentType": "image/webp",
+   "contentEncoding": null,
+   "cacheControl": "max-age=300"
+  },
+  "mp4": {
+   "url": "https://raw.githubusercontent.com/mediaelement/mediaelement-files/master/big_buck_bunny.mp4",
+   "contentType": "application/octet-stream",
+   "contentEncoding": null,
+   "cacheControl": "max-age=300"
+  }
+ },
+ "markdown": {
+  "status": 200,
+  "html": "<p dir=\"auto\"><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"demo.svg\"><img src=\"demo.svg\" alt=\"svg\" style=\"max-width: 100%;\"></a></p>\n<p dir=\"auto\"><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"demo.webp\"><img src=\"demo.webp\" alt=\"webp\" style=\"max-width: 100%;\"></a></p>\n<p dir=\"auto\"></p>\n<p dir=\"auto\"><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"demo.mp4\"><img src=\"demo.mp4\" alt=\"mp4\" style=\"max-width: 100%;\"></a></p>"
+ },
+ "csp": {
+  "img-src": [
+   "'self'",
+   "data:",
+   "blob:",
+   "github.githubassets.com",
+   "media.githubusercontent.com",
+   "camo.githubusercontent.com",
+   "identicons.github.com",
+   "avatars.githubusercontent.com",
+   "private-avatars.githubusercontent.com",
+   "github-cloud.s3.amazonaws.com",
+   "objects.githubusercontent.com",
+   "release-assets.githubusercontent.com",
+   "secured-user-images.githubusercontent.com",
+   "user-images.githubusercontent.com",
+   "private-user-images.githubusercontent.com",
+   "opengraph.githubassets.com",
+   "repository-images.githubusercontent.com",
+   "marketplace-screenshots.githubusercontent.com",
+   "copilotprodattachments.blob.core.windows.net/github-production-copilot-attachments/",
+   "github-production-user-asset-6210df.s3.amazonaws.com",
+   "customer-stories-feed.github.com",
+   "spotlights-feed.github.com",
+   "explore-feed.github.com",
+   "*.googleusercontent.com",
+   "objects-origin.githubusercontent.com",
+   "*.githubusercontent.com"
+  ],
+  "media-src": [
+   "github.com",
+   "user-images.githubusercontent.com",
+   "secured-user-images.githubusercontent.com",
+   "private-user-images.githubusercontent.com",
+   "github-production-user-asset-6210df.s3.amazonaws.com",
+   "gist.github.com",
+   "github.githubassets.com"
+  ]
+ }
+}

@@ -1,0 +1,495 @@
+{
+ "environment": {
+  "date": "2026-11-24T05:11:47.131Z",
+  "os": "Windows_NT 10.0.26200 x64",
+  "cpu": "AMD Ryzen 5 PRO 4650G with Radeon Graphics (12 threads)",
+  "ramGB": 47.4,
+  "node": "v22.21.0",
+  "ffmpeg": "ffmpeg version 9.0.1-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+  "git": "git version 2.51.0.windows.2"
+ },
+ "stepMs": 150,
+ "hold": 12,
+ "repeat": 3,
+ "formats": {
+  "webp-lossless": {
+   "ext": "webp",
+   "args": [
+    "-c:v",
+    "libwebp_anim",
+    "-lossless",
+    "1",
+    "-q:v",
+    "75",
+    "-compression_level",
+    "4",
+    "-loop",
+    "0"
+   ]
+  },
+  "webp-q80": {
+   "ext": "webp",
+   "args": [
+    "-c:v",
+    "libwebp_anim",
+    "-lossless",
+    "0",
+    "-q:v",
+    "80",
+    "-compression_level",
+    "4",
+    "-loop",
+    "0"
+   ]
+  },
+  "mp4-h264-crf18": {
+   "ext": "mp4",
+   "args": [
+    "-c:v",
+    "libx264",
+    "-preset",
+    "medium",
+    "-crf",
+    "18",
+    "-pix_fmt",
+    "yuv420p",
+    "-movflags",
+    "+faststart"
+   ]
+  },
+  "mp4-h264-crf28": {
+   "ext": "mp4",
+   "args": [
+    "-c:v",
+    "libx264",
+    "-preset",
+    "medium",
+    "-crf",
+    "28",
+    "-pix_fmt",
+    "yuv420p",
+    "-movflags",
+    "+faststart"
+   ]
+  },
+  "mp4-av1-crf35": {
+   "ext": "mp4",
+   "args": [
+    "-c:v",
+    "libsvtav1",
+    "-preset",
+    "8",
+    "-crf",
+    "35",
+    "-pix_fmt",
+    "yuv420p",
+    "-movflags",
+    "+faststart"
+   ]
+  }
+ },
+ "n": {
+  "40": {
+   "frames": 53,
+   "durationMs": 7950,
+   "rr": {
+    "coldMs": 4415,
+    "ascMs": 1136,
+    "noopCachedMs": 180,
+    "noopForcedMs": 4181,
+    "checkMs": 2958,
+    "styleEditMs": 2936,
+    "logicEditMs": 4083,
+    "size": {
+     "raw": 62946,
+     "gzip": 8772,
+     "brotli": 6871
+    }
+   },
+   "rec": {
+    "browserLaunchMs": 127,
+    "framesColdMs": 2034,
+    "noopCachedMs": 2.2,
+    "styleFramesMs": 1732,
+    "logicFramesCachedMs": 1036,
+    "logicFramesUncachedMs": 2055,
+    "logicFramesReused": 22,
+    "ascMs": 1128,
+    "encode": {
+     "webp-lossless": {
+      "ms": 991,
+      "size": {
+       "raw": 210380,
+       "gzip": 203635,
+       "brotli": 196758
+      },
+      "decodedFrames": 53,
+      "sourceFrames": 53,
+      "ssim": 1,
+      "psnr": "inf"
+     },
+     "webp-q80": {
+      "ms": 671,
+      "size": {
+       "raw": 180800,
+       "gzip": 175797,
+       "brotli": 173822
+      },
+      "decodedFrames": 53,
+      "sourceFrames": 53,
+      "ssim": 0.983622,
+      "psnr": 35.968198
+     },
+     "mp4-h264-crf18": {
+      "ms": 190,
+      "size": {
+       "raw": 37893,
+       "gzip": 36966,
+       "brotli": 36451
+      },
+      "decodedFrames": 53,
+      "sourceFrames": 53,
+      "ssim": 0.990014,
+      "psnr": 36.388378
+     },
+     "mp4-h264-crf28": {
+      "ms": 197,
+      "size": {
+       "raw": 24350,
+       "gzip": 23336,
+       "brotli": 22914
+      },
+      "decodedFrames": 53,
+      "sourceFrames": 53,
+      "ssim": 0.987361,
+      "psnr": 35.726592
+     },
+     "mp4-av1-crf35": {
+      "ms": 373,
+      "size": {
+       "raw": 24702,
+       "gzip": 23932,
+       "brotli": 23730
+      },
+      "decodedFrames": 53,
+      "sourceFrames": 53,
+      "ssim": 0.989389,
+      "psnr": 36.326229
+     }
+    }
+   }
+  },
+  "80": {
+   "frames": 93,
+   "durationMs": 13950,
+   "rr": {
+    "coldMs": 4437,
+    "ascMs": 1207,
+    "noopCachedMs": 165,
+    "noopForcedMs": 4598,
+    "checkMs": 3214,
+    "styleEditMs": 3819,
+    "logicEditMs": 4471,
+    "size": {
+     "raw": 63627,
+     "gzip": 8796,
+     "brotli": 6872
+    }
+   },
+   "rec": {
+    "browserLaunchMs": 146,
+    "framesColdMs": 3601,
+    "noopCachedMs": 2.1,
+    "styleFramesMs": 2998,
+    "logicFramesCachedMs": 2324,
+    "logicFramesUncachedMs": 3037,
+    "logicFramesReused": 22,
+    "ascMs": 1130,
+    "encode": {
+     "webp-lossless": {
+      "ms": 1865,
+      "size": {
+       "raw": 414422,
+       "gzip": 400876,
+       "brotli": 374409
+      },
+      "decodedFrames": 93,
+      "sourceFrames": 93,
+      "ssim": 1,
+      "psnr": "inf"
+     },
+     "webp-q80": {
+      "ms": 1226,
+      "size": {
+       "raw": 353910,
+       "gzip": 343730,
+       "brotli": 338438
+      },
+      "decodedFrames": 93,
+      "sourceFrames": 93,
+      "ssim": 0.982873,
+      "psnr": 35.932732
+     },
+     "mp4-h264-crf18": {
+      "ms": 246,
+      "size": {
+       "raw": 65344,
+       "gzip": 63715,
+       "brotli": 63042
+      },
+      "decodedFrames": 93,
+      "sourceFrames": 93,
+      "ssim": 0.989871,
+      "psnr": 36.356433
+     },
+     "mp4-h264-crf28": {
+      "ms": 283,
+      "size": {
+       "raw": 40500,
+       "gzip": 38879,
+       "brotli": 38302
+      },
+      "decodedFrames": 93,
+      "sourceFrames": 93,
+      "ssim": 0.987219,
+      "psnr": 35.696322
+     },
+     "mp4-av1-crf35": {
+      "ms": 455,
+      "size": {
+       "raw": 39015,
+       "gzip": 37865,
+       "brotli": 37569
+      },
+      "decodedFrames": 93,
+      "sourceFrames": 93,
+      "ssim": 0.988894,
+      "psnr": 36.230823
+     }
+    }
+   }
+  },
+  "160": {
+   "frames": 173,
+   "durationMs": 25950,
+   "rr": {
+    "coldMs": 4852,
+    "ascMs": 1154,
+    "noopCachedMs": 154,
+    "noopForcedMs": 4748,
+    "checkMs": 3560,
+    "styleEditMs": 3716,
+    "logicEditMs": 4696,
+    "size": {
+     "raw": 64993,
+     "gzip": 8810,
+     "brotli": 6880
+    }
+   },
+   "rec": {
+    "browserLaunchMs": 130,
+    "framesColdMs": 6074,
+    "noopCachedMs": 1.8,
+    "styleFramesMs": 5715,
+    "logicFramesCachedMs": 5180,
+    "logicFramesUncachedMs": 5457,
+    "logicFramesReused": 22,
+    "ascMs": 1230,
+    "encode": {
+     "webp-lossless": {
+      "ms": 3552,
+      "size": {
+       "raw": 815498,
+       "gzip": 787661,
+       "brotli": 708766
+      },
+      "decodedFrames": 173,
+      "sourceFrames": 173,
+      "ssim": 1,
+      "psnr": "inf"
+     },
+     "webp-q80": {
+      "ms": 2380,
+      "size": {
+       "raw": 700264,
+       "gzip": 679929,
+       "brotli": 664221
+      },
+      "decodedFrames": 173,
+      "sourceFrames": 173,
+      "ssim": 0.982408,
+      "psnr": 35.886076
+     },
+     "mp4-h264-crf18": {
+      "ms": 357,
+      "size": {
+       "raw": 117187,
+       "gzip": 112964,
+       "brotli": 111519
+      },
+      "decodedFrames": 173,
+      "sourceFrames": 173,
+      "ssim": 0.98976,
+      "psnr": 36.307614
+     },
+     "mp4-h264-crf28": {
+      "ms": 362,
+      "size": {
+       "raw": 71144,
+       "gzip": 68134,
+       "brotli": 67249
+      },
+      "decodedFrames": 173,
+      "sourceFrames": 173,
+      "ssim": 0.987159,
+      "psnr": 35.651241
+     },
+     "mp4-av1-crf35": {
+      "ms": 630,
+      "size": {
+       "raw": 74065,
+       "gzip": 72135,
+       "brotli": 71535
+      },
+      "decodedFrames": 173,
+      "sourceFrames": 173,
+      "ssim": 0.98841,
+      "psnr": 36.13277
+     }
+    }
+   }
+  },
+  "320": {
+   "frames": 333,
+   "durationMs": 49950,
+   "rr": {
+    "coldMs": 5733,
+    "ascMs": 1124,
+    "noopCachedMs": 154,
+    "noopForcedMs": 5680,
+    "checkMs": 4396,
+    "styleEditMs": 4418,
+    "logicEditMs": 5631,
+    "size": {
+     "raw": 67713,
+     "gzip": 8854,
+     "brotli": 6863
+    }
+   },
+   "rec": {
+    "browserLaunchMs": 142,
+    "framesColdMs": 10573,
+    "noopCachedMs": 2.5,
+    "styleFramesMs": 11463,
+    "logicFramesCachedMs": 10520,
+    "logicFramesUncachedMs": 10890,
+    "logicFramesReused": 22,
+    "ascMs": 1136,
+    "encode": {
+     "webp-lossless": {
+      "ms": 7340,
+      "size": {
+       "raw": 1611286,
+       "gzip": 1557184,
+       "brotli": 1340452
+      },
+      "decodedFrames": 333,
+      "sourceFrames": 333,
+      "ssim": 1,
+      "psnr": "inf"
+     },
+     "webp-q80": {
+      "ms": 4605,
+      "size": {
+       "raw": 1376068,
+       "gzip": 1335626,
+       "brotli": 1290770
+      },
+      "decodedFrames": 333,
+      "sourceFrames": 333,
+      "ssim": 0.982602,
+      "psnr": 35.946881
+     },
+     "mp4-h264-crf18": {
+      "ms": 680,
+      "size": {
+       "raw": 231240,
+       "gzip": 221901,
+       "brotli": 217963
+      },
+      "decodedFrames": 333,
+      "sourceFrames": 333,
+      "ssim": 0.990004,
+      "psnr": 36.382852
+     },
+     "mp4-h264-crf28": {
+      "ms": 581,
+      "size": {
+       "raw": 139490,
+       "gzip": 133400,
+       "brotli": 131628
+      },
+      "decodedFrames": 333,
+      "sourceFrames": 333,
+      "ssim": 0.987502,
+      "psnr": 35.755462
+     },
+     "mp4-av1-crf35": {
+      "ms": 1071,
+      "size": {
+       "raw": 141016,
+       "gzip": 137507,
+       "brotli": 136035
+      },
+      "decodedFrames": 333,
+      "sourceFrames": 333,
+      "ssim": 0.988464,
+      "psnr": 36.159055
+     }
+    }
+   }
+  }
+ },
+ "hidpi": {
+  "n": 160,
+  "framesMs": 12535,
+  "encode": {
+   "webp-lossless": {
+    "ms": 6607,
+    "size": {
+     "raw": 1746214,
+     "gzip": 1724011,
+     "brotli": 1694205
+    },
+    "decodedFrames": 173,
+    "sourceFrames": 173,
+    "ssim": 1,
+    "psnr": "inf"
+   },
+   "webp-q80": {
+    "ms": 8294,
+    "size": {
+     "raw": 1525494,
+     "gzip": 1362582,
+     "brotli": 1321430
+    },
+    "decodedFrames": 173,
+    "sourceFrames": 173,
+    "ssim": 0.993763,
+    "psnr": 40.016756
+   },
+   "mp4-h264-crf18": {
+    "ms": 927,
+    "size": {
+     "raw": 318609,
+     "gzip": 312318,
+     "brotli": 308388
+    },
+    "decodedFrames": 173,
+    "sourceFrames": 173,
+    "ssim": 0.995793,
+    "psnr": 40.648659
+   }
+  }
+ }
+}
