@@ -9,13 +9,22 @@
 // Writes bench/results/clock.json. Run: node bench/clock.mjs
 //   CLOCK_BASE   baseline commit (default dfafe10, the commit before the change)
 //   CLOCK_REPEAT playback repeats per card (default 3; the 160-step card gets 2 more)
+//   CLOCK_SUMMARIZE=1  recompute the summary of bench/results/clock.json only
 import fs from 'node:fs';
 import path from 'node:path';
 import http from 'node:http';
 import { spawnSync, execFileSync } from 'node:child_process';
 import { chromium, firefox, webkit } from 'playwright';
-import { ROOT, WORK, STEPS, CARD, sizes, median, round, writeJson, environment } from './common.mjs';
+import { ROOT, WORK, STEPS, CARD, sizes, median, round, writeJson, readJson, environment } from './common.mjs';
 import { makeProject } from './project.mjs';
+
+// CLOCK_SUMMARIZE=1 only recomputes the summary of the existing results (no measurement)
+if (process.env.CLOCK_SUMMARIZE) {
+  const existing = readJson('clock.json');
+  summarize(existing);
+  writeJson('clock.json', existing);
+  process.exit(0);
+}
 
 const BASE = process.env.CLOCK_BASE ?? 'dfafe10';
 const REPEAT = Number(process.env.CLOCK_REPEAT ?? 3);
@@ -130,17 +139,25 @@ for (const engine of ENGINES) {
 }
 server.close();
 
-// ------------------------------------------------------------------ summary: median [min, max]
-const stat = (xs) => { const v = xs.filter((x) => x != null); return v.length ? { median: round(median(v), 1), min: Math.min(...v), max: Math.max(...v), n: v.length } : null; };
-results.summary = {};
-for (const engine of ENGINES) for (const N of STEPS) for (const v of Object.keys(VARIANTS)) {
-  const rs = runs.filter((r) => r.engine === engine && r.N === N && r.v === v);
-  results.summary[`${engine}-${N}-${v}`] = {
-    plays: rs.every((r) => r.plays), cpuDelta: stat(rs.map((r) => r.cpuDelta)), memDeltaMB: stat(rs.map((r) => r.memDeltaMB)),
-    rate: stat(rs.map((r) => r.rate)), framesSeen: stat(rs.map((r) => r.framesSeen)), maxDistance: stat(rs.map((r) => r.maxDistance)),
-    styleMsPerS: stat(rs.map((r) => r.styleMsPerS)), updatesPerS: stat(rs.map((r) => r.updatesPerS)), updateMeanMs: stat(rs.map((r) => r.updateMeanMs)),
-    firstRenderMs: stat(results.firstRender[`${engine}-${v}-${N}`] ?? []),
-  };
-}
+// ------------------------------------------------------------------ summary
+summarize(results);
 writeJson('clock.json', results);
 console.log(JSON.stringify(results.summary, null, 1));
+
+// median [min, max] per engine, steps and generator; medians are not rounded here (the report
+// rounds per metric: a rate of 0.96 must not become 1.0)
+function summarize(res) {
+  const stat = (xs) => { const v = xs.filter((x) => x != null); return v.length ? { median: Number(median(v).toFixed(4)), min: Math.min(...v), max: Math.max(...v), n: v.length } : null; };
+  const uniq = (f) => [...new Set(res.runs.map(f))];
+  res.summary = {};
+  for (const engine of uniq((r) => r.engine)) for (const N of uniq((r) => r.N).sort((a, b) => a - b)) for (const v of ['before', 'after']) {
+    const rs = res.runs.filter((r) => r.engine === engine && r.N === N && r.v === v);
+    if (!rs.length) continue;
+    res.summary[`${engine}-${N}-${v}`] = {
+      plays: rs.every((r) => r.plays), cpuDelta: stat(rs.map((r) => r.cpuDelta)), memDeltaMB: stat(rs.map((r) => r.memDeltaMB)),
+      rate: stat(rs.map((r) => r.rate)), framesSeen: stat(rs.map((r) => r.framesSeen)), maxDistance: stat(rs.map((r) => r.maxDistance)),
+      styleMsPerS: stat(rs.map((r) => r.styleMsPerS)), updatesPerS: stat(rs.map((r) => r.updatesPerS)), updateMeanMs: stat(rs.map((r) => r.updateMeanMs)),
+      firstRenderMs: stat(res.firstRender[`${engine}-${v}-${N}`] ?? []),
+    };
+  }
+}

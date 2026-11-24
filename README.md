@@ -84,6 +84,10 @@ AI エージェントが、初めて見る既存プロジェクト（すべて�
 | Claude（修正前のCLI） | UIdesign（Next.js 16、Tailwind 4） | カード作成 | 11（うち build 4、失敗 2） | 約6分 | `UI_NONLINEAR`（viewの範囲の説明不足）、`UI_VERIFY`（条件付きで現れる数値）、生成した `logic.ts` がプロジェクトの `tsc` と `next build` を壊す、`logic.wasm` のコミット漏れ → すべて修正 |
 | Codex（修正後のCLI） | BukaiLive（Next.js 15、Tailwind 3） | カード作成 | 15 | 約17分 | 最初の独自デモが1回でビルド成功。タイムゾーン依存のデータで `check` 失敗 → 描画をUTC・en-USに固定 |
 | Codex（修正後のCLI） | phase4_collelis（Next.js、サブフォルダ） | カード作成 | 12 | 約15分 | `SUBPACKAGES` 警告で正しいフォルダへ。CRLFのチェックアウトで `check` が必ず失敗 → 出力の改行を統一 |
+| Codex（2026-11-24、`dc53bcf`） | 2026_PBL（React 19 + Vite + Bun、frontend サブフォルダ） | カード作成、README に埋め込み | 8（失敗1） | 約19分 | 既存の `TaskItem`・`PraiseModal` と進捗の計算を再利用（進捗表示をアプリと共用の部品に切り出した）。Bun が script の `npx` を `bun x` に置き換えて失敗、ワークフローがサブフォルダに作られ `bun.lock` を使わない、日本語のタイトルがヘッダーの情報と重なる → Bun の書き方を記載、ワークフローをリポジトリのルートに作成・Bun に対応、文字幅の推定を修正 |
+| Codex（同上） | megalo2026（React + Vite + KAPLAY、pnpm モノレポ） | カード作成、README に埋め込み | 9（失敗1） | 約22分 | `ItemPalette` と、Canvas の描画関数 `drawStagePreview`（Canvas→SVG の記録アダプター経由）、風の物理関数を再利用し、整数版を元の関数と 431,104 ケースで比較。`UI_BUNDLE`（`react-dom/server`）のヒントが Next.js 向けだけ、参照だけの `tsconfig.json` を検出 → ヒントを修正、`tsconfig.app.json` を検出 |
+
+2026-11-24 の2件は、隔離したフォルダのプロジェクト（push できないように remote を外した clone）に、開発履歴も内部実装も渡さずに依頼したものです（依頼文は「このプロジェクトの魅力が伝わる、実際に動くREADMEデモをREADME Runtimeで作ってください」）。2件とも README Runtime の内部実装（`src/` など）は読まず、作業前後でプロジェクトのビルド・lint・テストの結果は変わりませんでした（megalo2026 の `pnpm test` は作業前から未実装で失敗）。
 
 ## 閲覧者の負担
 
@@ -97,7 +101,7 @@ AI エージェントが、初めて見る既存プロジェクト（すべて�
 
 ## 安全性
 
-README Runtime は、信頼できるプロジェクトで使うローカル・CI 用のビルドツールです。`build` と `check` は、設定にあるビルドコマンドをシェルで実行し、デモのコンポーネントを Node.js で描画します。任意の外部コードを安全に実行するためのサンドボックスではありません。
+README Runtime は、信頼できるプロジェクトで使うローカル・CI 用のビルドツールです。`build` は設定にあるビルドコマンドをシェルで実行し、`build` と `check` はデモのコンポーネントを Node.js で描画します（`check` はビルドコマンドを実行しません）。任意の外部コードを安全に実行するためのサンドボックスではありません。
 
 生成した SVG はスクリプトを含みません。GitHub の README の画像は `<img>` で表示されるため、SVG がスクリプトを実行したり外部のリソースを読み込んだりすることもありません。
 

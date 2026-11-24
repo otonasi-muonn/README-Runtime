@@ -2,8 +2,9 @@
 
 Adding a live README card to a project. Every command is non-interactive; add `--json` to get
 one JSON object on stdout (`ok`, results, or `error: { code, message, hint }`, exit code 2).
-README Runtime runs the project's build commands and renders its components in Node during
-`build` and `check`: use it on code you trust. It is a build tool, not a sandbox.
+`build` runs the project's build commands in a shell, and `build` and `check` render its
+components in Node (`check` runs no build command): use it on code you trust. It is a build tool,
+not a sandbox.
 
 ```sh
 RR="npx --yes https://github.com/otonasi-muonn/README-Runtime/archive/HEAD.tar.gz"   # or: node <checkout>/bin/readme-runtime.js
@@ -13,18 +14,24 @@ $RR build --json                   # repeat until ok; only changed cards are reb
 $RR check --json                   # what CI runs; never writes
 ```
 
-`init` writes `.github/workflows/readme-runtime.yml`, pinned to the README Runtime commit you ran,
+Run it in the folder that has the components' `package.json` (`analyze` says so with `SUBPACKAGES`).
+`init` writes `.github/workflows/readme-runtime.yml` at the repository root (it runs `check` in that
+folder and installs dependencies where the nearest lockfile is: npm, pnpm, yarn or bun), pinned to
+the README Runtime commit you ran,
 and returns that command as `tool` (`npx --yes https://github.com/otonasi-muonn/README-Runtime/archive/<commit>.tar.gz`;
 npm 10 cannot install the git spec `github:owner/repo#ref` with npx).
 Use `tool` for every later command: another version may write different SVG, which `check`
-then reports as out of date.
+then reports as out of date. In `package.json` scripts run by Bun, `npx` becomes `bun x`, which
+cannot install that URL: write `npm exec --yes --package=<archive URL> -- readme-runtime build`.
 
 1. `analyze`: a `DEPS_NOT_INSTALLED` warning means install the project first (`npm ci`); a
    `SUBPACKAGES` warning means run it in the folder it names. `reusable: "yes"` components render
    without props; `needs props` ones need values from the demo. `exports[].name` is what to put
    after `#` (`default` for a default export).
 2. `init --ui` creates `readme-runtime/demo/<name>/logic.ts` (AssemblyScript) and `demo.tsx`, and a
-   card in `readme-runtime.json` (tsconfig and Tailwind entry CSS are detected). Keep the first two
+   card in `readme-runtime.json` (tsconfig and Tailwind entry CSS are detected; `--tsconfig` and
+   `--css` override). The scaffold renders the component without props: for one that `analyze`
+   lists as `needs props`, pass them in `demo.tsx` before the first build. Keep the first two
    lines of `logic.ts` (`/* eslint-disable */`, then `// @ts-nocheck`): they keep the project's own
    lint and type check off the AssemblyScript file.
 3. `logic.ts`: `step(s: i32): i32` advances one i32 state; each `view_<v>(s: i32): i32` is a value the
@@ -60,6 +67,11 @@ then reports as out of date.
    (CI checks against it and never builds it). Never edit generated SVGs or the lock by hand. CI
    installs the project's dependencies before `check` (the workflow `init` writes does).
    Renders run in UTC with the en-US locale, so dates and numbers are the same on every machine.
+9. Looking at the card yourself: it follows the viewer's reduce-motion setting (it shows the last
+   step, still), and Playwright's per-page emulation does not reach an SVG inside `<img>`. Launch
+   Chromium with `--force-prefers-no-reduced-motion` (Firefox: pref `ui.prefersReducedMotion` 0)
+   to see it move. Images and web fonts are not loaded inside `<img>`: pass small images to the
+   demo as data URIs.
 
 Working on README Runtime itself: `npm test` (unit), `npm run test:browser` and
 `npm run test:browser:ui` (real browsers, pixels from `<img>` with JS off). Generated cards are

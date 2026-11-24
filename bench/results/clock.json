@@ -1727,7 +1727,7 @@
     "n": 3
    },
    "rate": {
-    "median": 1,
+    "median": 1.02,
     "min": 1.01,
     "max": 1.03,
     "n": 3
@@ -1784,7 +1784,7 @@
     "n": 3
    },
    "rate": {
-    "median": 1,
+    "median": 0.97,
     "min": 0.93,
     "max": 1.04,
     "n": 3
@@ -1841,7 +1841,7 @@
     "n": 3
    },
    "rate": {
-    "median": 1,
+    "median": 0.99,
     "min": 0.95,
     "max": 1.01,
     "n": 3
@@ -1898,7 +1898,7 @@
     "n": 3
    },
    "rate": {
-    "median": 1,
+    "median": 0.98,
     "min": 0.88,
     "max": 1.01,
     "n": 3
@@ -1967,7 +1967,7 @@
     "n": 5
    },
    "maxDistance": {
-    "median": 0,
+    "median": 0.01,
     "min": 0,
     "max": 0.01,
     "n": 5
@@ -2012,7 +2012,7 @@
     "n": 5
    },
    "rate": {
-    "median": 1,
+    "median": 1.01,
     "min": 0.98,
     "max": 1.03,
     "n": 5
@@ -2024,7 +2024,7 @@
     "n": 5
    },
    "maxDistance": {
-    "median": 0,
+    "median": 0.01,
     "min": 0.01,
     "max": 0.01,
     "n": 5
@@ -2126,7 +2126,7 @@
     "n": 3
    },
    "rate": {
-    "median": 1,
+    "median": 0.96,
     "min": 0.96,
     "max": 0.98,
     "n": 3
@@ -2183,7 +2183,7 @@
     "n": 3
    },
    "rate": {
-    "median": 1,
+    "median": 1.01,
     "min": 0.95,
     "max": 1.01,
     "n": 3
@@ -2195,7 +2195,7 @@
     "n": 3
    },
    "maxDistance": {
-    "median": 0.1,
+    "median": 0.08,
     "min": 0.08,
     "max": 0.08,
     "n": 3
@@ -2225,7 +2225,7 @@
     "n": 3
    },
    "rate": {
-    "median": 1,
+    "median": 0.99,
     "min": 0.98,
     "max": 1.05,
     "n": 3
@@ -2237,7 +2237,7 @@
     "n": 3
    },
    "maxDistance": {
-    "median": 0.1,
+    "median": 0.08,
     "min": 0.08,
     "max": 0.08,
     "n": 3
@@ -2267,7 +2267,7 @@
     "n": 3
    },
    "rate": {
-    "median": 1,
+    "median": 0.96,
     "min": 0.93,
     "max": 0.98,
     "n": 3
@@ -2279,7 +2279,7 @@
     "n": 3
    },
    "maxDistance": {
-    "median": 0.1,
+    "median": 0.09,
     "min": 0.08,
     "max": 0.09,
     "n": 3
@@ -2309,7 +2309,7 @@
     "n": 3
    },
    "rate": {
-    "median": 1,
+    "median": 0.97,
     "min": 0.95,
     "max": 0.97,
     "n": 3
@@ -2321,7 +2321,7 @@
     "n": 3
    },
    "maxDistance": {
-    "median": 0.1,
+    "median": 0.09,
     "min": 0.09,
     "max": 0.09,
     "n": 3
@@ -2351,7 +2351,7 @@
     "n": 5
    },
    "rate": {
-    "median": 1,
+    "median": 0.99,
     "min": 0.97,
     "max": 1,
     "n": 5
@@ -2363,7 +2363,7 @@
     "n": 5
    },
    "maxDistance": {
-    "median": 0.1,
+    "median": 0.09,
     "min": 0.08,
     "max": 0.09,
     "n": 5
@@ -2393,7 +2393,7 @@
     "n": 5
    },
    "rate": {
-    "median": 1,
+    "median": 0.99,
     "min": 0.96,
     "max": 1.03,
     "n": 5
@@ -2405,7 +2405,7 @@
     "n": 5
    },
    "maxDistance": {
-    "median": 0.1,
+    "median": 0.09,
     "min": 0.08,
     "max": 0.09,
     "n": 5
@@ -2447,7 +2447,7 @@
     "n": 3
    },
    "maxDistance": {
-    "median": 0.1,
+    "median": 0.09,
     "min": 0.08,
     "max": 0.09,
     "n": 3
@@ -2477,7 +2477,7 @@
     "n": 3
    },
    "rate": {
-    "median": 1,
+    "median": 1.02,
     "min": 1.01,
     "max": 1.03,
     "n": 3
@@ -2489,7 +2489,7 @@
     "n": 3
    },
    "maxDistance": {
-    "median": 0.1,
+    "median": 0.09,
     "min": 0.08,
     "max": 0.09,
     "n": 3
@@ -2519,7 +2519,7 @@
     "n": 3
    },
    "rate": {
-    "median": 1,
+    "median": 1.03,
     "min": 1,
     "max": 1.04,
     "n": 3
@@ -2531,7 +2531,7 @@
     "n": 3
    },
    "maxDistance": {
-    "median": 0.5,
+    "median": 0.53,
     "min": 0.52,
     "max": 0.53,
     "n": 3
@@ -2573,7 +2573,7 @@
     "n": 3
    },
    "maxDistance": {
-    "median": 0.5,
+    "median": 0.53,
     "min": 0.52,
     "max": 0.53,
     "n": 3
@@ -2603,7 +2603,7 @@
     "n": 3
    },
    "rate": {
-    "median": 1,
+    "median": 0.97,
     "min": 0.93,
     "max": 1.01,
     "n": 3
@@ -2615,7 +2615,7 @@
     "n": 3
    },
    "maxDistance": {
-    "median": 0.5,
+    "median": 0.53,
     "min": 0.53,
     "max": 0.54,
     "n": 3
@@ -2645,7 +2645,7 @@
     "n": 3
    },
    "rate": {
-    "median": 1,
+    "median": 1.02,
     "min": 1.01,
     "max": 1.18,
     "n": 3
@@ -2657,7 +2657,7 @@
     "n": 3
    },
    "maxDistance": {
-    "median": 0.5,
+    "median": 0.53,
     "min": 0.53,
     "max": 0.54,
     "n": 3
@@ -2687,7 +2687,7 @@
     "n": 5
    },
    "rate": {
-    "median": 1,
+    "median": 1.01,
     "min": 0.99,
     "max": 1.02,
     "n": 5
@@ -2699,7 +2699,7 @@
     "n": 5
    },
    "maxDistance": {
-    "median": 0.6,
+    "median": 0.55,
     "min": 0.54,
     "max": 0.55,
     "n": 5
@@ -2729,7 +2729,7 @@
     "n": 5
    },
    "rate": {
-    "median": 1,
+    "median": 1.01,
     "min": 0.98,
     "max": 1.03,
     "n": 5
@@ -2741,7 +2741,7 @@
     "n": 5
    },
    "maxDistance": {
-    "median": 0.5,
+    "median": 0.53,
     "min": 0.53,
     "max": 0.54,
     "n": 5
@@ -2783,7 +2783,7 @@
     "n": 3
    },
    "maxDistance": {
-    "median": 0.5,
+    "median": 0.54,
     "min": 0.54,
     "max": 0.55,
     "n": 3
@@ -2813,7 +2813,7 @@
     "n": 3
    },
    "rate": {
-    "median": 1,
+    "median": 0.99,
     "min": 0.97,
     "max": 1.03,
     "n": 3
@@ -2825,7 +2825,7 @@
     "n": 3
    },
    "maxDistance": {
-    "median": 0.5,
+    "median": 0.53,
     "min": 0.53,
     "max": 0.54,
     "n": 3
