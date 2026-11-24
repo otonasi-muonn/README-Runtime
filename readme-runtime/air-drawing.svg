@@ -108,7 +108,7 @@ body.admin .card .del { display:block; }
  --ra: calc(1 - var(--rrg));
  --rS0: var(--rx);
 }
-.C{animation:rrclk 10100ms steps(202,jump-none) infinite}
+.C{animation:rrclk 10100ms steps(202,jump-none) 6 forwards}
 @keyframes rrclk{from{--rt:0}to{--rt:201}}
 @media (prefers-reduced-motion:reduce){.C{animation:none;--rt:201}.rr-ui *,.rr-ui *::before,.rr-ui *::after{animation:none!important;transition:none!important}}
 .A{

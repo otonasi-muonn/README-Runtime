@@ -43,6 +43,7 @@
       },
       "export": "step",
       "init": 27,
+      "altInits": [97, 871],
       "steps": 120,
       "halt": 1
     },

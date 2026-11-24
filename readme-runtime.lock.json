@@ -1,24 +1,24 @@
 {
   "version": 1,
   "tool": "0.1.0",
-  "generator": "4cf611f38a50ea3cf2984a9c6221cacafaa87aadf1903c153cc45ebdca7dc22f",
+  "generator": "b8cd273be8401cb0e7209e9760809993c328b121336da8e993ca442ea6e22b46",
   "cards": {
     "collatz": {
       "inputs": "5a1e2f80a8418a91d76ca55f53442bf4af1948e61477b5ed9ac9ce0a83c3bff2",
       "wasm": "dd40a4b6513c1fe94042a3e636d706a1cf4400f255b9634abea9ccba907e787a",
-      "out": "12438f4955490a8c7dfcc9cd806c09ec59293bb9ffa3c0bfc574e48335e00d18",
-      "render": "54d6d2eef441b9ce72d91b412d2f5e40d6a19769c69eefe231a6aeccfd1cb22a"
+      "out": "11a6ca41372260b9a0ffaac301242474a776e1c1d74a1bfb675632925964b57f",
+      "render": "7396a58fd072f55ccc6d117513a1f31d42d432686115f421b0e009ecdda7d83f"
     },
     "lfsr-rust": {
       "inputs": "b79cf255e75a24be61c4ef512c66b76e880d5e0091c93a85e33c43660017a835",
       "wasm": "bac5ae0dce92bcae0ec8cf01117b79300f39bcb543f7c729f54fcb30bee41a73",
-      "out": "27d816b51cdabd36f0290dd1d1647bcc57dc3211f16bd0221378675bce26ef3e",
-      "render": "04088f6c063368d5595c2ab97299515fd164244660401c9f16aa13dba802ffdd"
+      "out": "9b8b49639ba566d393eeae9dbfae4eac34adeba9facb07fdb09a2c45b59ad615",
+      "render": "5aa80fc5e58166884c71546f2edad96ef3e7519dbe559ac418a07fb5025425fd"
     },
     "mockcraft": {
       "inputs": "52e441ddcb27cd1f387a7661a40e4aba35ba4a2189e8001f1cb794cdcc1c9ac7",
       "wasm": "c257d18c9edd5c3e6477df556e7b5bee0fd043becf55604605894f0d476ac29a",
-      "out": "39735856c61a2893e5f080a4c5bae19e8506b9d85af11c7d88f77698d19b864e",
+      "out": "806e644fe5be66a3ef0eb19d8d3185f8c151c31f6ac12fc8e60575ed07bdc6a8",
       "uiInputs": {
         "examples/mockcraft/demo.tsx": "375d39a247e2ae478be8b27e587ee3cecb50e4bd91a24d6e1e9bdb9c56410658",
         "examples/mockcraft/tsconfig.json": "1217a666ab46a6bca330bc74ceb2d6f214ace1ada1c653f1e6fa5fedb9473275",
@@ -30,12 +30,12 @@
         "examples/mockcraft/upstream/src/lib/icons.tsx": "288d28df6b9683782cad221a2c1499dda7dbe8c42aac8a7e225cfc39259219a9",
         "examples/mockcraft/upstream/src/lib/templates.ts": "cced791479232b822d801fa922894a9dca39c2d08693653507f23b96b5f773f4"
       },
-      "render": "884b5b01cca70673bdade199766d05223813648bd51ba2558c5d2f651dd96e40"
+      "render": "c0222ad78eaec23b04413d8cd0f009526118f4e872f453ba1c4b6a6547b7a78e"
     },
     "air-drawing": {
       "inputs": "9609dc09810869fe5392acd99c27632501e80e3f47056069aaa0eb8d6baa0597",
       "wasm": "850415563cfec0ec881007c9be433d79822963bc0841d8cd9880131d7b337f39",
-      "out": "d1701f6869a219f2bccd07735f3354c12e6794cc874e10172d2e24a67e62ee4d",
+      "out": "af0fdf8a9651beed2687669625edbe8afc46c1e54d0eefa5d04d57e5f1665388",
       "uiInputs": {
         "examples/air-drawing/canvas-svg.ts": "85dfa089218cc2110f95beb915f7718a47f3fe0bf13484c0994f6557cb1a7819",
         "examples/air-drawing/demo.tsx": "a43a4142e7a118f76ac39c94aec105359b479a0f84b964ed7a4df0b294762c65",
@@ -44,7 +44,7 @@
         "examples/air-drawing/upstream/src/render/canvasRenderer.ts": "24d8034b5d53a9ddfbc41a113e7263d9baccaf3079120a0695dc2fac0f47f75a",
         "examples/air-drawing/upstream/src/styles.css": "a05f1cd091c2ee7715fecfbb44b3730d1f924c6c96a0cf9bdf537341cdd43161"
       },
-      "render": "8d3f2b40d72afb08e6799b9af79230c4544f0a0d3439844579fcb43201ad1ecd"
+      "render": "9deebd2fe25afb7df393da25027e23f2c5d70e844b50ce93909febe4c12f3e10"
     }
   }
 }

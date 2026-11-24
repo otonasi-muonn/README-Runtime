@@ -48,7 +48,7 @@
  --ra: calc(1 - var(--rrg));
  --rS0: var(--rx);
 }
-.C{animation:rrclk 15960ms steps(133,jump-none) infinite}
+.C{animation:rrclk 19950ms steps(133,jump-none) 4 forwards}
 @keyframes rrclk{from{--rt:0}to{--rt:132}}
 @media (prefers-reduced-motion:reduce){.C{animation:none;--rt:132}}
 .A{
