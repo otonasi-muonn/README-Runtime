@@ -56,7 +56,9 @@ cannot install that URL: write `npm exec --yes --package=<archive URL> -- readme
    updating, display elements, gzip bytes) and `cards[].warnings` with `PERF_*` codes, each with a
    `fix` to merge into the card in `readme-runtime.json`. Defaults: `stepMs` 150, `loops: "auto"`
    (whole runs for about a minute from page load, then it rests on the last step and costs
-   nothing); `"loops": "infinite"` keeps it running while it is on screen.
+   nothing); `"loops": "infinite"` keeps it running while it is on screen. Use `"infinite"` for the
+   card a visitor sees first (the top of a README): a finite card is still once its runs are over,
+   also after a reload in Firefox, which reuses the image's document and its clock.
 7. `altInits: [97]` lets the same file start from other initial values, each verified like
    `init`: embed `![demo](readme-runtime/<name>.svg?x97#x97)` (negative: `#x-17`). Keep the query:
    WebKit shares one document between images of the same URL and recomputes the whole run each

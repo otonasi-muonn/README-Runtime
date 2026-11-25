@@ -91,17 +91,17 @@ if (lv) {
 
 // the README's own cards looping forever, minutes in view (bench/longview.mjs with
 // BENCH_LONGVIEW_SET=readme BENCH_TAG=-readme)
-const lr = load('longview-readme.json');
-if (lr) {
+for (const lr of ['longview-readme.json', 'longview-readme-webkit15.json', 'longview-readme-images-webkit15.json'].map(load).filter(Boolean)) {
   const engines = Object.keys(lr.engines);
   const names = [...new Set(engines.flatMap((e) => Object.keys(lr.engines[e].artifacts)))];
   const label = { mockcraft: 'mockcraft（無限ループ）', 'readme-images': 'README の画像3枚（無限ループ）' };
   for (const name of names) {
     const rows = Math.max(...engines.map((e) => lr.engines[e].artifacts[name]?.samples.length ?? 0));
-    out.push(`長時間の表示: ${label[name] ?? name}（30 秒ごとの CPU / 表示前からのワーキングセットの増分 / プライベートメモリの増分、各1回）:`, '',
+    out.push(`長時間の表示: ${label[name] ?? name}、${lr.seconds / 60} 分（30 秒ごとの CPU / 表示前からのワーキングセットの増分 / プライベートメモリの増分、各1回）:`, '',
       table(['経過', ...engines.map((e) => `${e} ${lr.engines[e].version}`)], Array.from({ length: rows }, (_, i) => [`${((i + 1) * 30 / 60).toFixed(1)} 分`, ...engines.map((e) => {
         const x = lr.engines[e].artifacts[name]?.samples[i];
-        return x ? `${x.cpu} % / +${x.memDeltaMB} MB / +${x.privDeltaMB} MB` : '–';
+        const mb = (v) => `${v >= 0 ? '+' : ''}${v} MB`;
+        return x ? `${x.cpu} % / ${mb(x.memDeltaMB)} / ${mb(x.privDeltaMB)}` : '–';
       })])), '');
   }
 }
