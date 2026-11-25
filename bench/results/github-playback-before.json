@@ -1,0 +1,561 @@
+{
+ "environment": {
+  "date": "2026-11-25T11:33:10.276Z",
+  "os": "Windows_NT 10.0.26200 x64",
+  "cpu": "AMD Ryzen 5 PRO 4650G with Radeon Graphics (12 threads)",
+  "ramGB": 47.4,
+  "node": "v22.21.0",
+  "ffmpeg": "ffmpeg version 9.0.1-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+  "git": "git version 2.51.0.windows.2"
+ },
+ "url": "https://github.com/otonasi-muonn/README-Runtime",
+ "waitS": 90,
+ "runs": [
+  {
+   "engine": "chromium",
+   "mode": "os",
+   "version": "159.0.8154.6",
+   "reducedMotionInPage": false,
+   "first": {
+    "steps": [
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "sameTabLater": {
+    "steps": [
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "reload": {
+    "steps": [
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "newTab": {
+    "steps": [
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "awayAndBack": {
+    "steps": [
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "freshProfile": {
+    "steps": [
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "collatzMoving": [
+     false,
+     false
+    ]
+   }
+  },
+  {
+   "engine": "chromium",
+   "mode": "no-preference",
+   "version": "159.0.8154.6",
+   "reducedMotionInPage": false,
+   "first": {
+    "steps": [
+     19,
+     25,
+     30
+    ],
+    "moving": true,
+    "collatzMoving": [
+     true,
+     true
+    ]
+   },
+   "sameTabLater": {
+    "steps": [
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "reload": {
+    "steps": [
+     19,
+     25,
+     30
+    ],
+    "moving": true,
+    "collatzMoving": [
+     true,
+     true
+    ]
+   },
+   "newTab": {
+    "steps": [
+     27,
+     33,
+     38
+    ],
+    "moving": true,
+    "collatzMoving": [
+     true,
+     true
+    ]
+   },
+   "awayAndBack": {
+    "steps": [
+     19,
+     24,
+     29
+    ],
+    "moving": true,
+    "collatzMoving": [
+     true,
+     true
+    ]
+   },
+   "freshProfile": {
+    "steps": [
+     29,
+     34,
+     39
+    ],
+    "moving": true,
+    "collatzMoving": [
+     true,
+     true
+    ]
+   }
+  },
+  {
+   "engine": "chromium",
+   "mode": "reduce",
+   "version": "159.0.8154.6",
+   "reducedMotionInPage": false,
+   "first": {
+    "steps": [
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "sameTabLater": {
+    "steps": [
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "reload": {
+    "steps": [
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "newTab": {
+    "steps": [
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "awayAndBack": {
+    "steps": [
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "freshProfile": {
+    "steps": [
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "collatzMoving": [
+     false,
+     false
+    ]
+   }
+  },
+  {
+   "engine": "firefox",
+   "mode": "os",
+   "version": "159.0",
+   "reducedMotionInPage": false,
+   "first": {
+    "steps": [
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "sameTabLater": {
+    "steps": [
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "reload": {
+    "steps": [
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "newTab": {
+    "steps": [
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "awayAndBack": {
+    "steps": [
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "freshProfile": {
+    "steps": [
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "collatzMoving": [
+     false,
+     false
+    ]
+   }
+  },
+  {
+   "engine": "firefox",
+   "mode": "no-preference",
+   "version": "159.0",
+   "reducedMotionInPage": false,
+   "first": {
+    "steps": [
+     33,
+     38,
+     44
+    ],
+    "moving": true,
+    "collatzMoving": [
+     true,
+     true
+    ]
+   },
+   "sameTabLater": {
+    "steps": [
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "reload": {
+    "steps": [
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "newTab": {
+    "steps": [
+     30,
+     35,
+     40
+    ],
+    "moving": true,
+    "collatzMoving": [
+     true,
+     true
+    ]
+   },
+   "awayAndBack": {
+    "steps": [
+     109,
+     115,
+     121
+    ],
+    "moving": true,
+    "collatzMoving": [
+     false,
+     true
+    ]
+   },
+   "freshProfile": {
+    "steps": [
+     20,
+     26,
+     31
+    ],
+    "moving": true,
+    "collatzMoving": [
+     true,
+     true
+    ]
+   }
+  },
+  {
+   "engine": "firefox",
+   "mode": "reduce",
+   "version": "159.0",
+   "reducedMotionInPage": false,
+   "first": {
+    "steps": [
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "sameTabLater": {
+    "steps": [
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "reload": {
+    "steps": [
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "newTab": {
+    "steps": [
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "awayAndBack": {
+    "steps": [
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "freshProfile": {
+    "steps": [
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "collatzMoving": [
+     false,
+     false
+    ]
+   }
+  },
+  {
+   "engine": "webkit",
+   "mode": "os",
+   "version": "27.2",
+   "reducedMotionInPage": false,
+   "first": {
+    "steps": [
+     31,
+     38,
+     44
+    ],
+    "moving": true,
+    "collatzMoving": [
+     true,
+     true
+    ]
+   },
+   "sameTabLater": {
+    "steps": [
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "reload": {
+    "steps": [
+     24,
+     32,
+     39
+    ],
+    "moving": true,
+    "collatzMoving": [
+     true,
+     true
+    ]
+   },
+   "newTab": {
+    "steps": [
+     28,
+     36,
+     43
+    ],
+    "moving": true,
+    "collatzMoving": [
+     true,
+     true
+    ]
+   },
+   "awayAndBack": {
+    "steps": [
+     27,
+     34,
+     41
+    ],
+    "moving": true,
+    "collatzMoving": [
+     true,
+     true
+    ]
+   },
+   "freshProfile": {
+    "steps": [
+     31,
+     38,
+     45
+    ],
+    "moving": true,
+    "collatzMoving": [
+     true,
+     true
+    ]
+   }
+  }
+ ]
+}

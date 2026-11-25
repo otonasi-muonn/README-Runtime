@@ -64,7 +64,7 @@ export function environment() {
 // /proc is not implemented here, so the caller reports "not measured").
 export function processTree(rootPid) {
   if (process.platform !== 'win32') return null;
-  const ps = 'Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId,Name,KernelModeTime,UserModeTime,WorkingSetSize | ConvertTo-Json -Compress';
+  const ps = 'Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId,Name,KernelModeTime,UserModeTime,WorkingSetSize,PrivatePageCount | ConvertTo-Json -Compress';
   // CIM queries occasionally fail under load: retry, then report "not measured" (null)
   let all = null;
   for (let attempt = 0; attempt < 3 && !all; attempt++) {
@@ -82,12 +82,14 @@ export function processTree(rootPid) {
     if (seen.has(pid)) continue;
     seen.add(pid);
     const p = byPid.get(pid);
-    if (p) out.push({ pid, name: p.Name, cpuMs: (Number(p.KernelModeTime) + Number(p.UserModeTime)) / 1e4, ws: Number(p.WorkingSetSize) });
+    if (p) out.push({ pid, name: p.Name, cpuMs: (Number(p.KernelModeTime) + Number(p.UserModeTime)) / 1e4, ws: Number(p.WorkingSetSize), priv: Number(p.PrivatePageCount) });
     for (const c of children.get(pid) ?? []) stack.push(c.ProcessId);
   }
   return out;
 }
 export function treeTotals(tree) {
   if (!tree) return null;
-  return { cpuMs: tree.reduce((s, p) => s + p.cpuMs, 0), ws: tree.reduce((s, p) => s + p.ws, 0), processes: tree.length };
+  // ws: working set (shared pages counted once per process); priv: private bytes (committed,
+  // not shared), the better sign of memory that builds up
+  return { cpuMs: tree.reduce((s, p) => s + p.cpuMs, 0), ws: tree.reduce((s, p) => s + p.ws, 0), priv: tree.reduce((s, p) => s + (p.priv || 0), 0), processes: tree.length };
 }
