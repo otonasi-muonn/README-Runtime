@@ -7,6 +7,7 @@
 // The step is identified from the card's UI region against the recorder's reference frames
 // (bench/pipeline.mjs, WORK/n160-frames); the Collatz cards are only checked for motion.
 // Writes bench/results/github-playback<BENCH_TAG>.json. Run: node bench/github-playback.mjs
+import crypto from 'node:crypto';
 import { chromium, firefox, webkit } from 'playwright';
 import { writeJson, environment } from './common.mjs';
 import { identify } from './frames.mjs';
@@ -40,12 +41,22 @@ async function lookOnce(page) {
   await card.scrollIntoViewIfNeeded();
   await page.waitForFunction((el) => el.complete && el.naturalWidth > 0, await card.elementHandle(), { timeout: 60000 });
   await page.waitForTimeout(2500);
-  const steps = [];
-  for (let i = 0; i < 3; i++) {
-    if (i) await page.waitForTimeout(700);
-    steps.push(identify(await card.screenshot(), 160).frame);
+  // Three shots 0.7 s apart. A run ends on the last step and holds it for 12 clock steps
+  // (1.8 s), so a card that looks still is watched again 2.5 s and 5 s later before it counts
+  // as stopped (critic: a short window inside the hold looks like a stop).
+  const shots = [];
+  const take = async () => {
+    const buf = await card.screenshot();
+    const id = identify(buf, 160);
+    shots.push({ atMs: Date.now(), step: id.frame, distance: Number(id.d.toFixed(2)), size: (await card.boundingBox()) && [buf.readUInt32BE(16), buf.readUInt32BE(20)] });
+  };
+  for (let i = 0; i < 3; i++) { if (i) await page.waitForTimeout(700); await take(); }
+  if (new Set(shots.map((x) => x.step)).size === 1) {
+    await page.waitForTimeout(2500); await take();
+    await page.waitForTimeout(2500); await take();
   }
-  // Collatz: the two proof images, moving or not (two shots 1 s apart)
+  // Collatz: the two proof images, moving or not; one that looks still (it may be in its
+  // halted/hold part) is looked at again 4 s later
   const collatz = [];
   for (const sel of ['article img[src$="readme-runtime/collatz.svg"]', 'article img[src*="collatz.svg?x97"]']) {
     const im = page.locator(sel).first();
@@ -54,10 +65,21 @@ async function lookOnce(page) {
     await page.waitForTimeout(400);
     const a = await im.screenshot();
     await page.waitForTimeout(1000);
-    collatz.push(!a.equals(await im.screenshot()));
+    let moving = !a.equals(await im.screenshot());
+    if (!moving) { await page.waitForTimeout(4000); moving = !a.equals(await im.screenshot()); }
+    collatz.push(moving);
   }
   await card.scrollIntoViewIfNeeded();
-  return { steps, moving: new Set(steps).size > 1, collatzMoving: collatz };
+  return { steps: shots.map((x) => x.step), moving: new Set(shots.map((x) => x.step)).size > 1, shots, collatzMoving: collatz };
+}
+
+// what GitHub serves for the card right now: its clock rule and hash (the README's own
+// image URL, after GitHub's redirect)
+async function served(page) {
+  const src = await page.locator('article img[src*="readme-runtime/mockcraft.svg"]').first().evaluate((el) => el.src);
+  const res = await fetch(src, { redirect: 'follow' });
+  const text = await res.text();
+  return { url: res.url, status: res.status, cacheControl: res.headers.get('cache-control'), etag: res.headers.get('etag'), clock: /\.C\{animation:rrclk[^}]*\}/.exec(text)?.[0] ?? null, sha256: crypto.createHash('sha256').update(text).digest('hex') };
 }
 
 const results = { environment: environment(), url: URL_README, waitS: WAIT_S, runs: [] };
@@ -67,10 +89,12 @@ for (const engine of ENGINES) for (const [mode, opts] of Object.entries(MODES[en
   try {
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
     const page = await ctx.newPage();
-    r.reducedMotionInPage = null;
     const t0 = Date.now();
     await page.goto(URL_README, { waitUntil: 'domcontentloaded', timeout: 90000 });
-    r.reducedMotionInPage = await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches);
+    r.served = await served(page);
+    // the outer page's media query (Playwright's page emulation); the card inside <img>
+    // follows the browser's own setting, which the mode sets
+    r.pageReducedMotion = await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches);
     r.first = await look(page);
     await page.waitForTimeout(Math.max(0, WAIT_S * 1000 - (Date.now() - t0)));
     r.sameTabLater = await look(page);
@@ -82,7 +106,7 @@ for (const engine of ENGINES) for (const [mode, opts] of Object.entries(MODES[en
     await tab.goto(`${URL_README}/issues`, { waitUntil: 'domcontentloaded', timeout: 90000 });
     await tab.goBack({ waitUntil: 'domcontentloaded' });
     r.awayAndBack = await look(tab);
-    // a new browser context: an empty cache, like a first visit
+    // a new browser context (not a new persistent profile): an empty cache, like a first visit
     const fresh = await (await browser.newContext({ viewport: { width: 1280, height: 900 } })).newPage();
     await fresh.goto(URL_README, { waitUntil: 'domcontentloaded', timeout: 90000 });
     r.freshProfile = await look(fresh);

@@ -1,0 +1,206 @@
+{
+ "environment": {
+  "date": "2026-11-25T12:40:51.318Z",
+  "os": "Windows_NT 10.0.26200 x64",
+  "cpu": "AMD Ryzen 5 PRO 4650G with Radeon Graphics (12 threads)",
+  "ramGB": 47.4,
+  "node": "v22.21.0",
+  "ffmpeg": "ffmpeg version 9.0.1-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+  "git": "git version 2.51.0.windows.2"
+ },
+ "seconds": 900,
+ "set": "readme",
+ "engines": {
+  "webkit": {
+   "version": "27.2",
+   "artifacts": {
+    "readme-images": {
+     "base": 0.2,
+     "samples": [
+      {
+       "atS": 30,
+       "cpu": 44.7,
+       "memDeltaMB": 151,
+       "privDeltaMB": 122
+      },
+      {
+       "atS": 60,
+       "cpu": 47.7,
+       "memDeltaMB": 184,
+       "privDeltaMB": 150
+      },
+      {
+       "atS": 90,
+       "cpu": 52.4,
+       "memDeltaMB": 199,
+       "privDeltaMB": 183
+      },
+      {
+       "atS": 120,
+       "cpu": 51.4,
+       "memDeltaMB": 208,
+       "privDeltaMB": 183
+      },
+      {
+       "atS": 150,
+       "cpu": 44.8,
+       "memDeltaMB": 216,
+       "privDeltaMB": 183
+      },
+      {
+       "atS": 180,
+       "cpu": 42,
+       "memDeltaMB": 222,
+       "privDeltaMB": 183
+      },
+      {
+       "atS": 210,
+       "cpu": 40.1,
+       "memDeltaMB": 226,
+       "privDeltaMB": 182
+      },
+      {
+       "atS": 240,
+       "cpu": 41.1,
+       "memDeltaMB": 231,
+       "privDeltaMB": 215
+      },
+      {
+       "atS": 270,
+       "cpu": 44.2,
+       "memDeltaMB": 235,
+       "privDeltaMB": 217
+      },
+      {
+       "atS": 300,
+       "cpu": 40.4,
+       "memDeltaMB": 239,
+       "privDeltaMB": 220
+      },
+      {
+       "atS": 330,
+       "cpu": 40.1,
+       "memDeltaMB": 241,
+       "privDeltaMB": 220
+      },
+      {
+       "atS": 360,
+       "cpu": 43,
+       "memDeltaMB": 241,
+       "privDeltaMB": 218
+      },
+      {
+       "atS": 390,
+       "cpu": 43.7,
+       "memDeltaMB": 242,
+       "privDeltaMB": 218
+      },
+      {
+       "atS": 420,
+       "cpu": 41.1,
+       "memDeltaMB": 243,
+       "privDeltaMB": 217
+      },
+      {
+       "atS": 450,
+       "cpu": 42.2,
+       "memDeltaMB": 245,
+       "privDeltaMB": 218
+      },
+      {
+       "atS": 480,
+       "cpu": 40.2,
+       "memDeltaMB": 235,
+       "privDeltaMB": 207
+      },
+      {
+       "atS": 510,
+       "cpu": 42.6,
+       "memDeltaMB": 234,
+       "privDeltaMB": 202
+      },
+      {
+       "atS": 540,
+       "cpu": 43.2,
+       "memDeltaMB": 235,
+       "privDeltaMB": 202
+      },
+      {
+       "atS": 570,
+       "cpu": 42.7,
+       "memDeltaMB": 235,
+       "privDeltaMB": 203
+      },
+      {
+       "atS": 600,
+       "cpu": 40.3,
+       "memDeltaMB": 235,
+       "privDeltaMB": 204
+      },
+      {
+       "atS": 630,
+       "cpu": 39.6,
+       "memDeltaMB": 237,
+       "privDeltaMB": 205
+      },
+      {
+       "atS": 660,
+       "cpu": 48.3,
+       "memDeltaMB": 239,
+       "privDeltaMB": 206
+      },
+      {
+       "atS": 690,
+       "cpu": 41.6,
+       "memDeltaMB": 235,
+       "privDeltaMB": 203
+      },
+      {
+       "atS": 720,
+       "cpu": 43.5,
+       "memDeltaMB": 235,
+       "privDeltaMB": 203
+      },
+      {
+       "atS": 750,
+       "cpu": 41.6,
+       "memDeltaMB": 236,
+       "privDeltaMB": 208
+      },
+      {
+       "atS": 780,
+       "cpu": 42,
+       "memDeltaMB": 237,
+       "privDeltaMB": 209
+      },
+      {
+       "atS": 810,
+       "cpu": 42.5,
+       "memDeltaMB": 239,
+       "privDeltaMB": 207
+      },
+      {
+       "atS": 840,
+       "cpu": 50.4,
+       "memDeltaMB": 240,
+       "privDeltaMB": 212
+      },
+      {
+       "atS": 870,
+       "cpu": 59.4,
+       "memDeltaMB": 242,
+       "privDeltaMB": 214
+      },
+      {
+       "atS": 900,
+       "cpu": 57.8,
+       "memDeltaMB": 244,
+       "privDeltaMB": 215
+      }
+     ],
+     "movingAtEnd": true
+    }
+   }
+  }
+ }
+}

@@ -106,6 +106,18 @@ for (const lr of ['longview-readme.json', 'longview-readme-webkit15.json', 'long
   }
 }
 
+// the live README on github.com: does the mockcraft card move (bench/github-playback.mjs)
+const scenes = [['first', '初回'], ['sameTabLater', '同じタブで90秒後'], ['reload', '再読み込み'], ['newTab', '別タブ'], ['awayAndBack', '移動して戻る'], ['freshProfile', '新しいコンテキスト']];
+const modeName = { os: 'OS の設定（この機械は動きを減らす）', 'no-preference': '動きを減らさない（強制）', reduce: '動きを減らす（強制）' };
+for (const [file, title] of [['github-playback-before.json', '修正前（有限回の再生）'], ['github-playback-after.json', '修正後（無限ループ）']]) {
+  const g = load(file);
+  if (!g) continue;
+  const cell = (x) => (!x ? '–' : x.moving ? `動く（${x.steps.slice(0, 3).join('→')}）` : `**静止**（${x.steps[0]}）`);
+  out.push(`### GitHub の README での mockcraft カード: ${title}`, '',
+    `${g.url} を開き、カードの UI 部分を参照フレームと比べて表示中のステップを読みました（${g.environment.date.slice(0, 10)}、各1回）。${g.runs[0]?.served ? `配信された SVG の時計: \`${g.runs[0].served.clock}\`。` : ''}`, '',
+    table(['エンジン', 'モード', ...scenes.map(([, n]) => n)], g.runs.map((r) => [`${r.engine} ${r.version}`, r.engine === 'webkit' && r.mode === 'os' ? '既定（Windows の Playwright WebKit は OS の設定を反映しない）' : modeName[r.mode] ?? r.mode, ...scenes.map(([k]) => cell(r[k]))])), '');
+}
+
 const r = load('readme.json');
 if (r) {
   const engines = Object.keys(r.engines);

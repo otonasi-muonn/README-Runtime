@@ -1,0 +1,2315 @@
+{
+ "environment": {
+  "date": "2026-11-25T12:57:56.156Z",
+  "os": "Windows_NT 10.0.26200 x64",
+  "cpu": "AMD Ryzen 5 PRO 4650G with Radeon Graphics (12 threads)",
+  "ramGB": 47.4,
+  "node": "v22.21.0",
+  "ffmpeg": "ffmpeg version 9.0.1-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+  "git": "git version 2.51.0.windows.2"
+ },
+ "url": "https://github.com/otonasi-muonn/README-Runtime",
+ "waitS": 90,
+ "runs": [
+  {
+   "engine": "chromium",
+   "mode": "os",
+   "version": "159.0.8154.6",
+   "served": {
+    "url": "https://raw.githubusercontent.com/otonasi-muonn/README-Runtime/dev/readme-runtime-mvp/readme-runtime/mockcraft.svg",
+    "status": 200,
+    "cacheControl": "max-age=300",
+    "etag": "W/\"836b66100e29639560fc13770f830869455f77f3e769a4865573548704274a77\"",
+    "clock": ".C{animation:rrclk 25950ms steps(173,jump-none) infinite}",
+    "sha256": "39735856c61a2893e5f080a4c5bae19e8506b9d85af11c7d88f77698d19b864e"
+   },
+   "pageReducedMotion": false,
+   "first": {
+    "steps": [
+     160,
+     160,
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "shots": [
+     {
+      "atMs": 1795611489401,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611490268,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611491093,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611493725,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611496387,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "sameTabLater": {
+    "steps": [
+     160,
+     160,
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "shots": [
+     {
+      "atMs": 1795611569884,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611570741,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611571600,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611574225,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611576851,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "reload": {
+    "steps": [
+     160,
+     160,
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "shots": [
+     {
+      "atMs": 1795611592896,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611593759,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611594624,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611597317,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611599968,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "newTab": {
+    "steps": [
+     160,
+     160,
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "shots": [
+     {
+      "atMs": 1795611618166,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611619034,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611619883,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611622519,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611625188,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "awayAndBack": {
+    "steps": [
+     160,
+     160,
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "shots": [
+     {
+      "atMs": 1795611642317,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611643165,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611643985,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611646630,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611649268,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "freshProfile": {
+    "steps": [
+     160,
+     160,
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "shots": [
+     {
+      "atMs": 1795611668201,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611669043,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611670045,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611672677,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611675348,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     false,
+     false
+    ]
+   }
+  },
+  {
+   "engine": "chromium",
+   "mode": "no-preference",
+   "version": "159.0.8154.6",
+   "served": {
+    "url": "https://raw.githubusercontent.com/otonasi-muonn/README-Runtime/dev/readme-runtime-mvp/readme-runtime/mockcraft.svg",
+    "status": 200,
+    "cacheControl": "max-age=300",
+    "etag": "W/\"836b66100e29639560fc13770f830869455f77f3e769a4865573548704274a77\"",
+    "clock": ".C{animation:rrclk 25950ms steps(173,jump-none) infinite}",
+    "sha256": "39735856c61a2893e5f080a4c5bae19e8506b9d85af11c7d88f77698d19b864e"
+   },
+   "pageReducedMotion": false,
+   "first": {
+    "steps": [
+     20,
+     26,
+     32
+    ],
+    "moving": true,
+    "shots": [
+     {
+      "atMs": 1795611695714,
+      "step": 20,
+      "distance": 0.72,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611696612,
+      "step": 26,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611697470,
+      "step": 32,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     true,
+     true
+    ]
+   },
+   "sameTabLater": {
+    "steps": [
+     75,
+     81,
+     87
+    ],
+    "moving": true,
+    "shots": [
+     {
+      "atMs": 1795611781855,
+      "step": 75,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611782729,
+      "step": 81,
+      "distance": 0.7,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611783595,
+      "step": 87,
+      "distance": 0.7,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     true,
+     true
+    ]
+   },
+   "reload": {
+    "steps": [
+     23,
+     29,
+     34
+    ],
+    "moving": true,
+    "shots": [
+     {
+      "atMs": 1795611791844,
+      "step": 23,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611792697,
+      "step": 29,
+      "distance": 0.72,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611793533,
+      "step": 34,
+      "distance": 0.7,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     true,
+     true
+    ]
+   },
+   "newTab": {
+    "steps": [
+     28,
+     33,
+     39
+    ],
+    "moving": true,
+    "shots": [
+     {
+      "atMs": 1795611803960,
+      "step": 28,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611804810,
+      "step": 33,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611805681,
+      "step": 39,
+      "distance": 0.7,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     true,
+     true
+    ]
+   },
+   "awayAndBack": {
+    "steps": [
+     35,
+     41,
+     46
+    ],
+    "moving": true,
+    "shots": [
+     {
+      "atMs": 1795611814800,
+      "step": 35,
+      "distance": 0.7,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611815659,
+      "step": 41,
+      "distance": 0.7,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611816532,
+      "step": 46,
+      "distance": 0.85,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     true,
+     true
+    ]
+   },
+   "freshProfile": {
+    "steps": [
+     28,
+     33,
+     39
+    ],
+    "moving": true,
+    "shots": [
+     {
+      "atMs": 1795611826828,
+      "step": 28,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611827671,
+      "step": 33,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611828493,
+      "step": 39,
+      "distance": 0.7,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     true,
+     true
+    ]
+   }
+  },
+  {
+   "engine": "chromium",
+   "mode": "reduce",
+   "version": "159.0.8154.6",
+   "served": {
+    "url": "https://raw.githubusercontent.com/otonasi-muonn/README-Runtime/dev/readme-runtime-mvp/readme-runtime/mockcraft.svg",
+    "status": 200,
+    "cacheControl": "max-age=300",
+    "etag": "W/\"836b66100e29639560fc13770f830869455f77f3e769a4865573548704274a77\"",
+    "clock": ".C{animation:rrclk 25950ms steps(173,jump-none) infinite}",
+    "sha256": "39735856c61a2893e5f080a4c5bae19e8506b9d85af11c7d88f77698d19b864e"
+   },
+   "pageReducedMotion": false,
+   "first": {
+    "steps": [
+     160,
+     160,
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "shots": [
+     {
+      "atMs": 1795611838209,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611839028,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611839860,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611842526,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611845198,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "sameTabLater": {
+    "steps": [
+     160,
+     160,
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "shots": [
+     {
+      "atMs": 1795611925366,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611926215,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611927038,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611929675,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611932329,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "reload": {
+    "steps": [
+     160,
+     160,
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "shots": [
+     {
+      "atMs": 1795611948829,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611949682,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611950511,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611953142,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611955780,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "newTab": {
+    "steps": [
+     160,
+     160,
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "shots": [
+     {
+      "atMs": 1795611974316,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611975177,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611976018,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611978653,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611981271,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "awayAndBack": {
+    "steps": [
+     160,
+     160,
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "shots": [
+     {
+      "atMs": 1795611998377,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795611999200,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612000039,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612002661,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612005319,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "freshProfile": {
+    "steps": [
+     160,
+     160,
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "shots": [
+     {
+      "atMs": 1795612022290,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612023162,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612024014,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612026650,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612029308,
+      "step": 160,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     false,
+     false
+    ]
+   }
+  },
+  {
+   "engine": "firefox",
+   "mode": "os",
+   "version": "159.0",
+   "served": {
+    "url": "https://raw.githubusercontent.com/otonasi-muonn/README-Runtime/dev/readme-runtime-mvp/readme-runtime/mockcraft.svg",
+    "status": 200,
+    "cacheControl": "max-age=300",
+    "etag": "W/\"836b66100e29639560fc13770f830869455f77f3e769a4865573548704274a77\"",
+    "clock": ".C{animation:rrclk 25950ms steps(173,jump-none) infinite}",
+    "sha256": "39735856c61a2893e5f080a4c5bae19e8506b9d85af11c7d88f77698d19b864e"
+   },
+   "pageReducedMotion": false,
+   "first": {
+    "steps": [
+     160,
+     160,
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "shots": [
+     {
+      "atMs": 1795612052660,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612053567,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612054468,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612057144,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612059914,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "sameTabLater": {
+    "steps": [
+     160,
+     160,
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "shots": [
+     {
+      "atMs": 1795612137649,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612138535,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612139383,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612142012,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612144638,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "reload": {
+    "steps": [
+     160,
+     160,
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "shots": [
+     {
+      "atMs": 1795612163721,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612164580,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612165431,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612168057,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612170691,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "newTab": {
+    "steps": [
+     160,
+     160,
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "shots": [
+     {
+      "atMs": 1795612189063,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612189919,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612190793,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612193462,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612196110,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "awayAndBack": {
+    "steps": [
+     160,
+     160,
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "shots": [
+     {
+      "atMs": 1795612213769,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612214647,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612215513,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612218164,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612220811,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "freshProfile": {
+    "steps": [
+     160,
+     160,
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "shots": [
+     {
+      "atMs": 1795612240924,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612241800,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612242649,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612245326,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612247974,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     false,
+     false
+    ]
+   }
+  },
+  {
+   "engine": "firefox",
+   "mode": "no-preference",
+   "version": "159.0",
+   "served": {
+    "url": "https://raw.githubusercontent.com/otonasi-muonn/README-Runtime/dev/readme-runtime-mvp/readme-runtime/mockcraft.svg",
+    "status": 200,
+    "cacheControl": "max-age=300",
+    "etag": "W/\"836b66100e29639560fc13770f830869455f77f3e769a4865573548704274a77\"",
+    "clock": ".C{animation:rrclk 25950ms steps(173,jump-none) infinite}",
+    "sha256": "39735856c61a2893e5f080a4c5bae19e8506b9d85af11c7d88f77698d19b864e"
+   },
+   "pageReducedMotion": false,
+   "first": {
+    "steps": [
+     27,
+     34,
+     39
+    ],
+    "moving": true,
+    "shots": [
+     {
+      "atMs": 1795612273032,
+      "step": 27,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612273947,
+      "step": 34,
+      "distance": 0.72,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612274818,
+      "step": 39,
+      "distance": 0.72,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     true,
+     true
+    ]
+   },
+   "sameTabLater": {
+    "steps": [
+     74,
+     79,
+     85
+    ],
+    "moving": true,
+    "shots": [
+     {
+      "atMs": 1795612357789,
+      "step": 74,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612358664,
+      "step": 79,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612359543,
+      "step": 85,
+      "distance": 0.72,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     true,
+     true
+    ]
+   },
+   "reload": {
+    "steps": [
+     151,
+     158,
+     160
+    ],
+    "moving": true,
+    "shots": [
+     {
+      "atMs": 1795612369410,
+      "step": 151,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612370463,
+      "step": 158,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612371491,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     true,
+     true
+    ]
+   },
+   "newTab": {
+    "steps": [
+     35,
+     42,
+     48
+    ],
+    "moving": true,
+    "shots": [
+     {
+      "atMs": 1795612384414,
+      "step": 35,
+      "distance": 0.73,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612385396,
+      "step": 42,
+      "distance": 0.72,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612386315,
+      "step": 48,
+      "distance": 0.76,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     true,
+     true
+    ]
+   },
+   "awayAndBack": {
+    "steps": [
+     136,
+     143,
+     149
+    ],
+    "moving": true,
+    "shots": [
+     {
+      "atMs": 1795612399617,
+      "step": 136,
+      "distance": 0.87,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612400555,
+      "step": 143,
+      "distance": 0.76,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612401518,
+      "step": 149,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     true,
+     true
+    ]
+   },
+   "freshProfile": {
+    "steps": [
+     37,
+     44,
+     51
+    ],
+    "moving": true,
+    "shots": [
+     {
+      "atMs": 1795612415862,
+      "step": 37,
+      "distance": 0.72,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612416819,
+      "step": 44,
+      "distance": 0.72,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612417850,
+      "step": 51,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     true,
+     true
+    ]
+   }
+  },
+  {
+   "engine": "firefox",
+   "mode": "reduce",
+   "version": "159.0",
+   "served": {
+    "url": "https://raw.githubusercontent.com/otonasi-muonn/README-Runtime/dev/readme-runtime-mvp/readme-runtime/mockcraft.svg",
+    "status": 200,
+    "cacheControl": "max-age=300",
+    "etag": "W/\"836b66100e29639560fc13770f830869455f77f3e769a4865573548704274a77\"",
+    "clock": ".C{animation:rrclk 25950ms steps(173,jump-none) infinite}",
+    "sha256": "39735856c61a2893e5f080a4c5bae19e8506b9d85af11c7d88f77698d19b864e"
+   },
+   "pageReducedMotion": false,
+   "first": {
+    "steps": [
+     160,
+     160,
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "shots": [
+     {
+      "atMs": 1795612436136,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612437051,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612437961,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612440657,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612443328,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "sameTabLater": {
+    "steps": [
+     160,
+     160,
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "shots": [
+     {
+      "atMs": 1795612519867,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612520707,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612521561,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612524208,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612526864,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "reload": {
+    "steps": [
+     160,
+     160,
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "shots": [
+     {
+      "atMs": 1795612543761,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612544717,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612545681,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612548365,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612551103,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "newTab": {
+    "steps": [
+     160,
+     160,
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "shots": [
+     {
+      "atMs": 1795612570855,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612571715,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612572590,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612575366,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612578158,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "awayAndBack": {
+    "steps": [
+     160,
+     160,
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "shots": [
+     {
+      "atMs": 1795612597461,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612598330,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612599239,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612601898,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612604611,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     false,
+     false
+    ]
+   },
+   "freshProfile": {
+    "steps": [
+     160,
+     160,
+     160,
+     160,
+     160
+    ],
+    "moving": false,
+    "shots": [
+     {
+      "atMs": 1795612624483,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612625341,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612626201,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612628863,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612631527,
+      "step": 160,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     false,
+     false
+    ]
+   }
+  },
+  {
+   "engine": "webkit",
+   "mode": "os",
+   "version": "27.2",
+   "served": {
+    "url": "https://raw.githubusercontent.com/otonasi-muonn/README-Runtime/dev/readme-runtime-mvp/readme-runtime/mockcraft.svg",
+    "status": 200,
+    "cacheControl": "max-age=300",
+    "etag": "W/\"836b66100e29639560fc13770f830869455f77f3e769a4865573548704274a77\"",
+    "clock": ".C{animation:rrclk 25950ms steps(173,jump-none) infinite}",
+    "sha256": "39735856c61a2893e5f080a4c5bae19e8506b9d85af11c7d88f77698d19b864e"
+   },
+   "pageReducedMotion": false,
+   "first": {
+    "steps": [
+     35,
+     44,
+     53
+    ],
+    "moving": true,
+    "shots": [
+     {
+      "atMs": 1795612652381,
+      "step": 35,
+      "distance": 0.72,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612653691,
+      "step": 44,
+      "distance": 0.72,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612655024,
+      "step": 53,
+      "distance": 0.76,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     true,
+     true
+    ]
+   },
+   "sameTabLater": {
+    "steps": [
+     92,
+     101,
+     110
+    ],
+    "moving": true,
+    "shots": [
+     {
+      "atMs": 1795612738728,
+      "step": 92,
+      "distance": 0.91,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612740225,
+      "step": 101,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612741529,
+      "step": 110,
+      "distance": 0.78,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     true,
+     true
+    ]
+   },
+   "reload": {
+    "steps": [
+     25,
+     35,
+     43
+    ],
+    "moving": true,
+    "shots": [
+     {
+      "atMs": 1795612752748,
+      "step": 25,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612754225,
+      "step": 35,
+      "distance": 0.72,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612755508,
+      "step": 43,
+      "distance": 0.71,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     true,
+     true
+    ]
+   },
+   "newTab": {
+    "steps": [
+     35,
+     43,
+     51
+    ],
+    "moving": true,
+    "shots": [
+     {
+      "atMs": 1795612767392,
+      "step": 35,
+      "distance": 0.72,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612768586,
+      "step": 43,
+      "distance": 0.71,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612769787,
+      "step": 51,
+      "distance": 0.76,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     true,
+     true
+    ]
+   },
+   "awayAndBack": {
+    "steps": [
+     30,
+     38,
+     47
+    ],
+    "moving": true,
+    "shots": [
+     {
+      "atMs": 1795612782194,
+      "step": 30,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612783449,
+      "step": 38,
+      "distance": 0.71,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612784757,
+      "step": 47,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     true,
+     true
+    ]
+   },
+   "freshProfile": {
+    "steps": [
+     33,
+     42,
+     49
+    ],
+    "moving": true,
+    "shots": [
+     {
+      "atMs": 1795612796501,
+      "step": 33,
+      "distance": 0.76,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612797795,
+      "step": 42,
+      "distance": 0.71,
+      "size": [
+       760,
+       447
+      ]
+     },
+     {
+      "atMs": 1795612798881,
+      "step": 49,
+      "distance": 0.75,
+      "size": [
+       760,
+       447
+      ]
+     }
+    ],
+    "collatzMoving": [
+     true,
+     true
+    ]
+   }
+  }
+ ]
+}

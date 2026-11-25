@@ -1,0 +1,191 @@
+{
+ "environment": {
+  "date": "2026-11-25T12:42:15.207Z",
+  "os": "Windows_NT 10.0.26200 x64",
+  "cpu": "AMD Ryzen 5 PRO 4650G with Radeon Graphics (12 threads)",
+  "ramGB": 47.4,
+  "node": "v22.21.0",
+  "ffmpeg": "ffmpeg version 9.0.1-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+  "git": "git version 2.51.0.windows.2"
+ },
+ "url": "https://github.com/otonasi-muonn/README-Runtime",
+ "engines": {
+  "chromium": {
+   "version": "159.0.8154.6",
+   "checks": [
+    {
+     "init": 27,
+     "moment": 0,
+     "shownStep": 11,
+     "register": 107,
+     "status": "running",
+     "ok": true,
+     "problems": []
+    },
+    {
+     "init": 97,
+     "moment": 0,
+     "shownStep": 12,
+     "register": 188,
+     "status": "running",
+     "ok": true,
+     "problems": []
+    },
+    {
+     "init": 27,
+     "moment": 1,
+     "shownStep": 39,
+     "register": 890,
+     "status": "running",
+     "ok": true,
+     "problems": []
+    },
+    {
+     "init": 97,
+     "moment": 1,
+     "shownStep": 40,
+     "register": 263,
+     "status": "running",
+     "ok": true,
+     "problems": []
+    },
+    {
+     "init": 27,
+     "moment": 2,
+     "shownStep": 67,
+     "register": 7288,
+     "status": "running",
+     "ok": true,
+     "problems": []
+    },
+    {
+     "init": 97,
+     "moment": 2,
+     "shownStep": 68,
+     "register": 2158,
+     "status": "running",
+     "ok": true,
+     "problems": []
+    }
+   ]
+  },
+  "firefox": {
+   "version": "159.0",
+   "checks": [
+    {
+     "init": 27,
+     "moment": 0,
+     "shownStep": 9,
+     "register": 71,
+     "status": "running",
+     "ok": true,
+     "problems": []
+    },
+    {
+     "init": 97,
+     "moment": 0,
+     "shownStep": 13,
+     "register": 94,
+     "status": "running",
+     "ok": true,
+     "problems": []
+    },
+    {
+     "init": 27,
+     "moment": 1,
+     "shownStep": 41,
+     "register": 1336,
+     "status": "running",
+     "ok": true,
+     "problems": []
+    },
+    {
+     "init": 97,
+     "moment": 1,
+     "shownStep": 43,
+     "register": 1186,
+     "status": "running",
+     "ok": true,
+     "problems": []
+    },
+    {
+     "init": 27,
+     "moment": 2,
+     "shownStep": 71,
+     "register": 2734,
+     "status": "running",
+     "ok": true,
+     "problems": []
+    },
+    {
+     "init": 97,
+     "moment": 2,
+     "shownStep": 72,
+     "register": 4858,
+     "status": "running",
+     "ok": true,
+     "problems": []
+    }
+   ]
+  },
+  "webkit": {
+   "version": "27.2",
+   "checks": [
+    {
+     "init": 27,
+     "moment": 0,
+     "shownStep": 10,
+     "register": 214,
+     "status": "running",
+     "ok": true,
+     "problems": []
+    },
+    {
+     "init": 97,
+     "moment": 0,
+     "shownStep": 12,
+     "register": 188,
+     "status": "running",
+     "ok": true,
+     "problems": []
+    },
+    {
+     "init": 27,
+     "moment": 1,
+     "shownStep": 47,
+     "register": 754,
+     "status": "running",
+     "ok": true,
+     "problems": []
+    },
+    {
+     "init": 97,
+     "moment": 1,
+     "shownStep": 30,
+     "register": 206,
+     "status": "running",
+     "ok": true,
+     "problems": []
+    },
+    {
+     "init": 27,
+     "moment": 2,
+     "shownStep": 80,
+     "register": 1154,
+     "status": "running",
+     "ok": true,
+     "problems": []
+    },
+    {
+     "init": 97,
+     "moment": 2,
+     "shownStep": 63,
+     "register": 319,
+     "status": "running",
+     "ok": true,
+     "problems": []
+    }
+   ]
+  }
+ }
+}
