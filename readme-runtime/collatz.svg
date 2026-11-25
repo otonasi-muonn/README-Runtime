@@ -51,7 +51,7 @@
 }
 #x97:target~.R{--rxb:97!important}
 #x871:target~.R{--rxb:871!important}
-.C{animation:rrclk 19950ms steps(133,jump-none) 4 forwards}
+.C{animation:rrclk 19950ms steps(133,jump-none) infinite}
 @keyframes rrclk{from{--rt:0}to{--rt:132}}
 @media (prefers-reduced-motion:reduce){.C{animation:none;--rt:132}}
 .A{

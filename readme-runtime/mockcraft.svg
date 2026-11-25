@@ -639,7 +639,7 @@ input, textarea, select {
  --ra: calc(1 - var(--rrg));
  --rS0: var(--rx);
 }
-.C{animation:rrclk 25950ms steps(173,jump-none) 3 forwards}
+.C{animation:rrclk 25950ms steps(173,jump-none) infinite}
 @keyframes rrclk{from{--rt:0}to{--rt:172}}
 @media (prefers-reduced-motion:reduce){.C{animation:none;--rt:172}.rr-ui *,.rr-ui *::before,.rr-ui *::after{animation:none!important;transition:none!important}}
 .A{

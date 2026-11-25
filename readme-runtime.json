@@ -14,6 +14,7 @@
       "init": 1536,
       "steps": 160,
       "stepMs": 150,
+      "loops": "infinite",
       "ui": {
         "entry": "examples/mockcraft/demo.tsx",
         "tsconfig": "examples/mockcraft/tsconfig.json",
@@ -45,7 +46,8 @@
       "init": 27,
       "altInits": [97, 871],
       "steps": 120,
-      "halt": 1
+      "halt": 1,
+      "loops": "infinite"
     },
     {
       "name": "lfsr-rust",
