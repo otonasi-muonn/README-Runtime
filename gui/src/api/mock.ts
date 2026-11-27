@@ -10,6 +10,7 @@
 //   - ?mockCheck=fail makes `check` return a captured failure.
 import projectConfig from '../../../readme-runtime.json';
 import cached from '../mocks/cli/build-cached.json';
+import forced from '../mocks/cli/build-force.json';
 import checkOk from '../mocks/cli/check-ok.json';
 import checkFail from '../mocks/cli/check-fail.json';
 import { toConfigCard } from './fields';
@@ -23,6 +24,13 @@ const svgUrlFor = (out: string) => svgUrls[`../../../${out}`] ?? '';
 
 const config = projectConfig as ProjectConfig;
 const cachedCards = (cached as { cards: BuildCardResult[] }).cards;
+const forcedCards = (forced as { cards: BuildCardResult[] }).cards;
+/** A cached card reports no run end; the recorded --force build has it for some cards. */
+function lastBuildOf(name: string): BuildCardResult | null {
+  const c = cachedCards.find((x) => x.name === name);
+  const f = forcedCards.find((x) => x.name === name);
+  return c ? { ...c, ...(f?.end ? { steps: f.steps, end: f.end } : {}) } : null;
+}
 const TOOL_VERSION = (cached as { version: string }).version;
 
 // src/errors.js HINTS for the codes the mock can produce
@@ -145,7 +153,7 @@ export function createMockApi(): RuntimeApi {
           kind: c.ui ? 'ui' : 'trace',
           config: structuredClone(c),
           svgUrl: svgUrlFor(outOf(c)),
-          lastBuild: cachedCards.find((x) => x.name === c.name) ?? null,
+          lastBuild: lastBuildOf(c.name),
         })),
       };
     },

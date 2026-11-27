@@ -28,14 +28,34 @@ const startFrom = ref<number | null>(null);
 watch(() => [s.selected, s.preview?.generation], () => { startFrom.value = null; });
 const inits = computed(() => (s.preview ? [s.preview.settings.init, ...s.preview.svgAltInits.filter((x) => x !== s.preview!.settings.init)] : []));
 
+// ?v=<generation>-<replay> makes every preview and replay a new image (step 0 again);
+// another initial value adds &seed=<x>#x<x>, used only where that SVG answers to it.
+function imageUrl(base: string, generation: string, init: number, answersTo: number[]) {
+  const params = new URLSearchParams({ v: `${generation}-${s.replays[s.selected ?? ''] ?? 0}` });
+  const x = startFrom.value;
+  const alt = x !== null && x !== init && answersTo.includes(x) ? x : null;
+  if (alt !== null) params.set('seed', String(alt));
+  return `${base}${base.includes('?') ? '&' : '?'}${params}${alt !== null ? `#x${alt}` : ''}`;
+}
 const src = computed(() => {
   const p = s.preview;
   if (!p || !p.svgUrl || !s.selected) return '';
-  const params = new URLSearchParams({ v: `${p.generation}-${s.replays[s.selected] ?? 0}` });
-  const alt = startFrom.value !== null && startFrom.value !== p.settings.init ? startFrom.value : null;
-  if (alt !== null) params.set('seed', String(alt));
-  return `${p.svgUrl}${p.svgUrl.includes('?') ? '&' : '?'}${params}${alt !== null ? `#x${alt}` : ''}`;
+  return imageUrl(p.svgUrl, String(p.generation), p.settings.init, p.svgAltInits);
 });
+
+// Side by side: the saved card next to the last successful preview.
+const canCompare = computed(() => s.preview?.source === 'preview');
+const compare = ref(false);
+watch(canCompare, (v) => { if (!v) compare.value = false; });
+const savedSrc = computed(() => {
+  const c = s.card;
+  if (!c?.svgUrl) return '';
+  return imageUrl(c.svgUrl, 'saved', c.config.init, c.config.altInits ?? []);
+});
+
+// Zoom only scales this view. The SVG's own size is set when it is generated (#11).
+const ZOOMS = [0.5, 0.75, 1, 1.5, 2];
+const zoom = ref(1);
 
 // The card follows the viewer's reduce-motion setting: it shows its last step, still.
 const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -63,6 +83,13 @@ onBeforeUnmount(() => mq.removeEventListener('change', onChange));
         </select>
       </label>
       <span class="spacer" />
+      <label class="start" title="この画面での表示倍率です。SVG の寸法は変わりません。">
+        <span>表示倍率</span>
+        <select v-model.number="zoom" aria-label="表示倍率">
+          <option v-for="z in ZOOMS" :key="z" :value="z">{{ z * 100 }}%</option>
+        </select>
+      </label>
+      <button type="button" :aria-pressed="compare" :disabled="!canCompare" :title="canCompare ? '保存済みとプレビューを並べる' : 'プレビューを生成すると比べられます'" class="toggle" @click="compare = !compare">⇆ 比較</button>
       <button type="button" class="replay" @click="s.replay()">↻ 最初から再生</button>
     </div>
 
@@ -77,8 +104,19 @@ onBeforeUnmount(() => mq.removeEventListener('change', onChange));
     </div>
 
     <div class="canvas">
-      <div class="page" :style="{ background: bgColor, width: pagePx ? `${pagePx}px` : 'auto' }" :title="'背景と表示幅は、この画面での見え方だけを変えます。SVG の大きさや配色は変わりません。'">
-        <img v-if="src" :key="src" :src="src" :alt="s.preview?.settings.title" :class="{ fit: !!pagePx }" />
+      <div class="pages" :class="{ compare }" :style="{ zoom }">
+        <figure v-if="compare && savedSrc" class="frame">
+          <figcaption>保存済み</figcaption>
+          <div class="page saved" :style="{ background: bgColor, width: pagePx ? `${pagePx}px` : 'auto' }">
+            <img :key="savedSrc" :src="savedSrc" :alt="`${s.card?.config.title ?? s.card?.name}（保存済み）`" :class="{ fit: !!pagePx }" />
+          </div>
+        </figure>
+        <figure class="frame">
+          <figcaption v-if="compare">プレビュー #{{ s.preview?.generation }}</figcaption>
+          <div class="page current" :style="{ background: bgColor, width: pagePx ? `${pagePx}px` : 'auto' }" :title="'背景・表示幅・表示倍率は、この画面での見え方だけを変えます。SVG の大きさや配色は変わりません。'">
+            <img v-if="src" :key="src" :src="src" :alt="s.preview?.settings.title" :class="{ fit: !!pagePx }" />
+          </div>
+        </figure>
       </div>
       <span v-if="s.attempt?.status === 'running'" class="busy">{{ s.attempt.kind === 'save' ? '保存中…' : '生成中…' }}</span>
     </div>
@@ -109,6 +147,13 @@ onBeforeUnmount(() => mq.removeEventListener('change', onChange));
   position: relative; flex: 1; overflow: auto; padding: 40px 32px; display: flex; justify-content: center; align-items: flex-start;
   background-image: radial-gradient(var(--border) 1px, transparent 1px); background-size: 16px 16px;
 }
+.pages { display: flex; gap: 24px; align-items: flex-start; justify-content: center; max-width: 100%; }
+.pages.compare { width: 100%; }
+.frame { margin: 0; max-width: 100%; display: flex; flex-direction: column; gap: 8px; }
+.pages.compare .frame { flex: 1 1 0; min-width: 0; }
+.pages.compare .page img { max-width: 100%; }
+.frame figcaption { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: 0.04em; }
+.toggle[aria-pressed='true'] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
 .page { max-width: 100%; padding: 24px; border-radius: 8px; box-shadow: 0 0 0 1px var(--border-strong), 0 12px 40px rgba(0, 0, 0, 0.45); }
 .page img { display: block; height: auto; }
 .page img.fit { width: 100%; }

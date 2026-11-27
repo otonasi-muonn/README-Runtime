@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { END_LABELS, FIX_LABELS, labelFor } from '../api/labels';
+import PerfBars from './PerfBars.vue';
+import PerfTimeline from './PerfTimeline.vue';
 import { useSessionContext } from '../composables/useSession';
 
 const s = useSessionContext();
@@ -40,7 +42,11 @@ const source = computed(() => (s.preview?.source === 'saved' ? '保存済みの 
         </div>
       </template>
 
+      <h3 class="section-title">再生の流れ（ページを開いてから）</h3>
+      <PerfTimeline v-if="s.preview" :perf="result.perf" :end="result.end" :step-ms="s.preview.settings.stepMs" />
+
       <h3 class="section-title">閲覧者への負荷の目安</h3>
+      <PerfBars :perf="result.perf" />
       <dl class="perf">
         <div><dt>状態の更新頻度</dt><dd>{{ result.perf.updatesPerSecond }} 回/秒</dd><p>1ステップの時間から計算した値です。画面の描画 FPS ではありません。</p></div>
         <div><dt>1周の長さ</dt><dd>{{ result.perf.loopSeconds }} 秒</dd><p>保持の時間を含みます。</p></div>

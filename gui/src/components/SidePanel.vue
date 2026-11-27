@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import ComparePanel from './ComparePanel.vue';
 import EmbedPanel from './EmbedPanel.vue';
 import ResultPanel from './ResultPanel.vue';
 import { useSessionContext } from '../composables/useSession';
 
 const s = useSessionContext();
-const tab = ref<'result' | 'readme'>('result');
+const tab = ref<'result' | 'compare' | 'readme'>('result');
 // a new outcome (an error, or a warning to act on) is shown where it can be read
-watch(() => s.attempt?.status, (st) => { if (st === 'error' || st === 'ok') tab.value = 'result'; });
+watch(() => s.attempt?.status, (st) => { if (st === 'error' || (st === 'ok' && tab.value === 'readme')) tab.value = 'result'; });
 const warnings = computed(() => s.preview?.card?.warnings?.length ?? 0);
 const hasError = computed(() => s.attempt?.status === 'error');
 </script>
@@ -20,10 +21,12 @@ const hasError = computed(() => s.attempt?.status === 'error');
         <span v-if="hasError" class="count error">!</span>
         <span v-else-if="warnings" class="count warn">{{ warnings }}</span>
       </button>
+      <button type="button" role="tab" :aria-selected="tab === 'compare'" :disabled="s.preview?.source !== 'preview'" title="プレビューを生成すると比べられます" @click="tab = 'compare'">比較</button>
       <button type="button" role="tab" :aria-selected="tab === 'readme'" @click="tab = 'readme'">README</button>
     </div>
     <div class="body">
       <ResultPanel v-if="tab === 'result'" />
+      <ComparePanel v-else-if="tab === 'compare'" />
       <EmbedPanel v-else />
     </div>
   </aside>
