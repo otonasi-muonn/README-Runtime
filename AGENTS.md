@@ -79,3 +79,19 @@ cannot install that URL: write `npm exec --yes --package=<archive URL> -- readme
 Working on README Runtime itself: `npm test` (unit), `npm run test:browser` and
 `npm run test:browser:ui` (real browsers, pixels from `<img>` with JS off). Generated cards are
 checked byte-for-byte by `node bin/readme-runtime.js check`.
+
+## Design principles
+
+- Improve execution and rendering capabilities, correctness and performance.
+- Report results, limitations, failure causes and verification coverage accurately, in machine-readable form where applicable.
+- Respect the host project. Keep Runtime-specific adapters and dependencies outside its production code. Prefer reuse without edits; make only necessary, behavior-preserving extractions or exports when useful, not unrelated refactors. Avoid changing host build settings or dependencies unnecessarily. Demo directories can still be picked up by the host toolchain; verify its existing build, lint and tests after integration. Use isolated clones for adoption experiments; do not push to the host repository without permission.
+
+## Development and verification
+
+- Match verification to the actual impact of a change, with particular care for compiler semantics, state transitions, numerical precision and browser rendering.
+- Prefer existing tests, CI and benchmarks; turn reproducible bugs into regression tests where practical. Review new or modified tests and benchmarks for whether they actually measure the intended property.
+- Keep output concise: summarize pass/fail, relevant differences and untested conditions; read detailed logs when needed.
+- Require concrete evidence and impact for review findings. Do not turn speculative risks or subjective preferences into implementation requirements.
+- Independent review, when needed, normally takes one round plus a targeted recheck of significant fixes. Escalate unresolved serious issues rather than treating the review limit as a pass.
+- Stop searching for additional problems once the relevant quality criteria are met. Do not claim verification that was not performed.
+- For handoffs, share the commit/diff, test results and unresolved questions with references to the originals. Use existing task channels; do not create handoff files by default.
