@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "command": "check",
+  "version": "0.1.0",
+  "ok": false,
+  "problems": [
+    {
+      "card": "collatz",
+      "code": "CHECK_CARD_STALE",
+      "message": "readme-runtime/collatz.svg is out of date or was edited by hand; run \"readme-runtime build\" and commit (first difference at character 41685: committed \"g></g></g></g></g></g>\\n</svg>\\n<!-- edited -->\\n\", fresh build \"g></g></g></g></g></g>\\n</svg>\\n\")",
+      "hint": "Run `readme-runtime build` (with the same README Runtime version as CI) and commit the result."
+    }
+  ],
+  "exitCode": 1
+}

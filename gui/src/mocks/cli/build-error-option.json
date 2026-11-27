@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "command": "build",
+  "version": "0.1.0",
+  "ok": false,
+  "error": {
+    "code": "OPTION_INVALID",
+    "message": "\"steps\" must be an integer between 1 and 400 (WebKit stops resolving styles beyond ~510 nested elements)",
+    "hint": "Adjust the option named in the message (see `readme-runtime --help`).",
+    "details": {}
+  }
+}

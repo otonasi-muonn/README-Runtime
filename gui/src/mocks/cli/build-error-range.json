@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "command": "build",
+  "version": "0.1.0",
+  "ok": false,
+  "error": {
+    "code": "RANGE_STATE",
+    "message": "step 14: state 1327102 is outside the CSS-exact range (|x| <= 999,999). Chromium keeps only 6 significant digits of computed custom properties, so this value cannot be shown faithfully. Use a smaller \"init\", fewer \"steps\", or a halt condition.",
+    "hint": "A state value exceeds ±999,999. Use a smaller \"init\", fewer \"steps\", a halt condition, or scale the state down.",
+    "details": {}
+  }
+}

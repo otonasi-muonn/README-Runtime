@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "command": "build",
+  "version": "0.1.0",
+  "ok": true,
+  "cards": [
+    {
+      "name": "mockcraft",
+      "build": "cached",
+      "card": "cached",
+      "out": "readme-runtime/mockcraft.svg",
+      "summary": "",
+      "reason": null,
+      "perf": {
+        "updatesPerSecond": 6.7,
+        "loopSeconds": 25.9,
+        "loops": "infinite",
+        "activeSeconds": null,
+        "steps": 160,
+        "displayElements": 173,
+        "containerRules": 37,
+        "bytes": 78754,
+        "gzipBytes": 10892
+      },
+      "warnings": [
+        {
+          "code": "PERF_ENDLESS",
+          "message": "loops is \"infinite\": the card keeps updating for as long as the page is open and the card is on screen (WebKit also while it is scrolled out of view); \"auto\" plays for about a minute and then rests on the last step, which costs nothing",
+          "fix": {
+            "loops": "auto"
+          }
+        }
+      ],
+      "embed": [
+        "![mockcraft](readme-runtime/mockcraft.svg)"
+      ]
+    },
+    {
+      "name": "collatz",
+      "build": "cached",
+      "card": "cached",
+      "out": "readme-runtime/collatz.svg",
+      "summary": "",
+      "reason": null,
+      "perf": {
+        "updatesPerSecond": 6.7,
+        "loopSeconds": 19.9,
+        "loops": "infinite",
+        "activeSeconds": null,
+        "steps": 120,
+        "displayElements": 85,
+        "containerRules": 0,
+        "bytes": 41710,
+        "gzipBytes": 6109
+      },
+      "warnings": [
+        {
+          "code": "PERF_ENDLESS",
+          "message": "loops is \"infinite\": the card keeps updating for as long as the page is open and the card is on screen (WebKit also while it is scrolled out of view); \"auto\" plays for about a minute and then rests on the last step, which costs nothing",
+          "fix": {
+            "loops": "auto"
+          }
+        }
+      ],
+      "embed": [
+        "![collatz](readme-runtime/collatz.svg)",
+        "![collatz from 97](readme-runtime/collatz.svg?x97#x97)",
+        "![collatz from 871](readme-runtime/collatz.svg?x871#x871)"
+      ]
+    },
+    {
+      "name": "lfsr-rust",
+      "build": "cached",
+      "card": "cached",
+      "out": "readme-runtime/lfsr-rust.svg",
+      "summary": "",
+      "reason": null,
+      "perf": {
+        "updatesPerSecond": 6.7,
+        "loopSeconds": 19.9,
+        "loops": 4,
+        "activeSeconds": 79.8,
+        "steps": 120,
+        "displayElements": 85,
+        "containerRules": 0,
+        "bytes": 48918,
+        "gzipBytes": 6565
+      },
+      "embed": [
+        "![lfsr-rust](readme-runtime/lfsr-rust.svg)"
+      ]
+    },
+    {
+      "name": "air-drawing",
+      "build": "cached",
+      "card": "cached",
+      "out": "readme-runtime/air-drawing.svg",
+      "summary": "",
+      "reason": null,
+      "perf": {
+        "updatesPerSecond": 20,
+        "loopSeconds": 10.1,
+        "loops": 6,
+        "activeSeconds": 60.6,
+        "steps": 177,
+        "displayElements": 758,
+        "containerRules": 188,
+        "bytes": 175539,
+        "gzipBytes": 13416
+      },
+      "warnings": [
+        {
+          "code": "PERF_FAST_CLOCK",
+          "message": "the card updates 20 times per second (stepMs 50); every update restyles and repaints the display, so viewers' CPU use grows with the rate",
+          "fix": {
+            "stepMs": 200
+          }
+        },
+        {
+          "code": "PERF_LARGE_DISPLAY",
+          "message": "the display has 758 elements and 188 @container rules, restyled on every step; show a smaller part of the UI, or fewer switched (discrete) props",
+          "fix": {
+            "stepMs": 200
+          }
+        }
+      ],
+      "embed": [
+        "![air-drawing](readme-runtime/air-drawing.svg)"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "command": "build",
+  "version": "0.1.0",
+  "ok": true,
+  "cards": [
+    {
+      "name": "collatz",
+      "build": "cached",
+      "card": "written",
+      "out": "readme-runtime/collatz.svg",
+      "summary": "65.1 kB, halts at step 111, verified against Wasm under 4 browser arithmetic models",
+      "reason": "options or generator changed",
+      "steps": 111,
+      "end": {
+        "kind": "halt",
+        "at": 111
+      },
+      "ui": null,
+      "perf": {
+        "updatesPerSecond": 20,
+        "loopSeconds": 15.7,
+        "loops": "infinite",
+        "activeSeconds": null,
+        "steps": 300,
+        "displayElements": 85,
+        "containerRules": 0,
+        "bytes": 66703,
+        "gzipBytes": 8414
+      },
+      "warnings": [
+        {
+          "code": "PERF_FAST_CLOCK",
+          "message": "the card updates 20 times per second (stepMs 50); every update restyles and repaints the display, so viewers' CPU use grows with the rate",
+          "fix": {
+            "stepMs": 150
+          }
+        },
+        {
+          "code": "PERF_ENDLESS",
+          "message": "loops is \"infinite\": the card keeps updating for as long as the page is open and the card is on screen (WebKit also while it is scrolled out of view); \"auto\" plays for about a minute and then rests on the last step, which costs nothing",
+          "fix": {
+            "loops": "auto"
+          }
+        },
+        {
+          "code": "PERF_LONG_RUN",
+          "message": "300 steps: the first render computes every step and the file grows with each one (8.2 kB gzip); a shorter run or a halt condition keeps both small",
+          "fix": {
+            "steps": 240
+          }
+        }
+      ],
+      "embed": [
+        "![collatz](readme-runtime/collatz.svg)",
+        "![collatz from 97](readme-runtime/collatz.svg?x97#x97)",
+        "![collatz from 871](readme-runtime/collatz.svg?x871#x871)"
+      ]
+    }
+  ]
+}

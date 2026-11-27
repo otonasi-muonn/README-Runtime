@@ -1,0 +1,187 @@
+{
+  "schemaVersion": 1,
+  "command": "build",
+  "version": "0.1.0",
+  "ok": true,
+  "cards": [
+    {
+      "name": "mockcraft",
+      "build": "built",
+      "card": "unchanged",
+      "out": "readme-runtime/mockcraft.svg",
+      "summary": "76.9 kB, 160 steps, verified against Wasm under 4 browser arithmetic models",
+      "reason": "forced",
+      "steps": 160,
+      "end": {
+        "kind": "steps",
+        "at": 160
+      },
+      "ui": {
+        "numeric": [
+          {
+            "view": "dx",
+            "sites": 6
+          },
+          {
+            "view": "dy",
+            "sites": 6
+          },
+          {
+            "view": "on",
+            "sites": 0
+          },
+          {
+            "view": "sel",
+            "sites": 0
+          },
+          {
+            "view": "hits",
+            "sites": 1
+          }
+        ],
+        "discrete": [
+          {
+            "views": [
+              "on"
+            ],
+            "path": "0.6",
+            "variants": 2
+          },
+          {
+            "views": [
+              "sel"
+            ],
+            "path": "0.0",
+            "variants": 6
+          },
+          {
+            "views": [
+              "sel"
+            ],
+            "path": "0.1",
+            "variants": 6
+          },
+          {
+            "views": [
+              "sel"
+            ],
+            "path": "0.2",
+            "variants": 6
+          },
+          {
+            "views": [
+              "on",
+              "sel"
+            ],
+            "path": "0.5",
+            "variants": 12
+          },
+          {
+            "views": [
+              "sel"
+            ],
+            "path": "0.3",
+            "variants": 6
+          },
+          {
+            "views": [
+              "sel"
+            ],
+            "path": "0.4",
+            "variants": 6
+          }
+        ],
+        "ignoredAttributes": [],
+        "renders": 87,
+        "verifiedEachValue": [
+          "hits",
+          "dy",
+          "dx"
+        ],
+        "sampledViews": [],
+        "verifiedStates": 161,
+        "verifiedRandomStates": 544,
+        "fontFallbacks": [
+          "--font-jetbrains",
+          "--font-jakarta"
+        ],
+        "inputs": [
+          "examples/mockcraft/demo.tsx",
+          "examples/mockcraft/tsconfig.json",
+          "examples/mockcraft/upstream/src/app/globals.css",
+          "examples/mockcraft/upstream/src/components/board/ElementView.tsx",
+          "examples/mockcraft/upstream/src/lib/cn.ts",
+          "examples/mockcraft/upstream/src/lib/defaults.ts",
+          "examples/mockcraft/upstream/src/lib/elementStyle.ts",
+          "examples/mockcraft/upstream/src/lib/icons.tsx",
+          "examples/mockcraft/upstream/src/lib/templates.ts"
+        ],
+        "markupBytes": 14199,
+        "variantBytes": 11678,
+        "variantShare": 0.82
+      },
+      "perf": {
+        "updatesPerSecond": 6.7,
+        "loopSeconds": 25.9,
+        "loops": "infinite",
+        "activeSeconds": null,
+        "steps": 160,
+        "displayElements": 173,
+        "containerRules": 37,
+        "bytes": 78754,
+        "gzipBytes": 10892
+      },
+      "warnings": [
+        {
+          "code": "PERF_ENDLESS",
+          "message": "loops is \"infinite\": the card keeps updating for as long as the page is open and the card is on screen (WebKit also while it is scrolled out of view); \"auto\" plays for about a minute and then rests on the last step, which costs nothing",
+          "fix": {
+            "loops": "auto"
+          }
+        }
+      ],
+      "embed": [
+        "![mockcraft](readme-runtime/mockcraft.svg)"
+      ]
+    },
+    {
+      "name": "collatz",
+      "build": "built",
+      "card": "unchanged",
+      "out": "readme-runtime/collatz.svg",
+      "summary": "40.7 kB, halts at step 111, verified against Wasm under 4 browser arithmetic models",
+      "reason": "forced",
+      "steps": 111,
+      "end": {
+        "kind": "halt",
+        "at": 111
+      },
+      "ui": null,
+      "perf": {
+        "updatesPerSecond": 6.7,
+        "loopSeconds": 19.9,
+        "loops": "infinite",
+        "activeSeconds": null,
+        "steps": 120,
+        "displayElements": 85,
+        "containerRules": 0,
+        "bytes": 41710,
+        "gzipBytes": 6109
+      },
+      "warnings": [
+        {
+          "code": "PERF_ENDLESS",
+          "message": "loops is \"infinite\": the card keeps updating for as long as the page is open and the card is on screen (WebKit also while it is scrolled out of view); \"auto\" plays for about a minute and then rests on the last step, which costs nothing",
+          "fix": {
+            "loops": "auto"
+          }
+        }
+      ],
+      "embed": [
+        "![collatz](readme-runtime/collatz.svg)",
+        "![collatz from 97](readme-runtime/collatz.svg?x97#x97)",
+        "![collatz from 871](readme-runtime/collatz.svg?x871#x871)"
+      ]
+    }
+  ]
+}
