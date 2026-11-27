@@ -25,7 +25,7 @@ async function copy(text: string, key: string) {
 
 <template>
   <section v-if="s.card" class="embed">
-    <h3>README に貼る</h3>
+    <h3 class="section-title">README に貼る</h3>
     <p class="path">出力ファイル: <code>{{ out }}</code></p>
     <ul class="lines">
       <li v-for="(line, i) in embed" :key="line">
@@ -42,7 +42,7 @@ async function copy(text: string, key: string) {
       <pre>{{ pending }}</pre>
     </details>
 
-    <h3>check（CI と同じ検査）</h3>
+    <h3 class="section-title">check（CI と同じ検査）</h3>
     <div class="check">
       <button type="button" :disabled="s.checkState.status === 'running'" @click="s.runCheck()">{{ s.checkState.status === 'running' ? '実行中…' : 'check を実行' }}</button>
       <span class="note">ファイルは書き換えません。</span>
@@ -62,20 +62,22 @@ async function copy(text: string, key: string) {
 </template>
 
 <style scoped>
-.embed { display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
-h3 { margin: 6px 0 0; font-size: 13px; }
-.path { margin: 0; }
+.embed { display: flex; flex-direction: column; gap: 8px; font-size: 12px; }
+.section-title { padding: 0; }
+.section-title:not(:first-child) { padding-top: 12px; }
+.path { margin: 0; color: var(--muted); }
+.path code { color: var(--text); }
 .lines { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
-.lines li { display: flex; gap: 8px; align-items: center; justify-content: space-between; border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; background: var(--input-bg); }
-.lines code { overflow-wrap: anywhere; }
-.lines button { flex: none; font-size: 12px; }
-.embed > button { align-self: flex-start; font-size: 12px; }
-.note { margin: 0; font-size: 12px; color: var(--muted); }
+.lines li { display: flex; gap: 8px; align-items: center; justify-content: space-between; border: 1px solid var(--border); border-radius: var(--radius); padding: 6px 6px 6px 10px; background: var(--input-bg); }
+.lines code { overflow-wrap: anywhere; font-size: 11px; }
+.lines button { flex: none; }
+.embed > button { align-self: flex-start; }
+.note { margin: 0; font-size: 11px; color: var(--faint); }
 .err { margin: 0; color: var(--danger); }
 .ok { margin: 0; color: var(--ok); }
-.pending summary { cursor: pointer; font-size: 12px; color: var(--muted); }
-.pending pre { font-size: 12px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 6px; padding: 8px; overflow: auto; }
+.pending summary { cursor: pointer; font-size: 11px; color: var(--muted); }
+.pending pre { font-family: var(--mono); font-size: 11px; background: var(--input-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px; overflow: auto; }
 .check { display: flex; gap: 10px; align-items: center; }
-.problems { margin: 0; padding-left: 18px; }
-.problems .msg { font-family: var(--mono); font-size: 12px; overflow-wrap: anywhere; }
+.problems { margin: 0; padding-left: 16px; }
+.problems .msg { font-family: var(--mono); font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
 </style>

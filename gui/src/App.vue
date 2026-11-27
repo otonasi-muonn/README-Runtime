@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { onMounted, provide } from 'vue';
 import CardList from './components/CardList.vue';
-import EmbedPanel from './components/EmbedPanel.vue';
 import PreviewPane from './components/PreviewPane.vue';
-import ResultPanel from './components/ResultPanel.vue';
 import SettingsForm from './components/SettingsForm.vue';
+import SidePanel from './components/SidePanel.vue';
+import TopBar from './components/TopBar.vue';
 import { SessionKey, useSession } from './composables/useSession';
 
 const s = useSession();
@@ -13,38 +13,51 @@ onMounted(() => s.load());
 </script>
 
 <template>
-  <header class="top">
-    <h1>README Runtime <span>カードの調整とプレビュー</span></h1>
-    <span v-if="s.project?.mode === 'mock'" class="badge" title="生成と保存は行いません。表示は保存済みの SVG と、記録した CLI の出力です。">モック</span>
-    <span v-if="s.project" class="version">readme-runtime {{ s.project.toolVersion }}</span>
-  </header>
-  <p v-if="s.loadError" class="load-error">読み込めませんでした: {{ s.loadError }}</p>
-  <main v-else-if="s.project" class="layout">
-    <aside class="side"><CardList /></aside>
-    <div class="settings panel"><SettingsForm /></div>
-    <div class="output">
-      <div class="panel"><PreviewPane /></div>
-      <div class="panel"><ResultPanel /></div>
-      <div class="panel"><EmbedPanel /></div>
-    </div>
-  </main>
-  <p v-else class="loading">読み込み中…</p>
+  <p v-if="s.loadError" class="message error">読み込めませんでした: {{ s.loadError }}</p>
+  <div v-else-if="s.project" class="app">
+    <TopBar />
+    <aside class="left">
+      <CardList />
+      <SettingsForm />
+    </aside>
+    <PreviewPane />
+    <SidePanel />
+    <footer class="status">
+      <span v-if="s.project.mode === 'mock'" class="mock">● モック（生成・保存はしません）</span>
+      <span v-else>● 接続中</span>
+      <span v-if="s.card">{{ s.card.name }}</span>
+      <span v-if="s.unsaved" class="unsaved">未保存の変更あり</span>
+      <span class="grow" />
+      <span>readme-runtime {{ s.project.toolVersion }}</span>
+    </footer>
+  </div>
+  <p v-else class="message">読み込み中…</p>
 </template>
 
 <style scoped>
-.top { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 12px 20px; border-bottom: 1px solid var(--border); background: var(--panel); }
-h1 { margin: 0; font-size: 16px; }
-h1 span { font-weight: 400; color: var(--muted); margin-left: 6px; font-size: 13px; }
-.badge { font-size: 11px; font-weight: 700; color: var(--warn); border: 1px solid var(--warn); border-radius: 99px; padding: 1px 8px; cursor: help; white-space: nowrap; }
-.version { margin-left: auto; font-size: 12px; color: var(--muted); font-family: var(--mono); }
-.layout { display: grid; grid-template-columns: 170px minmax(280px, 340px) minmax(0, 1fr); gap: 16px; padding: 16px 20px; align-items: start; }
-.output { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
-.panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
-.settings { position: sticky; top: 16px; }
-.load-error, .loading { padding: 20px; }
-.load-error { color: var(--danger); }
+.app {
+  height: 100%;
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr) 340px;
+  grid-template-rows: 48px minmax(0, 1fr) 24px;
+  grid-template-areas: 'top top top' 'left center right' 'status status status';
+}
+.left { grid-area: left; overflow-y: auto; background: var(--panel); border-right: 1px solid var(--border); }
+.status { grid-area: status; display: flex; align-items: center; gap: 14px; padding: 0 12px; font-size: 11px; color: var(--muted); background: var(--panel); border-top: 1px solid var(--border); }
+.status .mock { color: var(--warn); }
+.status .unsaved { color: var(--accent); }
+.grow { flex: 1; }
+.message { padding: 20px; color: var(--muted); }
+.message.error { color: var(--danger); }
+
+/* narrow windows: one column that scrolls */
 @media (max-width: 900px) {
-  .layout { grid-template-columns: 1fr; }
-  .settings { position: static; }
+  :global(body) { overflow: auto; }
+  .app { height: auto; grid-template-columns: 1fr; grid-template-rows: auto; grid-template-areas: 'top' 'center' 'left' 'right' 'status'; }
+  .left { border-right: 0; }
+  :deep(.top) { height: auto; flex-wrap: wrap; padding: 8px 12px; }
+  :deep(.stepper) { order: 3; width: 100%; justify-content: center; }
+  :deep(.canvas) { min-height: 280px; padding: 20px 12px; }
+  :deep(.side) { border-left: 0; border-top: 1px solid var(--border); }
 }
 </style>

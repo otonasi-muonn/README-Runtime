@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { INT_FIELDS, LOOP_COUNT, MAX_ALT_INITS, parseIntList } from '../api/fields';
+import { INT_FIELDS, LOOP_COUNT, MAX_ALT_INITS, parseIntList, settingsFromConfig } from '../api/fields';
 import { useSessionContext } from '../composables/useSession';
+import type { CardSettings } from '../api/types';
 
 const s = useSessionContext();
 
@@ -28,53 +29,61 @@ const loopCount = computed({
 });
 
 const c = computed(() => s.card?.config);
+// a field that differs from the saved settings gets a marker
+const savedSettings = computed(() => (c.value ? settingsFromConfig(c.value) : null));
+const changed = (k: keyof CardSettings) => !!s.draft && !!savedSettings.value && JSON.stringify(s.draft[k]) !== JSON.stringify(savedSettings.value[k]);
 </script>
 
 <template>
   <form v-if="s.draft && c" class="form" @submit.prevent="s.runPreview()">
-    <h2>設定 <span class="card-name">{{ c.name }}</span></h2>
+    <h2 class="section-title">設定</h2>
 
-    <label class="field">
-      <span class="label">タイトル</span>
-      <input v-model="s.draft.title" type="text" />
-    </label>
+    <div class="group">
+      <label class="field" :class="{ changed: changed('title') }">
+        <span class="label">タイトル</span>
+        <input v-model="s.draft.title" type="text" />
+      </label>
+    </div>
 
-    <label v-for="f in INT_FIELDS" :key="f.key" class="field" :class="{ invalid: s.errors[f.key] }">
-      <span class="label">{{ f.label }}<small v-if="f.unit">（{{ f.unit }}）</small></span>
-      <input v-model.number="s.draft[f.key]" type="number" :min="f.min" :max="f.max" step="1" />
-      <span class="help">{{ f.help }}</span>
-      <span v-if="s.errors[f.key]" class="error">{{ s.errors[f.key] }}</span>
-    </label>
+    <div class="group">
+      <label v-for="f in INT_FIELDS" :key="f.key" class="field" :class="{ invalid: s.errors[f.key], changed: changed(f.key) }">
+        <span class="label">{{ f.label }}<small v-if="f.unit">{{ f.unit }}</small></span>
+        <input v-model.number="s.draft[f.key]" type="number" :min="f.min" :max="f.max" step="1" />
+        <span v-if="s.errors[f.key]" class="error">{{ s.errors[f.key] }}</span>
+        <span class="help">{{ f.help }}</span>
+      </label>
+    </div>
 
-    <label class="field" :class="{ invalid: s.errors.altInits }">
-      <span class="label">ほかの初期値 <small>（{{ MAX_ALT_INITS }}個まで、カンマ区切り）</small></span>
-      <input v-model="altText" type="text" placeholder="例: 97, 871" @input="onAltInput" />
-      <span class="help">README で <code>card.svg?x97#x97</code> のように指定すると、同じ SVG がこの値から計算します。</span>
-      <span v-if="s.errors.altInits" class="error">{{ s.errors.altInits }}</span>
-    </label>
+    <div class="group">
+      <label class="field" :class="{ invalid: s.errors.altInits, changed: changed('altInits') }">
+        <span class="label">ほかの初期値<small>{{ MAX_ALT_INITS }}個まで</small></span>
+        <input v-model="altText" type="text" placeholder="例: 97, 871" @input="onAltInput" />
+        <span v-if="s.errors.altInits" class="error">{{ s.errors.altInits }}</span>
+        <span class="help">README で <code>card.svg?x97#x97</code> と書くと、同じ SVG がこの値から計算します。</span>
+      </label>
 
-    <fieldset class="field" :class="{ invalid: s.errors.loops }">
-      <legend class="label">ループ</legend>
-      <div class="radios">
-        <label><input v-model="loopMode" type="radio" value="auto" /> 自動（約1分で止まる）</label>
-        <label><input v-model="loopMode" type="radio" value="infinite" /> 止まらない</label>
-        <label>
-          <input v-model="loopMode" type="radio" value="count" /> 回数
-          <input v-model.number="loopCount" class="count" type="number" :min="LOOP_COUNT.min" :max="LOOP_COUNT.max" :disabled="loopMode !== 'count'" />
-        </label>
-      </div>
-      <span class="help">終わると最後の状態で止まり、CPU を使いません。ページの最初に見えるカードは「止まらない」が向いています。</span>
-      <span v-if="s.errors.loops" class="error">{{ s.errors.loops }}</span>
-    </fieldset>
+      <fieldset class="field" :class="{ invalid: s.errors.loops, changed: changed('loops') }">
+        <legend class="label">ループ</legend>
+        <div class="seg" role="radiogroup">
+          <label :class="{ on: loopMode === 'auto' }"><input v-model="loopMode" type="radio" value="auto" />自動</label>
+          <label :class="{ on: loopMode === 'infinite' }"><input v-model="loopMode" type="radio" value="infinite" />無限</label>
+          <label :class="{ on: loopMode === 'count' }"><input v-model="loopMode" type="radio" value="count" />回数</label>
+        </div>
+        <input v-if="loopMode === 'count'" v-model.number="loopCount" class="count" type="number" :min="LOOP_COUNT.min" :max="LOOP_COUNT.max" aria-label="ループ回数" />
+        <span v-if="s.errors.loops" class="error">{{ s.errors.loops }}</span>
+        <span class="help">自動は約1分で止まり、その後は CPU を使いません。ページの最初に見えるカードは無限が向いています。</span>
+      </fieldset>
+    </div>
 
     <details class="readonly">
-      <summary>ほかの設定（この画面では変更しません）</summary>
+      <summary>ほかの設定（変更できません）</summary>
       <dl>
-        <dt>Wasm</dt><dd><code>{{ c.wasm }}</code>（export: <code>{{ c.export ?? 'step' }}</code>）</dd>
+        <dt>Wasm</dt><dd><code>{{ c.wasm }}</code></dd>
+        <dt>export</dt><dd><code>{{ c.export ?? 'step' }}</code></dd>
         <template v-if="c.halt !== undefined"><dt>停止値</dt><dd><code>{{ c.halt }}</code></dd></template>
-        <template v-if="c.haltExport"><dt>停止判定関数</dt><dd><code>{{ c.haltExport }}</code></dd></template>
-        <template v-if="!c.ui"><dt>ビット表示数</dt><dd>{{ c.bits ?? 20 }}</dd></template>
-        <template v-if="c.build"><dt>ビルドコマンド</dt><dd><code>{{ c.build.command }}</code></dd></template>
+        <template v-if="c.haltExport"><dt>停止判定</dt><dd><code>{{ c.haltExport }}</code></dd></template>
+        <template v-if="!c.ui"><dt>ビット数</dt><dd>{{ c.bits ?? 20 }}</dd></template>
+        <template v-if="c.build"><dt>ビルド</dt><dd><code>{{ c.build.command }}</code></dd></template>
         <template v-if="c.ui">
           <dt>UI</dt><dd><code>{{ c.ui.entry }}</code></dd>
           <dt>views</dt><dd><code>{{ Object.entries(c.ui.views).map(([k, v]) => `${k} ← ${v}`).join(', ') }}</code></dd>
@@ -82,43 +91,31 @@ const c = computed(() => s.card?.config);
         <dt>出力先</dt><dd><code>{{ c.out ?? `readme-runtime/${c.name}.svg` }}</code></dd>
       </dl>
     </details>
-
-    <div class="actions">
-      <button type="submit" class="primary" :disabled="!s.valid || s.busy">
-        {{ s.attempt?.status === 'running' && s.attempt.kind === 'preview' ? '生成中…' : 'プレビューを生成' }}
-      </button>
-      <button type="button" :disabled="!s.canSave" @click="s.save()">
-        {{ s.attempt?.status === 'running' && s.attempt.kind === 'save' ? '保存中…' : '保存' }}
-      </button>
-      <button type="button" class="ghost" :disabled="!s.unsaved || s.busy" @click="s.resetDraft()">編集を破棄</button>
-    </div>
-    <p class="state">
-      <template v-if="!s.unsaved">保存済みの設定と同じです。</template>
-      <template v-else-if="!s.previewIsCurrent">保存するには、この設定でプレビューを生成してください。</template>
-      <template v-else-if="s.preview?.source === 'preview'">プレビューに成功した設定です。保存できます。</template>
-    </p>
   </form>
 </template>
 
 <style scoped>
-.form { display: flex; flex-direction: column; gap: 14px; }
-h2 { margin: 0; font-size: 15px; }
-.card-name { font-family: var(--mono); font-weight: 500; color: var(--muted); margin-left: 6px; }
-.field { display: flex; flex-direction: column; gap: 4px; border: 0; padding: 0; margin: 0; min-width: 0; }
-.label { font-size: 13px; font-weight: 600; padding: 0; }
-.label small { font-weight: 400; color: var(--muted); }
-input[type='text'], input[type='number'] { font: inherit; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--input-bg); color: inherit; }
+.form { display: flex; flex-direction: column; }
+.group { display: flex; flex-direction: column; gap: 10px; padding: 4px 12px 14px; border-bottom: 1px solid var(--border); }
+.group:first-of-type { padding-top: 0; }
+.field { position: relative; display: flex; flex-direction: column; gap: 4px; border: 0; padding: 0; margin: 0; min-width: 0; }
+.label { display: flex; justify-content: space-between; gap: 6px; font-size: 11px; font-weight: 500; color: var(--muted); padding: 0; }
+.label small { color: var(--faint); font-size: 10px; }
+.changed > .label::after { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); position: absolute; left: -9px; top: 7px; }
+.help { display: none; font-size: 11px; color: var(--faint); line-height: 1.45; }
+.field:focus-within .help { display: block; }
 .invalid input { border-color: var(--danger); }
-.help { font-size: 12px; color: var(--muted); }
-.error { font-size: 12px; color: var(--danger); }
-.radios { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; }
-.radios label { display: inline-flex; align-items: center; gap: 4px; }
-.count { width: 72px; }
-.readonly { font-size: 12px; border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; }
-.readonly summary { cursor: pointer; color: var(--muted); }
-.readonly dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 10px; margin: 8px 0 2px; }
-.readonly dt { color: var(--muted); }
-.readonly dd { margin: 0; overflow-wrap: anywhere; }
-.actions { display: flex; flex-wrap: wrap; gap: 8px; }
-.state { margin: 0; font-size: 12px; color: var(--muted); min-height: 1.4em; }
+.error { font-size: 11px; color: var(--danger); }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--input-bg); }
+.seg label { display: flex; justify-content: center; align-items: center; padding: 5px 0; font-size: 12px; cursor: pointer; color: var(--muted); }
+.seg label + label { border-left: 1px solid var(--border); }
+.seg label.on { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label:focus-within { box-shadow: inset 0 0 0 2px var(--accent); }
+.count { margin-top: 2px; }
+.readonly { margin: 12px; font-size: 11px; color: var(--muted); }
+.readonly summary { cursor: pointer; }
+.readonly dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 10px; margin: 8px 0 0; }
+.readonly dt { color: var(--faint); }
+.readonly dd { margin: 0; overflow-wrap: anywhere; color: var(--text); }
 </style>
