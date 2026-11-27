@@ -103,6 +103,8 @@ export function useSession() {
       if (!r.ok) { attempts[name] = { kind: 'save', status: 'error', error: r.error }; return; }
       c.config = r.config;
       c.lastBuild = r.card;
+      // the saved file changed: a new URL so the browser does not show the old image
+      c.svgUrl = `${c.svgUrl.split('?')[0]}?r=${Date.now()}`;
       previews[name] = { ...previews[name], card: r.card };
       attempts[name] = { kind: 'save', status: 'ok' };
       checkState.value = { status: 'idle' };

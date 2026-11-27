@@ -1,18 +1,24 @@
-# README Runtime GUI（Issue #2）
+# README Runtime GUI（Issue #2・#3）
 
-動く README カードの設定を調整し、プレビューして、README に貼る Markdown をコピーするための、ローカル用の画面です。Vue 3 + Vite + TypeScript で作っていて、README Runtime 本体の依存（ルートの `package.json`）は変えていません。
+動く README カードの設定を調整し、プレビューして、README に貼る Markdown をコピーするための、ローカル用の画面です。Vue 3 + Vite + TypeScript で作っていて、README Runtime 本体の依存（ルートの `package.json`）とコード（`src/`）は変えていません。
 
-> **いまはモックで動いています。** 生成と保存を実際に行う接続部分（Issue #3）がまだないためです。画像は、コミット済みの SVG（`readme-runtime/*.svg`）をそのまま表示します。結果・エラー・警告は、CLI の実際の出力（`src/mocks/cli/`）と、CLI と同じ規則で計算した値です。ファイルには何も書き込みません。
+README Runtime への接続（#3）は、開発サーバーの `/api` にあります（`server/runtimeApi.ts`）。本体の `generate()`・`build()`・`check()` をそのまま呼ぶので、プレビューは本物の生成で、保存は本物の `build` です。
 
 ## 起動
 
 ```sh
+npm install          # リポジトリのルートで（生成に使う esbuild・React・Tailwind など）
 cd gui
 npm install
-npm run dev        # http://127.0.0.1:5175/ （ループバックのみで待ち受け）
+npm run dev          # http://127.0.0.1:5175/ （ループバックのみで待ち受け）
 ```
 
-`npm run build` は、型チェック（`vue-tsc`）をしてから `dist/` を作ります。必要なのは Node.js 20.19 以上（Vite 8 の要件）です。
+- 画面の左上に **LIVE** と出ていれば、本物に接続しています。
+- 接続できないとき（たとえば本体を読み込めないとき）は、自動でモックに切り替わり、**MOCK** と理由を表示します。
+- 最初からモックで開くには `VITE_RUNTIME_API=mock npm run dev` とします。
+- 既存 UI のカード（mockcraft、air-drawing）の生成には、ルートの `npm install` が必要です。入っていないと `DEPS_NOT_INSTALLED` が出ます。トレースのカード（collatz、lfsr-rust）は、なくても生成できます。
+
+`npm run build` は、型チェック（`vue-tsc`）をしてから `dist/` を作ります（画面だけで、接続部分は含みません）。必要なのは Node.js 20.19 以上（Vite 8 の要件）です。
 
 ## 画面
 
@@ -27,24 +33,41 @@ npm run dev        # http://127.0.0.1:5175/ （ループバックのみで待ち
   棒の目安の線は、`src/perf.js` の `PERF_*` 警告と同じ値です（`src/api/perfLimits.ts`）。bench/ の1台での経験則で、保証値ではありません。
 - **ショートカット:** `Ctrl+Enter` でプレビュー、`Ctrl+S` で保存（Mac は `Cmd`）。
 
-## できること
+## 操作と、ファイルへの影響
 
-| 操作 | モックでの動き |
+| 操作 | LIVE | MOCK |
+|---|---|---|
+| プレビューを生成 | 本体の `generate()` で SVG を作り、Wasm との照合もします。結果はメモリに置くだけで、`readme-runtime.json`・SVG・lock は**書き換えません** | コミット済みの SVG を表示します（設定は画像に反映されません。画面にもそう出します）。結果・警告・負荷の目安は、CLI と同じ規則で計算します |
+| 保存 | `readme-runtime.json` のそのカードの設定を書き換えてから、そのカードだけ `build` を実行します。`build` が失敗したら、`readme-runtime.json` を元に戻します。書式（字下げ、数値の配列を1行に）は今のファイルと同じで、変えた項目以外の行は変わりません | 画面内で保存済みとして扱うだけです |
+| check | 本体の `check` を実行します（ファイルは書き換えません） | 記録した出力を表示します。`?mockCheck=fail` で失敗の例 |
+
+プレビューに成功した設定だけ保存できます。保存すると書かれる内容は、「README」タブで保存前に確認できます。
+
+保存の `build` は、そのカードの `build.command`（Wasm のビルド）を、ソースが変わっていれば CLI と同じように実行します。信頼できるプロジェクトで使ってください。
+
+## 接続 API（`server/runtimeApi.ts`）
+
+| | 内容 |
 |---|---|
-| カードを選ぶ | `readme-runtime.json` のカードを、そのまま一覧にします |
-| 設定を変える（タイトル、初期値、ほかの初期値、ステップ数、1ステップの時間、終了時の保持、ループ） | 範囲と既定値は `src/generate.js` と同じです。範囲の外は、入力欄でその場で知らせます |
-| プレビューを生成 | コミット済みの SVG を表示します（設定は画像に反映されません。画面にもそう表示します）。結果・警告・負荷の目安は、設定から計算します |
-| 生成の失敗 | 設定エラーは CLI と同じ文面で出ます。Collatz は、`step()` を JS で再現して範囲を確かめます（例: 初期値 77671 で `RANGE_STATE`）。失敗しても、直前に成功した画像と結果は表示したままです |
-| 警告の対処ボタン | `PERF_*` 警告の `fix` を、編集中の設定に反映します |
-| 保存 | プレビューに成功した設定だけ保存できます。モックでは、画面内で保存済みとして扱うだけで、ファイルには書き込みません。保存すると `readme-runtime.json` に書かれる内容は、保存前に確認できます |
-| Markdown のコピー | `build --json` の `embed` と同じ行を出します |
-| check | 記録した `check --json` の出力を表示します。`?mockCheck=fail` を付けて開くと、失敗の例を表示します |
-| 表示の切り替え | 背景（ライト／ダーク）、表示幅（原寸、README 幅、スマホ幅）、開始値（`?seed=97#x97`）、最初から再生 |
+| `GET /api/project` | カードの一覧と設定、保存済みの SVG の `perf`・警告・`embed`（作り直さずに、今のファイルから計算） |
+| `GET /api/svg/<name>` | 保存済みの SVG |
+| `POST /api/preview` `{ name, settings }` | 生成して `/api/preview/<n>.svg` を返す（直近24件だけ保持） |
+| `POST /api/save` `{ name, settings }` | 設定を書いて `build` |
+| `POST /api/check` | `check` |
 
-## 守っていること（Issue #2 の技術レビュー）
+結果とエラーの形は、CLI の `--json`（schemaVersion 1）と同じです。型は `src/api/types.ts` にあります。
+
+守っていること（#3）:
+
+- 待ち受けは 127.0.0.1 だけです。Host がループバック以外の要求は、Vite が拒否します。POST は同じオリジンからの JSON だけを受け付け（CSRF 対策）、大きさは 64 KB までです。
+- 受け取るのはカード名と、GUI が編集する7つの設定だけです。パスやコマンドは受け取りません。読み書きするのは、`readme-runtime.json` に書かれたファイルだけです。
+- 生成は1つずつ順に行います。待っている間に画面が取り消した要求は、生成しません。保存中に次の保存は受け付けません（`BUSY`）。
+- SVG は、GitHub と同じ CSP（`default-src 'none'; style-src 'unsafe-inline'; sandbox`）で返します。
+
+## 守っていること（#2 の技術レビュー）
 
 - 設定は3つに分けて持ちます。編集中の設定、最後に成功したプレビュー、保存済みの設定です。生成に失敗しても、直前に成功したものを表示します。
-- プレビューは `<img>` で表示します。生成のたび、「最初から再生」のたびに URL のクエリ（`?v=<生成番号>-<再生回数>`）が変わります。開始値を切り替えたときは、クエリ（`seed`）も変えます。
+- プレビューは `<img>` で表示します。生成のたび、「最初から再生」のたびに URL のクエリ（`?v=<生成番号>-<再生回数>`）が変わります。開始値を切り替えたときは、クエリ（`seed`）も変えます。保存すると、保存済みの画像の URL も変わります。
 - 古い応答は捨てます。新しいプレビューを頼むと、前の要求は取り消します。
 - 状態の更新頻度（`1000 / stepMs`）は、描画の FPS としては表示しません。CPU とメモリは「計測していない」と明記します。
 - 背景と表示幅の切り替えは、この画面での見え方だけを変えます。SVG の大きさ（#11）や、SVG 内部の配色は変わりません。
@@ -54,26 +77,26 @@ npm run dev        # http://127.0.0.1:5175/ （ループバックのみで待ち
 ## 構成
 
 ```
+server/runtimeApi.ts  接続 API（Vite の開発サーバーに /api として組み込む。vite.config.ts）
 src/
-  api/types.ts        CLI の出力の型（schemaVersion 1）と、接続 API の案（RuntimeApi）
-  api/client.ts       どの実装を使うかを決める唯一の場所（いまはモック）
-  api/mock.ts         モックの実装
+  api/types.ts        CLI の出力の型（schemaVersion 1）と、接続 API の型（RuntimeApi）
+  api/client.ts       LIVE か MOCK かを決める唯一の場所
+  api/live.ts         接続 API を呼ぶ実装
+  api/mock.ts         モックの実装（使うときだけ読み込む）
   api/fields.ts       編集できる設定の範囲・既定値・入力チェック・保存する形
   api/labels.ts       エラーコードと警告コードの日本語の見出し
+  api/perfLimits.ts   PERF_* 警告の目安（src/perf.js と同じ値）
   mocks/cli/          d11668f の CLI で記録した出力（build / check の成功と失敗）
   composables/useSession.ts   画面の状態（3つの設定、要求の番号、check）
-  components/         カード一覧、設定フォーム、プレビュー、結果、README 用 Markdown
+  components/         ツールバー、カード一覧、設定、プレビュー、結果、比較、README
 ```
 
-## #3（接続）と決めたいこと
+## 残っていること
 
-`src/api/types.ts` の `RuntimeApi` が、GUI 側からの案です。`client.ts` でモックを本物の実装に差し替えれば、画面はそのまま使えます。
-
-- `preview(name, settings)`: 設定・SVG・lock を書き換えずに生成します。本体では `generate(wasm, options)`（`src/generate.js`）を直接呼べば実現できそうです。返す `svgUrl` は、生成ごとに別の URL か、少なくともクエリが変わるものにしてください。
-- `save(name, settings)`: `readme-runtime.json` に書いてから `build` を実行します。保存しない設定キーの扱い（既定値と同じなら書かない）は、`fields.ts` の `toConfigCard` で決めています。
+- 保存済みのカードの「実行」（どこで止まるか）は、LIVE では表示しません。作り直さないと分からないためです。
+- 範囲・既定値・使えるかどうかは、まだ GUI 側の表（`fields.ts`）です。接続 API から返す形にすれば、未対応の機能を無効にして説明できます。
 - CLI の出力について、気づいた点が2つあります。
   1. `RANGE_STATE` などのエラーに、どのカードで起きたかが入っていません（`details: {}`）。
   2. `build` は最初のエラーで止まり、ほかのカードの結果を返しません。
 
   GUI ではカードを1枚ずつ扱うので今は困りませんが、まとめてビルドする画面を作るときに必要になります。
-- 設定項目の範囲・既定値・使えるかどうかを、接続部分から返す場合は、`fields.ts` の表と置き換える形になります。

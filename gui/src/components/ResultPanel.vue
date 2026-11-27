@@ -23,7 +23,7 @@ const source = computed(() => (s.preview?.source === 'saved' ? '保存済みの 
       <p v-if="s.preview" class="keep">直前に成功した{{ source }}を表示したままです。下の結果もそのときのものです。</p>
     </div>
     <div v-else-if="s.attempt?.status === 'ok'" class="box ok">
-      {{ s.attempt.kind === 'save' ? (s.project?.mode === 'mock' ? '✓ 保存しました（モック: ファイルには書き込んでいません）' : '✓ 保存しました') : '✓ プレビューを生成しました' }}
+      {{ s.attempt.kind === 'save' ? (s.project?.mode === 'mock' ? '✓ 保存しました（モック: ファイルには書き込んでいません）' : `✓ 保存しました（readme-runtime.json を更新し、build で ${s.card?.lastBuild?.out ?? 'SVG'} を${s.card?.lastBuild?.card === 'unchanged' ? '作り直しました（内容は同じ）' : '書き出しました'}）`) : '✓ プレビューを生成しました' }}
     </div>
 
     <template v-if="result">

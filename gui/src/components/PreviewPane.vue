@@ -94,6 +94,7 @@ onBeforeUnmount(() => mq.removeEventListener('change', onChange));
     </div>
 
     <div class="banners">
+      <p v-if="s.project?.notice" class="banner warn">{{ s.project.notice }}</p>
       <p v-if="!s.previewIsCurrent" class="banner warn">編集中の設定は、まだプレビューに反映されていません。</p>
       <p v-if="s.preview?.source === 'preview' && !s.preview.reflectsSettings" class="banner mock">
         モック: 画像は保存済みの SVG のままです。設定から計算しているのは、右の結果と警告だけです。

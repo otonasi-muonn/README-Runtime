@@ -145,6 +145,8 @@ export interface ProjectInfo {
   /** "mock": data from the files below and captured CLI output; nothing is generated or written. */
   mode: 'mock' | 'live';
   toolVersion: string;
+  /** Why the GUI is not in the mode it asked for (e.g. the runtime could not be loaded). */
+  notice?: string;
   cards: CardSummary[];
 }
 

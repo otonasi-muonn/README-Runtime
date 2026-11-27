@@ -41,6 +41,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
       <span class="logo" aria-hidden="true">▚</span>
       <span class="name">README Runtime</span>
       <span v-if="s.project?.mode === 'mock'" class="badge" title="生成と保存は行いません。表示は保存済みの SVG と、記録した CLI の出力です。">MOCK</span>
+      <span v-else-if="s.project?.mode === 'live'" class="badge live" title="README Runtime で実際に生成します。保存すると readme-runtime.json と SVG を書き換えます。">LIVE</span>
     </div>
 
     <ol v-if="s.card" class="stepper" aria-label="カードの状態">
@@ -68,6 +69,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
 .logo { color: var(--accent); font-size: 16px; }
 .name { font-weight: 600; font-size: 13px; }
 .badge { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; color: var(--warn); border: 1px solid var(--warn); border-radius: 4px; padding: 0 5px; cursor: help; }
+.badge.live { color: var(--ok); border-color: var(--ok); }
 
 .stepper { display: flex; align-items: center; gap: 0; margin: 0 auto; padding: 0; list-style: none; }
 .stepper li { display: flex; align-items: center; gap: 8px; padding: 0 6px; color: var(--faint); }
