@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "tool": "0.1.0",
+  "generator": "7cb70637b36b6799b3900845db5c92245578a998897b854f98075c7af874c9c3",
+  "cards": {
+    "mockcraft-state": {
+      "inputs": "555553d33a60a2da35c75bf37d75c21b762f5c294be7ec2342719cc1ddb147ea",
+      "wasm": "7c7407e8df179e99e006d059d6c8e1e23c7b79dd916353095d5fe936bdd07fa9",
+      "out": "ad0f35206ed6386b54b9479a29e44a55b6f9d506878b9a12609d0afe4992eb7b",
+      "uiInputs": {
+        "demo.tsx": "375d39a247e2ae478be8b27e587ee3cecb50e4bd91a24d6e1e9bdb9c56410658",
+        "tsconfig.json": "1217a666ab46a6bca330bc74ceb2d6f214ace1ada1c653f1e6fa5fedb9473275",
+        "upstream/src/app/globals.css": "ff78a060367d44163949b451077a288f26478570f8b08e209bb18ac08a9074df",
+        "upstream/src/components/board/ElementView.tsx": "6fa9bf29404d9b65546f71b3ed28d4caf75f37aba0d0286ef4f3a544855c8361",
+        "upstream/src/lib/cn.ts": "4cef1daee5cf1c2b45b045f966d58fa73351953836c685ac8375b8fc0f75dac0",
+        "upstream/src/lib/defaults.ts": "89cfe3ca6a55e181285b08c3c10f20cfccfec3cdb9d25bea156ab6829d7a91d9",
+        "upstream/src/lib/elementStyle.ts": "238b1df7b1bd9f37457d68cfc6c46e0fde762588d4509605c72f5bac15aa68ee",
+        "upstream/src/lib/icons.tsx": "288d28df6b9683782cad221a2c1499dda7dbe8c42aac8a7e225cfc39259219a9",
+        "upstream/src/lib/templates.ts": "cced791479232b822d801fa922894a9dca39c2d08693653507f23b96b5f773f4"
+      },
+      "render": "31cb496d3f2ff1364155e3e81ccd4e708a463bd8e13e4f0e3e62a14ccf768afc"
+    }
+  }
+}

@@ -263,3 +263,12 @@ test('inspect and analyze recognise the step functions of every ABI', () => {
   assert.match(v.error.message, /must have signature \(i32\) -> i32/);
 });
 
+test('examples/mockcraft: the state of 5 values shows the same views as the packed logic.ts, and its card is up to date', async () => {
+  const cfg = loadConfig('examples/mockcraft/readme-runtime.json');
+  assert.deepEqual(await check('examples/mockcraft/readme-runtime.json', { log: () => {} }), []);
+  // the same views at every step as the card of the packed integer (readme-runtime.json)
+  const packed = loadConfig(CONFIG_FILE).cards.find((x) => x.name === 'mockcraft');
+  const steps = 60;
+  const views = async (card, dir) => (await generate(fs.readFileSync(path.join(dir, card.wasm)), { ...card.options, steps, altInits: [] })).verification.viewSamples;
+  assert.deepEqual(await views(cfg.cards[0], cfg.dir), await views(packed, '.'));
+});

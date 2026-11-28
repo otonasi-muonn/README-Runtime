@@ -1,0 +1,39 @@
+{
+  "cards": [
+    {
+      "name": "mockcraft-state",
+      "title": "mockcraft · auto-pilot (state of 5 values)",
+      "wasm": "state.wasm",
+      "build": {
+        "command": "npx asc state.ts -O3 --runtime stub --noAssert -o state.wasm",
+        "inputs": [
+          "state.ts"
+        ]
+      },
+      "export": "step",
+      "state": ["x", "y", "right", "down", "hits"],
+      "init": { "x": 0, "y": 0, "right": 1, "down": 1, "hits": 0 },
+      "altInits": [
+        { "x": 5, "y": 3, "right": 0, "down": 1, "hits": 0 },
+        { "x": 20, "y": 9, "right": 1, "down": 0, "hits": 21 }
+      ],
+      "steps": 160,
+      "stepMs": 150,
+      "ui": {
+        "entry": "demo.tsx",
+        "tsconfig": "tsconfig.json",
+        "css": [
+          "upstream/src/app/globals.css"
+        ],
+        "views": {
+          "dx": "view_dx",
+          "dy": "view_dy",
+          "on": "view_on",
+          "sel": "view_sel",
+          "hits": "view_hits"
+        },
+        "credit": "UI reused from UIdesign@2f97712 (unchanged)"
+      }
+    }
+  ]
+}

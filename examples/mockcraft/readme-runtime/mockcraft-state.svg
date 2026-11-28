@@ -1,0 +1,775 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="446" viewBox="0 0 760 446" role="img" aria-labelledby="rrt rrd">
+<!-- README Runtime 0.1.0 - generated card, wasm sha256:7c7407e8df179e99.
+     The UI below is the project's own component markup (rendered once, statically) whose
+     view-dependent parts are CSS bindings. The view values are computed by CSS from the live
+     state, which the rules .A and .B advance one step per nested g element. The only input is
+     the custom property rxb, ry1b, ry2b, ry3b, ry4b in the style attribute of g.R. The URL fragments #x5_3_0_1_0 #x20_9_1_0_21
+     start the same run from those values instead. Regenerate with: readme-runtime build -->
+<title id="rrt">mockcraft · auto-pilot (state of 5 values) — README Runtime</title>
+<desc id="rrd">mockcraft · auto-pilot (state of 5 values): the project's UI driven live by state.wasm computed in CSS.</desc>
+<style><![CDATA[
+@property --rxa{syntax:'<integer>';inherits:true;initial-value:0}
+@property --rxb{syntax:'<integer>';inherits:true;initial-value:0}
+@property --rka{syntax:'<integer>';inherits:true;initial-value:0}
+@property --rkb{syntax:'<integer>';inherits:true;initial-value:0}
+@property --rha{syntax:'<integer>';inherits:true;initial-value:0}
+@property --rhb{syntax:'<integer>';inherits:true;initial-value:0}
+@property --rea{syntax:'<integer>';inherits:true;initial-value:0}
+@property --reb{syntax:'<integer>';inherits:true;initial-value:0}
+@property --rfa{syntax:'<integer>';inherits:true;initial-value:0}
+@property --rfb{syntax:'<integer>';inherits:true;initial-value:0}
+@property --rqa{syntax:'<integer>';inherits:true;initial-value:0}
+@property --rqb{syntax:'<integer>';inherits:true;initial-value:0}
+@property --rza{syntax:'<integer>';inherits:true;initial-value:0}
+@property --rzb{syntax:'<integer>';inherits:true;initial-value:0}
+@property --ry1a{syntax:'<integer>';inherits:true;initial-value:0}
+@property --ry1b{syntax:'<integer>';inherits:true;initial-value:0}
+@property --ry2a{syntax:'<integer>';inherits:true;initial-value:0}
+@property --ry2b{syntax:'<integer>';inherits:true;initial-value:0}
+@property --ry3a{syntax:'<integer>';inherits:true;initial-value:0}
+@property --ry3b{syntax:'<integer>';inherits:true;initial-value:0}
+@property --ry4a{syntax:'<integer>';inherits:true;initial-value:0}
+@property --ry4b{syntax:'<integer>';inherits:true;initial-value:0}
+@property --rx{syntax:'<integer>';inherits:true;initial-value:0}
+@property --rk{syntax:'<integer>';inherits:true;initial-value:0}
+@property --ra{syntax:'<integer>';inherits:true;initial-value:0}
+@property --rt{syntax:'<integer>';inherits:true;initial-value:0}
+@property --rv4{syntax:'<integer>';inherits:false;initial-value:0}
+@property --rv3{syntax:'<integer>';inherits:false;initial-value:0}
+@property --rv2{syntax:'<integer>';inherits:false;initial-value:0}
+@property --rv1{syntax:'<integer>';inherits:false;initial-value:0}
+@property --rv0{syntax:'<integer>';inherits:false;initial-value:0}
+@property --rlv{syntax:'<integer>';inherits:false;initial-value:0}
+@property --rrg{syntax:'<integer>';inherits:false;initial-value:0}
+@property --rsx{syntax:'<integer>';inherits:true;initial-value:0}
+@property --rcs{syntax:'<integer>';inherits:true;initial-value:0}
+@property --rcy1{syntax:'<integer>';inherits:true;initial-value:0}
+@property --rcy2{syntax:'<integer>';inherits:true;initial-value:0}
+@property --rcy4{syntax:'<integer>';inherits:true;initial-value:0}
+@property --rfs{syntax:'<integer>';inherits:true;initial-value:0}
+@property --rview_dx{syntax:'<integer>';inherits:true;initial-value:0}
+@property --rview_dy{syntax:'<integer>';inherits:true;initial-value:0}
+@property --rview_on{syntax:'<integer>';inherits:true;initial-value:0}
+@property --rview_sel{syntax:'<integer>';inherits:true;initial-value:0}
+@property --rview_hits{syntax:'<integer>';inherits:true;initial-value:0}
+@property --rvg0{syntax:'<integer>';inherits:false;initial-value:0}
+@property --rvg1{syntax:'<integer>';inherits:false;initial-value:0}
+@property --rvf{syntax:'<integer>';inherits:true;initial-value:0}
+@property --rok{syntax:'<integer>';inherits:true;initial-value:0}
+/*! tailwindcss v4.3.5 | MIT License | https://tailwindcss.com */
+@layer theme, base, components, utilities;
+@layer theme {
+  :root, :host {
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+      "Noto Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+      "Segoe UI Symbol", "Noto Color Emoji";
+    --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+    --default-font-family: var(--font-sans);
+    --default-mono-font-family: var(--font-mono);
+    --color-ink-900: #0a0a0d;
+    --color-ink-750: #1d1d24;
+    --color-ink-700: #23232b;
+    --color-line: #2c2c35;
+    --color-line-2: #3a3a45;
+    --color-fg: #eceae5;
+    --color-fg-dim: #a4a19a;
+    --color-accent: #ff6a45;
+    --color-accent-soft: rgba(255, 106, 69, 0.14);
+    --font-ui: var(--font-jakarta), system-ui, sans-serif;
+  }
+}
+@layer base {
+  *, ::after, ::before, ::backdrop, ::file-selector-button {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    border: 0 solid;
+  }
+  :host {
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+    tab-size: 4;
+    font-family: var(--default-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji");
+    font-feature-settings: var(--default-font-feature-settings, normal);
+    font-variation-settings: var(--default-font-variation-settings, normal);
+    -webkit-tap-highlight-color: transparent;
+  }
+.rr-ui { line-height: 1.5; -webkit-text-size-adjust: 100%; tab-size: 4; font-family: var(--default-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"); font-feature-settings: var(--default-font-feature-settings, normal); font-variation-settings: var(--default-font-variation-settings, normal); -webkit-tap-highlight-color: transparent; }
+  hr {
+    height: 0;
+    color: inherit;
+    border-top-width: 1px;
+  }
+  abbr:where([title]) {
+    -webkit-text-decoration: underline dotted;
+    text-decoration: underline dotted;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-size: inherit;
+    font-weight: inherit;
+  }
+  a {
+    color: inherit;
+    -webkit-text-decoration: inherit;
+    text-decoration: inherit;
+  }
+  b, strong {
+    font-weight: bolder;
+  }
+  code, kbd, samp, pre {
+    font-family: var(--default-mono-font-family, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace);
+    font-feature-settings: var(--default-mono-font-feature-settings, normal);
+    font-variation-settings: var(--default-mono-font-variation-settings, normal);
+    font-size: 1em;
+  }
+  small {
+    font-size: 80%;
+  }
+  sub, sup {
+    font-size: 75%;
+    line-height: 0;
+    position: relative;
+    vertical-align: baseline;
+  }
+  sub {
+    bottom: -0.25em;
+  }
+  sup {
+    top: -0.5em;
+  }
+  table {
+    text-indent: 0;
+    border-color: inherit;
+    border-collapse: collapse;
+  }
+  :-moz-focusring:where(:not(iframe)) {
+    outline: auto;
+  }
+  progress {
+    vertical-align: baseline;
+  }
+  summary {
+    display: list-item;
+  }
+  ol, ul, menu {
+    list-style: none;
+  }
+  img, svg, video, canvas, audio, iframe, embed, object {
+    display: block;
+    vertical-align: middle;
+  }
+  img, video {
+    max-width: 100%;
+    height: auto;
+  }
+  button, input, select, optgroup, textarea, ::file-selector-button {
+    font: inherit;
+    font-feature-settings: inherit;
+    font-variation-settings: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+    border-radius: 0;
+    background-color: transparent;
+    opacity: 1;
+  }
+  :where(select:is([multiple], [size])) optgroup {
+    font-weight: bolder;
+  }
+  :where(select:is([multiple], [size])) optgroup option {
+    padding-inline-start: 20px;
+  }
+  ::file-selector-button {
+    margin-inline-end: 4px;
+  }
+  ::placeholder {
+    opacity: 1;
+  }
+  @supports (not (-webkit-appearance: -apple-pay-button))  or (contain-intrinsic-size: 1px) {
+    ::placeholder {
+      color: currentcolor;
+      @supports (color: color-mix(in lab, red, red)) {
+        color: color-mix(in oklab, currentcolor 50%, transparent);
+      }
+    }
+  }
+  textarea {
+    resize: vertical;
+  }
+  ::-webkit-search-decoration {
+    -webkit-appearance: none;
+  }
+  ::-webkit-date-and-time-value {
+    min-height: 1lh;
+    text-align: inherit;
+  }
+  ::-webkit-datetime-edit {
+    display: inline-flex;
+  }
+  ::-webkit-datetime-edit-fields-wrapper {
+    padding: 0;
+  }
+  ::-webkit-datetime-edit, ::-webkit-datetime-edit-year-field, ::-webkit-datetime-edit-month-field, ::-webkit-datetime-edit-day-field, ::-webkit-datetime-edit-hour-field, ::-webkit-datetime-edit-minute-field, ::-webkit-datetime-edit-second-field, ::-webkit-datetime-edit-millisecond-field, ::-webkit-datetime-edit-meridiem-field {
+    padding-block: 0;
+  }
+  ::-webkit-calendar-picker-indicator {
+    line-height: 1;
+  }
+  :-moz-ui-invalid {
+    box-shadow: none;
+  }
+  button, input:where([type="button"], [type="reset"], [type="submit"]), ::file-selector-button {
+    appearance: button;
+  }
+  ::-webkit-inner-spin-button, ::-webkit-outer-spin-button {
+    height: auto;
+  }
+  [hidden]:where(:not([hidden="until-found"])) {
+    display: none !important;
+  }
+}
+@layer utilities;
+
+.rr-ui { background: var(--color-ink-900); color: var(--color-fg); font-family: var(--font-ui); -webkit-font-smoothing: antialiased; }
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+input, textarea, select {
+  font-family: inherit;
+}
+::selection {
+  background: var(--color-accent);
+  color: #fff;
+}
+@layer components {
+  .mc-icon {
+    display: inline-flex;
+    width: 1em;
+    height: 1em;
+    flex: none;
+  }
+  .mc-icon > svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .mc-inp {
+    width: 100%;
+    background: var(--color-ink-750);
+    border: 1px solid var(--color-line);
+    border-radius: 8px;
+    padding: 9px 11px;
+    font-size: 13px;
+    color: var(--color-fg);
+    outline: none;
+    transition: border-color 0.12s;
+  }
+  .mc-inp:focus {
+    border-color: var(--color-accent);
+  }
+  textarea.mc-inp {
+    resize: vertical;
+    min-height: 62px;
+    line-height: 1.5;
+  }
+  select.mc-inp {
+    appearance: none;
+    cursor: pointer;
+    padding-right: 30px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23a4a19a' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+  }
+  .mc-ibtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 9px;
+    border-radius: 8px;
+    background: var(--color-ink-750);
+    border: 1px solid var(--color-line);
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--color-fg-dim);
+    transition: 0.12s;
+  }
+  .mc-ibtn:hover {
+    background: var(--color-ink-700);
+    color: var(--color-fg);
+    border-color: var(--color-line-2);
+  }
+  .mc-ibtn.is-on {
+    background: var(--color-accent-soft);
+    color: var(--color-accent);
+    border-color: rgba(255, 106, 69, 0.4);
+  }
+  .mc-ibtn.is-danger:hover {
+    color: #ff7a6a;
+    border-color: #5a2a24;
+    background: #241715;
+  }
+  .mc-ibtn.is-sq {
+    padding: 8px;
+  }
+  .mc-ibtn .mc-icon {
+    width: 14px;
+    height: 14px;
+  }
+  .mc-range {
+    width: 100%;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    border-radius: 3px;
+    background: var(--color-ink-700);
+    outline: none;
+  }
+  .mc-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    cursor: pointer;
+    box-shadow: 0 0 0 3px var(--color-accent-soft);
+  }
+  .mc-range::-moz-range-thumb {
+    width: 15px;
+    height: 15px;
+    border: none;
+    border-radius: 50%;
+    background: var(--color-accent);
+    cursor: pointer;
+  }
+}
+@layer utilities {
+  .mc-dotgrid {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+    background-size: 26px 26px;
+  }
+}
+.el {
+  position: absolute;
+  box-sizing: border-box;
+  display: flex;
+  user-select: none;
+}
+.editmode .el {
+  cursor: move;
+}
+.el-btn {
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  line-height: 1.2;
+  padding: 0 14px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.el-text {
+  align-items: center;
+  line-height: 1.35;
+  overflow: hidden;
+}
+.el-text .t {
+  display: block;
+  width: 100%;
+}
+.el-input {
+  align-items: center;
+  padding: 0 14px;
+  border-radius: 9px;
+  overflow: hidden;
+}
+.el-input .ph {
+  opacity: 0.85;
+}
+.el-box {
+  border-radius: 14px;
+}
+.el-image {
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  overflow: hidden;
+  color: #5b5852;
+  background: linear-gradient(135deg, #efece6, #e2ded6);
+}
+.el-image::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.025) 0 10px, transparent 10px 20px);
+}
+.el-image .imlbl {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.el-image .imlbl .mc-icon {
+  width: 17px;
+  height: 17px;
+  opacity: 0.6;
+}
+.el-avatar {
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+.el-icon {
+  align-items: center;
+  justify-content: center;
+}
+.el-icon > .mc-icon {
+  width: 72%;
+  height: 72%;
+}
+.el-badge {
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0 10px;
+  border-radius: 99px;
+  overflow: hidden;
+}
+.el-line {
+  align-items: center;
+}
+.el-toggle {
+  align-items: center;
+  padding: 3px;
+  border-radius: 99px;
+  background: #d8d4cc;
+  transition: background 0.15s;
+}
+.el-toggle.is-on {
+  background: var(--color-accent);
+}
+.el-toggle .knob {
+  width: calc(50% - 3px);
+  height: 100%;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s;
+}
+.el-toggle.is-on .knob {
+  transform: translateX(100%);
+}
+.el.is-linked::after {
+  content: "";
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3'%3E%3Cpath d='M5 12h14M13 6l6 6-6 6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  box-shadow: 0 0 0 2px #fff;
+  pointer-events: none;
+}
+.editmode .el:hover {
+  outline: 1.5px solid var(--color-accent-soft);
+  outline-offset: 1px;
+}
+.el .edit-target {
+  outline: none;
+  cursor: text;
+}
+.selbox {
+  position: absolute;
+  pointer-events: none;
+  outline: 1.5px solid var(--color-accent);
+  z-index: 9998;
+}
+.selbox.is-multi {
+  outline-style: dashed;
+}
+.rz {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  background: #fff;
+  border: 1.5px solid var(--color-accent);
+  border-radius: 2px;
+  pointer-events: auto;
+}
+.rz[data-d="nw"] {
+  left: -6px;
+  top: -6px;
+  cursor: nwse-resize;
+}
+.rz[data-d="ne"] {
+  right: -6px;
+  top: -6px;
+  cursor: nesw-resize;
+}
+.rz[data-d="sw"] {
+  left: -6px;
+  bottom: -6px;
+  cursor: nesw-resize;
+}
+.rz[data-d="se"] {
+  right: -6px;
+  bottom: -6px;
+  cursor: nwse-resize;
+}
+.rz[data-d="n"] {
+  left: 50%;
+  top: -6px;
+  transform: translateX(-50%);
+  cursor: ns-resize;
+}
+.rz[data-d="s"] {
+  left: 50%;
+  bottom: -6px;
+  transform: translateX(-50%);
+  cursor: ns-resize;
+}
+.rz[data-d="w"] {
+  left: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: ew-resize;
+}
+.rz[data-d="e"] {
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: ew-resize;
+}
+.dim-tag {
+  position: absolute;
+  left: 50%;
+  bottom: -26px;
+  transform: translateX(-50%);
+  background: var(--color-accent);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 5px;
+  white-space: nowrap;
+}
+.guide {
+  position: absolute;
+  background: var(--color-accent);
+  z-index: 9997;
+  pointer-events: none;
+}
+.guide.v {
+  width: 1px;
+  top: 0;
+  bottom: 0;
+}
+.guide.h {
+  height: 1px;
+  left: 0;
+  right: 0;
+}
+.el.is-selected {
+  outline: 1.5px solid var(--color-accent);
+  outline-offset: 1px;
+}
+.marquee {
+  position: absolute;
+  border: 1px solid var(--color-accent);
+  background: rgba(255, 106, 69, 0.1);
+  z-index: 9996;
+  pointer-events: none;
+}
+::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-ink-700);
+  border-radius: 8px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-line-2);
+  background-clip: padding-box;
+  border: 3px solid transparent;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+@keyframes mc-toast {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 20px);
+  }
+  8%, 92% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, 20px);
+  }
+}
+.mc-toast-pop {
+  animation: mc-toast 1.8s ease forwards;
+}
+
+:root { --font-jetbrains: ui-monospace, monospace; --font-jakarta: system-ui, sans-serif; }
+
+.R{
+ --rkb: 0;
+ --rrg: max(clamp(0, max(var(--rxb), -1 * var(--rxb)) - 999999, 1), clamp(0, max(var(--ry1b), -1 * var(--ry1b)) - 999999, 1), clamp(0, max(var(--ry2b), -1 * var(--ry2b)) - 999999, 1), clamp(0, max(var(--ry3b), -1 * var(--ry3b)) - 999999, 1), clamp(0, max(var(--ry4b), -1 * var(--ry4b)) - 999999, 1));
+ --rhb: 0;
+ --reb: var(--rrg);
+ --rfb: calc(2 * var(--rrg));
+ --rqb: 0;
+ --rzb: 0;
+ --rx: var(--rxb);
+ --rk: 0;
+ --ra: calc(1 - var(--rrg));
+ --rS0: var(--rx);
+ --rS0y1: var(--ry1b);
+ --rS0y2: var(--ry2b);
+ --rS0y4: var(--ry4b);
+}
+#x5_3_0_1_0:target~.R{--rxb:5!important;--ry1b:3!important;--ry2b:0!important;--ry3b:1!important;--ry4b:0!important}
+#x20_9_1_0_21:target~.R{--rxb:20!important;--ry1b:9!important;--ry2b:1!important;--ry3b:0!important;--ry4b:21!important}
+.C{animation:rrclk 25950ms steps(173,jump-none) 3 forwards}
+@keyframes rrclk{from{--rt:0}to{--rt:172}}
+@media (prefers-reduced-motion:reduce){.C{animation:none;--rt:172}.rr-ui *,.rr-ui *::before,.rr-ui *::after{animation:none!important;transition:none!important}}
+.A{
+ --rv4: calc(-1 + 2 * min(1, max(var(--ry3b), -1 * var(--ry3b))));
+ --rv3: max(clamp(0, 0 - (var(--ry1b) + var(--rv4)), 1), clamp(0, var(--ry1b) + var(--rv4) - 11, 1));
+ --rv2: calc(-1 + 2 * min(1, max(var(--ry2b), -1 * var(--ry2b))));
+ --rv1: max(clamp(0, 0 - (var(--rxb) + var(--rv2)), 1), clamp(0, var(--rxb) + var(--rv2) - 23, 1));
+ --rv0: calc(mod(var(--ry4b) + 1, 64) * var(--rv1) + var(--ry4b) * (1 - var(--rv1)));
+ --ry4a: calc(mod(var(--rv0) + 1, 64) * var(--rv3) + var(--rv0) * (1 - var(--rv3)));
+ --ry3a: calc((1 - var(--ry3b)) * var(--rv3) + var(--ry3b) * (1 - var(--rv3)));
+ --ry2a: calc((1 - var(--ry2b)) * var(--rv1) + var(--ry2b) * (1 - var(--rv1)));
+ --ry1a: calc((var(--ry1b) + (-1 + 2 * min(1, max(1 - var(--ry3b), -1 * (1 - var(--ry3b)))))) * var(--rv3) + (var(--ry1b) + var(--rv4)) * (1 - var(--rv3)));
+ --rxa: calc((var(--rxb) + (-1 + 2 * min(1, max(1 - var(--ry2b), -1 * (1 - var(--ry2b)))))) * var(--rv1) + (var(--rxb) + var(--rv2)) * (1 - var(--rv1)));
+ --rka: calc(var(--rkb) + 1);
+ --rlv: calc(1 - max(var(--rhb), var(--reb)));
+ --rrg: max(clamp(0, max(var(--rxa), -1 * var(--rxa)) - 999999, 1), clamp(0, max(var(--ry1a), -1 * var(--ry1a)) - 999999, 1), clamp(0, max(var(--ry2a), -1 * var(--ry2a)) - 999999, 1), clamp(0, max(var(--ry3a), -1 * var(--ry3a)) - 999999, 1), clamp(0, max(var(--ry4a), -1 * var(--ry4a)) - 999999, 1));
+ --rea: max(var(--reb), var(--rlv) * var(--rrg));
+ --rha: max(var(--rhb), 0);
+ --rfa: calc(var(--rfb) + var(--rlv) * (2 * var(--rrg)));
+ --rqa: var(--rqb);
+ --rza: calc(var(--rzb) + var(--rlv));
+ --rx: var(--rxa);
+ --rk: var(--rka);
+ --ra: calc(var(--rlv) * (1 - var(--rrg)));
+}
+.B{
+ --rv4: calc(-1 + 2 * min(1, max(var(--ry3a), -1 * var(--ry3a))));
+ --rv3: max(clamp(0, 0 - (var(--ry1a) + var(--rv4)), 1), clamp(0, var(--ry1a) + var(--rv4) - 11, 1));
+ --rv2: calc(-1 + 2 * min(1, max(var(--ry2a), -1 * var(--ry2a))));
+ --rv1: max(clamp(0, 0 - (var(--rxa) + var(--rv2)), 1), clamp(0, var(--rxa) + var(--rv2) - 23, 1));
+ --rv0: calc(mod(var(--ry4a) + 1, 64) * var(--rv1) + var(--ry4a) * (1 - var(--rv1)));
+ --ry4b: calc(mod(var(--rv0) + 1, 64) * var(--rv3) + var(--rv0) * (1 - var(--rv3)));
+ --ry3b: calc((1 - var(--ry3a)) * var(--rv3) + var(--ry3a) * (1 - var(--rv3)));
+ --ry2b: calc((1 - var(--ry2a)) * var(--rv1) + var(--ry2a) * (1 - var(--rv1)));
+ --ry1b: calc((var(--ry1a) + (-1 + 2 * min(1, max(1 - var(--ry3a), -1 * (1 - var(--ry3a)))))) * var(--rv3) + (var(--ry1a) + var(--rv4)) * (1 - var(--rv3)));
+ --rxb: calc((var(--rxa) + (-1 + 2 * min(1, max(1 - var(--ry2a), -1 * (1 - var(--ry2a)))))) * var(--rv1) + (var(--rxa) + var(--rv2)) * (1 - var(--rv1)));
+ --rkb: calc(var(--rka) + 1);
+ --rlv: calc(1 - max(var(--rha), var(--rea)));
+ --rrg: max(clamp(0, max(var(--rxb), -1 * var(--rxb)) - 999999, 1), clamp(0, max(var(--ry1b), -1 * var(--ry1b)) - 999999, 1), clamp(0, max(var(--ry2b), -1 * var(--ry2b)) - 999999, 1), clamp(0, max(var(--ry3b), -1 * var(--ry3b)) - 999999, 1), clamp(0, max(var(--ry4b), -1 * var(--ry4b)) - 999999, 1));
+ --reb: max(var(--rea), var(--rlv) * var(--rrg));
+ --rhb: max(var(--rha), 0);
+ --rfb: calc(var(--rfa) + var(--rlv) * (2 * var(--rrg)));
+ --rqb: var(--rqa);
+ --rzb: calc(var(--rza) + var(--rlv));
+ --rx: var(--rxb);
+ --rk: var(--rkb);
+ --ra: calc(var(--rlv) * (1 - var(--rrg)));
+}
+.D{
+ --rsx: min(var(--rt), var(--rzb));
+ --rcs: calc(var(--rS0) * max(0, 1 - var(--rsx)) + var(--rS1) * max(0, min(2 - var(--rsx), var(--rsx))) + var(--rS2) * max(0, min(3 - var(--rsx), var(--rsx) - 1)) + var(--rS3) * max(0, min(4 - var(--rsx), var(--rsx) - 2)) + var(--rS4) * max(0, min(5 - var(--rsx), var(--rsx) - 3)) + var(--rS5) * max(0, min(6 - var(--rsx), var(--rsx) - 4)) + var(--rS6) * max(0, min(7 - var(--rsx), var(--rsx) - 5)) + var(--rS7) * max(0, min(8 - var(--rsx), var(--rsx) - 6)) + var(--rS8) * max(0, min(9 - var(--rsx), var(--rsx) - 7)) + var(--rS9) * max(0, min(10 - var(--rsx), var(--rsx) - 8)) + var(--rS10) * max(0, min(11 - var(--rsx), var(--rsx) - 9)) + var(--rS11) * max(0, min(12 - var(--rsx), var(--rsx) - 10)) + var(--rS12) * max(0, min(13 - var(--rsx), var(--rsx) - 11)) + var(--rS13) * max(0, min(14 - var(--rsx), var(--rsx) - 12)) + var(--rS14) * max(0, min(15 - var(--rsx), var(--rsx) - 13)) + var(--rS15) * max(0, min(16 - var(--rsx), var(--rsx) - 14)) + var(--rS16) * max(0, min(17 - var(--rsx), var(--rsx) - 15)) + var(--rS17) * max(0, min(18 - var(--rsx), var(--rsx) - 16)) + var(--rS18) * max(0, min(19 - var(--rsx), var(--rsx) - 17)) + var(--rS19) * max(0, min(20 - var(--rsx), var(--rsx) - 18)) + var(--rS20) * max(0, min(21 - var(--rsx), var(--rsx) - 19)) + var(--rS21) * max(0, min(22 - var(--rsx), var(--rsx) - 20)) + var(--rS22) * max(0, min(23 - var(--rsx), var(--rsx) - 21)) + var(--rS23) * max(0, min(24 - var(--rsx), var(--rsx) - 22)) + var(--rS24) * max(0, min(25 - var(--rsx), var(--rsx) - 23)) + var(--rS25) * max(0, min(26 - var(--rsx), var(--rsx) - 24)) + var(--rS26) * max(0, min(27 - var(--rsx), var(--rsx) - 25)) + var(--rS27) * max(0, min(28 - var(--rsx), var(--rsx) - 26)) + var(--rS28) * max(0, min(29 - var(--rsx), var(--rsx) - 27)) + var(--rS29) * max(0, min(30 - var(--rsx), var(--rsx) - 28)) + var(--rS30) * max(0, min(31 - var(--rsx), var(--rsx) - 29)) + var(--rS31) * max(0, min(32 - var(--rsx), var(--rsx) - 30)) + var(--rS32) * max(0, min(33 - var(--rsx), var(--rsx) - 31)) + var(--rS33) * max(0, min(34 - var(--rsx), var(--rsx) - 32)) + var(--rS34) * max(0, min(35 - var(--rsx), var(--rsx) - 33)) + var(--rS35) * max(0, min(36 - var(--rsx), var(--rsx) - 34)) + var(--rS36) * max(0, min(37 - var(--rsx), var(--rsx) - 35)) + var(--rS37) * max(0, min(38 - var(--rsx), var(--rsx) - 36)) + var(--rS38) * max(0, min(39 - var(--rsx), var(--rsx) - 37)) + var(--rS39) * max(0, min(40 - var(--rsx), var(--rsx) - 38)) + var(--rS40) * max(0, min(41 - var(--rsx), var(--rsx) - 39)) + var(--rS41) * max(0, min(42 - var(--rsx), var(--rsx) - 40)) + var(--rS42) * max(0, min(43 - var(--rsx), var(--rsx) - 41)) + var(--rS43) * max(0, min(44 - var(--rsx), var(--rsx) - 42)) + var(--rS44) * max(0, min(45 - var(--rsx), var(--rsx) - 43)) + var(--rS45) * max(0, min(46 - var(--rsx), var(--rsx) - 44)) + var(--rS46) * max(0, min(47 - var(--rsx), var(--rsx) - 45)) + var(--rS47) * max(0, min(48 - var(--rsx), var(--rsx) - 46)) + var(--rS48) * max(0, min(49 - var(--rsx), var(--rsx) - 47)) + var(--rS49) * max(0, min(50 - var(--rsx), var(--rsx) - 48)) + var(--rS50) * max(0, min(51 - var(--rsx), var(--rsx) - 49)) + var(--rS51) * max(0, min(52 - var(--rsx), var(--rsx) - 50)) + var(--rS52) * max(0, min(53 - var(--rsx), var(--rsx) - 51)) + var(--rS53) * max(0, min(54 - var(--rsx), var(--rsx) - 52)) + var(--rS54) * max(0, min(55 - var(--rsx), var(--rsx) - 53)) + var(--rS55) * max(0, min(56 - var(--rsx), var(--rsx) - 54)) + var(--rS56) * max(0, min(57 - var(--rsx), var(--rsx) - 55)) + var(--rS57) * max(0, min(58 - var(--rsx), var(--rsx) - 56)) + var(--rS58) * max(0, min(59 - var(--rsx), var(--rsx) - 57)) + var(--rS59) * max(0, min(60 - var(--rsx), var(--rsx) - 58)) + var(--rS60) * max(0, min(61 - var(--rsx), var(--rsx) - 59)) + var(--rS61) * max(0, min(62 - var(--rsx), var(--rsx) - 60)) + var(--rS62) * max(0, min(63 - var(--rsx), var(--rsx) - 61)) + var(--rS63) * max(0, min(64 - var(--rsx), var(--rsx) - 62)) + var(--rS64) * max(0, min(65 - var(--rsx), var(--rsx) - 63)) + var(--rS65) * max(0, min(66 - var(--rsx), var(--rsx) - 64)) + var(--rS66) * max(0, min(67 - var(--rsx), var(--rsx) - 65)) + var(--rS67) * max(0, min(68 - var(--rsx), var(--rsx) - 66)) + var(--rS68) * max(0, min(69 - var(--rsx), var(--rsx) - 67)) + var(--rS69) * max(0, min(70 - var(--rsx), var(--rsx) - 68)) + var(--rS70) * max(0, min(71 - var(--rsx), var(--rsx) - 69)) + var(--rS71) * max(0, min(72 - var(--rsx), var(--rsx) - 70)) + var(--rS72) * max(0, min(73 - var(--rsx), var(--rsx) - 71)) + var(--rS73) * max(0, min(74 - var(--rsx), var(--rsx) - 72)) + var(--rS74) * max(0, min(75 - var(--rsx), var(--rsx) - 73)) + var(--rS75) * max(0, min(76 - var(--rsx), var(--rsx) - 74)) + var(--rS76) * max(0, min(77 - var(--rsx), var(--rsx) - 75)) + var(--rS77) * max(0, min(78 - var(--rsx), var(--rsx) - 76)) + var(--rS78) * max(0, min(79 - var(--rsx), var(--rsx) - 77)) + var(--rS79) * max(0, min(80 - var(--rsx), var(--rsx) - 78)) + var(--rS80) * max(0, min(81 - var(--rsx), var(--rsx) - 79)) + var(--rS81) * max(0, min(82 - var(--rsx), var(--rsx) - 80)) + var(--rS82) * max(0, min(83 - var(--rsx), var(--rsx) - 81)) + var(--rS83) * max(0, min(84 - var(--rsx), var(--rsx) - 82)) + var(--rS84) * max(0, min(85 - var(--rsx), var(--rsx) - 83)) + var(--rS85) * max(0, min(86 - var(--rsx), var(--rsx) - 84)) + var(--rS86) * max(0, min(87 - var(--rsx), var(--rsx) - 85)) + var(--rS87) * max(0, min(88 - var(--rsx), var(--rsx) - 86)) + var(--rS88) * max(0, min(89 - var(--rsx), var(--rsx) - 87)) + var(--rS89) * max(0, min(90 - var(--rsx), var(--rsx) - 88)) + var(--rS90) * max(0, min(91 - var(--rsx), var(--rsx) - 89)) + var(--rS91) * max(0, min(92 - var(--rsx), var(--rsx) - 90)) + var(--rS92) * max(0, min(93 - var(--rsx), var(--rsx) - 91)) + var(--rS93) * max(0, min(94 - var(--rsx), var(--rsx) - 92)) + var(--rS94) * max(0, min(95 - var(--rsx), var(--rsx) - 93)) + var(--rS95) * max(0, min(96 - var(--rsx), var(--rsx) - 94)) + var(--rS96) * max(0, min(97 - var(--rsx), var(--rsx) - 95)) + var(--rS97) * max(0, min(98 - var(--rsx), var(--rsx) - 96)) + var(--rS98) * max(0, min(99 - var(--rsx), var(--rsx) - 97)) + var(--rS99) * max(0, min(100 - var(--rsx), var(--rsx) - 98)) + var(--rS100) * max(0, min(101 - var(--rsx), var(--rsx) - 99)) + var(--rS101) * max(0, min(102 - var(--rsx), var(--rsx) - 100)) + var(--rS102) * max(0, min(103 - var(--rsx), var(--rsx) - 101)) + var(--rS103) * max(0, min(104 - var(--rsx), var(--rsx) - 102)) + var(--rS104) * max(0, min(105 - var(--rsx), var(--rsx) - 103)) + var(--rS105) * max(0, min(106 - var(--rsx), var(--rsx) - 104)) + var(--rS106) * max(0, min(107 - var(--rsx), var(--rsx) - 105)) + var(--rS107) * max(0, min(108 - var(--rsx), var(--rsx) - 106)) + var(--rS108) * max(0, min(109 - var(--rsx), var(--rsx) - 107)) + var(--rS109) * max(0, min(110 - var(--rsx), var(--rsx) - 108)) + var(--rS110) * max(0, min(111 - var(--rsx), var(--rsx) - 109)) + var(--rS111) * max(0, min(112 - var(--rsx), var(--rsx) - 110)) + var(--rS112) * max(0, min(113 - var(--rsx), var(--rsx) - 111)) + var(--rS113) * max(0, min(114 - var(--rsx), var(--rsx) - 112)) + var(--rS114) * max(0, min(115 - var(--rsx), var(--rsx) - 113)) + var(--rS115) * max(0, min(116 - var(--rsx), var(--rsx) - 114)) + var(--rS116) * max(0, min(117 - var(--rsx), var(--rsx) - 115)) + var(--rS117) * max(0, min(118 - var(--rsx), var(--rsx) - 116)) + var(--rS118) * max(0, min(119 - var(--rsx), var(--rsx) - 117)) + var(--rS119) * max(0, min(120 - var(--rsx), var(--rsx) - 118)) + var(--rS120) * max(0, min(121 - var(--rsx), var(--rsx) - 119)) + var(--rS121) * max(0, min(122 - var(--rsx), var(--rsx) - 120)) + var(--rS122) * max(0, min(123 - var(--rsx), var(--rsx) - 121)) + var(--rS123) * max(0, min(124 - var(--rsx), var(--rsx) - 122)) + var(--rS124) * max(0, min(125 - var(--rsx), var(--rsx) - 123)) + var(--rS125) * max(0, min(126 - var(--rsx), var(--rsx) - 124)) + var(--rS126) * max(0, min(127 - var(--rsx), var(--rsx) - 125)) + var(--rS127) * max(0, min(128 - var(--rsx), var(--rsx) - 126)) + var(--rS128) * max(0, min(129 - var(--rsx), var(--rsx) - 127)) + var(--rS129) * max(0, min(130 - var(--rsx), var(--rsx) - 128)) + var(--rS130) * max(0, min(131 - var(--rsx), var(--rsx) - 129)) + var(--rS131) * max(0, min(132 - var(--rsx), var(--rsx) - 130)) + var(--rS132) * max(0, min(133 - var(--rsx), var(--rsx) - 131)) + var(--rS133) * max(0, min(134 - var(--rsx), var(--rsx) - 132)) + var(--rS134) * max(0, min(135 - var(--rsx), var(--rsx) - 133)) + var(--rS135) * max(0, min(136 - var(--rsx), var(--rsx) - 134)) + var(--rS136) * max(0, min(137 - var(--rsx), var(--rsx) - 135)) + var(--rS137) * max(0, min(138 - var(--rsx), var(--rsx) - 136)) + var(--rS138) * max(0, min(139 - var(--rsx), var(--rsx) - 137)) + var(--rS139) * max(0, min(140 - var(--rsx), var(--rsx) - 138)) + var(--rS140) * max(0, min(141 - var(--rsx), var(--rsx) - 139)) + var(--rS141) * max(0, min(142 - var(--rsx), var(--rsx) - 140)) + var(--rS142) * max(0, min(143 - var(--rsx), var(--rsx) - 141)) + var(--rS143) * max(0, min(144 - var(--rsx), var(--rsx) - 142)) + var(--rS144) * max(0, min(145 - var(--rsx), var(--rsx) - 143)) + var(--rS145) * max(0, min(146 - var(--rsx), var(--rsx) - 144)) + var(--rS146) * max(0, min(147 - var(--rsx), var(--rsx) - 145)) + var(--rS147) * max(0, min(148 - var(--rsx), var(--rsx) - 146)) + var(--rS148) * max(0, min(149 - var(--rsx), var(--rsx) - 147)) + var(--rS149) * max(0, min(150 - var(--rsx), var(--rsx) - 148)) + var(--rS150) * max(0, min(151 - var(--rsx), var(--rsx) - 149)) + var(--rS151) * max(0, min(152 - var(--rsx), var(--rsx) - 150)) + var(--rS152) * max(0, min(153 - var(--rsx), var(--rsx) - 151)) + var(--rS153) * max(0, min(154 - var(--rsx), var(--rsx) - 152)) + var(--rS154) * max(0, min(155 - var(--rsx), var(--rsx) - 153)) + var(--rS155) * max(0, min(156 - var(--rsx), var(--rsx) - 154)) + var(--rS156) * max(0, min(157 - var(--rsx), var(--rsx) - 155)) + var(--rS157) * max(0, min(158 - var(--rsx), var(--rsx) - 156)) + var(--rS158) * max(0, min(159 - var(--rsx), var(--rsx) - 157)) + var(--rS159) * max(0, min(160 - var(--rsx), var(--rsx) - 158)) + var(--rS160) * max(0, min(161 - var(--rsx), var(--rsx) - 159)));
+ --rcy1: calc(var(--rS0y1) * max(0, 1 - var(--rsx)) + var(--rS1y1) * max(0, min(2 - var(--rsx), var(--rsx))) + var(--rS2y1) * max(0, min(3 - var(--rsx), var(--rsx) - 1)) + var(--rS3y1) * max(0, min(4 - var(--rsx), var(--rsx) - 2)) + var(--rS4y1) * max(0, min(5 - var(--rsx), var(--rsx) - 3)) + var(--rS5y1) * max(0, min(6 - var(--rsx), var(--rsx) - 4)) + var(--rS6y1) * max(0, min(7 - var(--rsx), var(--rsx) - 5)) + var(--rS7y1) * max(0, min(8 - var(--rsx), var(--rsx) - 6)) + var(--rS8y1) * max(0, min(9 - var(--rsx), var(--rsx) - 7)) + var(--rS9y1) * max(0, min(10 - var(--rsx), var(--rsx) - 8)) + var(--rS10y1) * max(0, min(11 - var(--rsx), var(--rsx) - 9)) + var(--rS11y1) * max(0, min(12 - var(--rsx), var(--rsx) - 10)) + var(--rS12y1) * max(0, min(13 - var(--rsx), var(--rsx) - 11)) + var(--rS13y1) * max(0, min(14 - var(--rsx), var(--rsx) - 12)) + var(--rS14y1) * max(0, min(15 - var(--rsx), var(--rsx) - 13)) + var(--rS15y1) * max(0, min(16 - var(--rsx), var(--rsx) - 14)) + var(--rS16y1) * max(0, min(17 - var(--rsx), var(--rsx) - 15)) + var(--rS17y1) * max(0, min(18 - var(--rsx), var(--rsx) - 16)) + var(--rS18y1) * max(0, min(19 - var(--rsx), var(--rsx) - 17)) + var(--rS19y1) * max(0, min(20 - var(--rsx), var(--rsx) - 18)) + var(--rS20y1) * max(0, min(21 - var(--rsx), var(--rsx) - 19)) + var(--rS21y1) * max(0, min(22 - var(--rsx), var(--rsx) - 20)) + var(--rS22y1) * max(0, min(23 - var(--rsx), var(--rsx) - 21)) + var(--rS23y1) * max(0, min(24 - var(--rsx), var(--rsx) - 22)) + var(--rS24y1) * max(0, min(25 - var(--rsx), var(--rsx) - 23)) + var(--rS25y1) * max(0, min(26 - var(--rsx), var(--rsx) - 24)) + var(--rS26y1) * max(0, min(27 - var(--rsx), var(--rsx) - 25)) + var(--rS27y1) * max(0, min(28 - var(--rsx), var(--rsx) - 26)) + var(--rS28y1) * max(0, min(29 - var(--rsx), var(--rsx) - 27)) + var(--rS29y1) * max(0, min(30 - var(--rsx), var(--rsx) - 28)) + var(--rS30y1) * max(0, min(31 - var(--rsx), var(--rsx) - 29)) + var(--rS31y1) * max(0, min(32 - var(--rsx), var(--rsx) - 30)) + var(--rS32y1) * max(0, min(33 - var(--rsx), var(--rsx) - 31)) + var(--rS33y1) * max(0, min(34 - var(--rsx), var(--rsx) - 32)) + var(--rS34y1) * max(0, min(35 - var(--rsx), var(--rsx) - 33)) + var(--rS35y1) * max(0, min(36 - var(--rsx), var(--rsx) - 34)) + var(--rS36y1) * max(0, min(37 - var(--rsx), var(--rsx) - 35)) + var(--rS37y1) * max(0, min(38 - var(--rsx), var(--rsx) - 36)) + var(--rS38y1) * max(0, min(39 - var(--rsx), var(--rsx) - 37)) + var(--rS39y1) * max(0, min(40 - var(--rsx), var(--rsx) - 38)) + var(--rS40y1) * max(0, min(41 - var(--rsx), var(--rsx) - 39)) + var(--rS41y1) * max(0, min(42 - var(--rsx), var(--rsx) - 40)) + var(--rS42y1) * max(0, min(43 - var(--rsx), var(--rsx) - 41)) + var(--rS43y1) * max(0, min(44 - var(--rsx), var(--rsx) - 42)) + var(--rS44y1) * max(0, min(45 - var(--rsx), var(--rsx) - 43)) + var(--rS45y1) * max(0, min(46 - var(--rsx), var(--rsx) - 44)) + var(--rS46y1) * max(0, min(47 - var(--rsx), var(--rsx) - 45)) + var(--rS47y1) * max(0, min(48 - var(--rsx), var(--rsx) - 46)) + var(--rS48y1) * max(0, min(49 - var(--rsx), var(--rsx) - 47)) + var(--rS49y1) * max(0, min(50 - var(--rsx), var(--rsx) - 48)) + var(--rS50y1) * max(0, min(51 - var(--rsx), var(--rsx) - 49)) + var(--rS51y1) * max(0, min(52 - var(--rsx), var(--rsx) - 50)) + var(--rS52y1) * max(0, min(53 - var(--rsx), var(--rsx) - 51)) + var(--rS53y1) * max(0, min(54 - var(--rsx), var(--rsx) - 52)) + var(--rS54y1) * max(0, min(55 - var(--rsx), var(--rsx) - 53)) + var(--rS55y1) * max(0, min(56 - var(--rsx), var(--rsx) - 54)) + var(--rS56y1) * max(0, min(57 - var(--rsx), var(--rsx) - 55)) + var(--rS57y1) * max(0, min(58 - var(--rsx), var(--rsx) - 56)) + var(--rS58y1) * max(0, min(59 - var(--rsx), var(--rsx) - 57)) + var(--rS59y1) * max(0, min(60 - var(--rsx), var(--rsx) - 58)) + var(--rS60y1) * max(0, min(61 - var(--rsx), var(--rsx) - 59)) + var(--rS61y1) * max(0, min(62 - var(--rsx), var(--rsx) - 60)) + var(--rS62y1) * max(0, min(63 - var(--rsx), var(--rsx) - 61)) + var(--rS63y1) * max(0, min(64 - var(--rsx), var(--rsx) - 62)) + var(--rS64y1) * max(0, min(65 - var(--rsx), var(--rsx) - 63)) + var(--rS65y1) * max(0, min(66 - var(--rsx), var(--rsx) - 64)) + var(--rS66y1) * max(0, min(67 - var(--rsx), var(--rsx) - 65)) + var(--rS67y1) * max(0, min(68 - var(--rsx), var(--rsx) - 66)) + var(--rS68y1) * max(0, min(69 - var(--rsx), var(--rsx) - 67)) + var(--rS69y1) * max(0, min(70 - var(--rsx), var(--rsx) - 68)) + var(--rS70y1) * max(0, min(71 - var(--rsx), var(--rsx) - 69)) + var(--rS71y1) * max(0, min(72 - var(--rsx), var(--rsx) - 70)) + var(--rS72y1) * max(0, min(73 - var(--rsx), var(--rsx) - 71)) + var(--rS73y1) * max(0, min(74 - var(--rsx), var(--rsx) - 72)) + var(--rS74y1) * max(0, min(75 - var(--rsx), var(--rsx) - 73)) + var(--rS75y1) * max(0, min(76 - var(--rsx), var(--rsx) - 74)) + var(--rS76y1) * max(0, min(77 - var(--rsx), var(--rsx) - 75)) + var(--rS77y1) * max(0, min(78 - var(--rsx), var(--rsx) - 76)) + var(--rS78y1) * max(0, min(79 - var(--rsx), var(--rsx) - 77)) + var(--rS79y1) * max(0, min(80 - var(--rsx), var(--rsx) - 78)) + var(--rS80y1) * max(0, min(81 - var(--rsx), var(--rsx) - 79)) + var(--rS81y1) * max(0, min(82 - var(--rsx), var(--rsx) - 80)) + var(--rS82y1) * max(0, min(83 - var(--rsx), var(--rsx) - 81)) + var(--rS83y1) * max(0, min(84 - var(--rsx), var(--rsx) - 82)) + var(--rS84y1) * max(0, min(85 - var(--rsx), var(--rsx) - 83)) + var(--rS85y1) * max(0, min(86 - var(--rsx), var(--rsx) - 84)) + var(--rS86y1) * max(0, min(87 - var(--rsx), var(--rsx) - 85)) + var(--rS87y1) * max(0, min(88 - var(--rsx), var(--rsx) - 86)) + var(--rS88y1) * max(0, min(89 - var(--rsx), var(--rsx) - 87)) + var(--rS89y1) * max(0, min(90 - var(--rsx), var(--rsx) - 88)) + var(--rS90y1) * max(0, min(91 - var(--rsx), var(--rsx) - 89)) + var(--rS91y1) * max(0, min(92 - var(--rsx), var(--rsx) - 90)) + var(--rS92y1) * max(0, min(93 - var(--rsx), var(--rsx) - 91)) + var(--rS93y1) * max(0, min(94 - var(--rsx), var(--rsx) - 92)) + var(--rS94y1) * max(0, min(95 - var(--rsx), var(--rsx) - 93)) + var(--rS95y1) * max(0, min(96 - var(--rsx), var(--rsx) - 94)) + var(--rS96y1) * max(0, min(97 - var(--rsx), var(--rsx) - 95)) + var(--rS97y1) * max(0, min(98 - var(--rsx), var(--rsx) - 96)) + var(--rS98y1) * max(0, min(99 - var(--rsx), var(--rsx) - 97)) + var(--rS99y1) * max(0, min(100 - var(--rsx), var(--rsx) - 98)) + var(--rS100y1) * max(0, min(101 - var(--rsx), var(--rsx) - 99)) + var(--rS101y1) * max(0, min(102 - var(--rsx), var(--rsx) - 100)) + var(--rS102y1) * max(0, min(103 - var(--rsx), var(--rsx) - 101)) + var(--rS103y1) * max(0, min(104 - var(--rsx), var(--rsx) - 102)) + var(--rS104y1) * max(0, min(105 - var(--rsx), var(--rsx) - 103)) + var(--rS105y1) * max(0, min(106 - var(--rsx), var(--rsx) - 104)) + var(--rS106y1) * max(0, min(107 - var(--rsx), var(--rsx) - 105)) + var(--rS107y1) * max(0, min(108 - var(--rsx), var(--rsx) - 106)) + var(--rS108y1) * max(0, min(109 - var(--rsx), var(--rsx) - 107)) + var(--rS109y1) * max(0, min(110 - var(--rsx), var(--rsx) - 108)) + var(--rS110y1) * max(0, min(111 - var(--rsx), var(--rsx) - 109)) + var(--rS111y1) * max(0, min(112 - var(--rsx), var(--rsx) - 110)) + var(--rS112y1) * max(0, min(113 - var(--rsx), var(--rsx) - 111)) + var(--rS113y1) * max(0, min(114 - var(--rsx), var(--rsx) - 112)) + var(--rS114y1) * max(0, min(115 - var(--rsx), var(--rsx) - 113)) + var(--rS115y1) * max(0, min(116 - var(--rsx), var(--rsx) - 114)) + var(--rS116y1) * max(0, min(117 - var(--rsx), var(--rsx) - 115)) + var(--rS117y1) * max(0, min(118 - var(--rsx), var(--rsx) - 116)) + var(--rS118y1) * max(0, min(119 - var(--rsx), var(--rsx) - 117)) + var(--rS119y1) * max(0, min(120 - var(--rsx), var(--rsx) - 118)) + var(--rS120y1) * max(0, min(121 - var(--rsx), var(--rsx) - 119)) + var(--rS121y1) * max(0, min(122 - var(--rsx), var(--rsx) - 120)) + var(--rS122y1) * max(0, min(123 - var(--rsx), var(--rsx) - 121)) + var(--rS123y1) * max(0, min(124 - var(--rsx), var(--rsx) - 122)) + var(--rS124y1) * max(0, min(125 - var(--rsx), var(--rsx) - 123)) + var(--rS125y1) * max(0, min(126 - var(--rsx), var(--rsx) - 124)) + var(--rS126y1) * max(0, min(127 - var(--rsx), var(--rsx) - 125)) + var(--rS127y1) * max(0, min(128 - var(--rsx), var(--rsx) - 126)) + var(--rS128y1) * max(0, min(129 - var(--rsx), var(--rsx) - 127)) + var(--rS129y1) * max(0, min(130 - var(--rsx), var(--rsx) - 128)) + var(--rS130y1) * max(0, min(131 - var(--rsx), var(--rsx) - 129)) + var(--rS131y1) * max(0, min(132 - var(--rsx), var(--rsx) - 130)) + var(--rS132y1) * max(0, min(133 - var(--rsx), var(--rsx) - 131)) + var(--rS133y1) * max(0, min(134 - var(--rsx), var(--rsx) - 132)) + var(--rS134y1) * max(0, min(135 - var(--rsx), var(--rsx) - 133)) + var(--rS135y1) * max(0, min(136 - var(--rsx), var(--rsx) - 134)) + var(--rS136y1) * max(0, min(137 - var(--rsx), var(--rsx) - 135)) + var(--rS137y1) * max(0, min(138 - var(--rsx), var(--rsx) - 136)) + var(--rS138y1) * max(0, min(139 - var(--rsx), var(--rsx) - 137)) + var(--rS139y1) * max(0, min(140 - var(--rsx), var(--rsx) - 138)) + var(--rS140y1) * max(0, min(141 - var(--rsx), var(--rsx) - 139)) + var(--rS141y1) * max(0, min(142 - var(--rsx), var(--rsx) - 140)) + var(--rS142y1) * max(0, min(143 - var(--rsx), var(--rsx) - 141)) + var(--rS143y1) * max(0, min(144 - var(--rsx), var(--rsx) - 142)) + var(--rS144y1) * max(0, min(145 - var(--rsx), var(--rsx) - 143)) + var(--rS145y1) * max(0, min(146 - var(--rsx), var(--rsx) - 144)) + var(--rS146y1) * max(0, min(147 - var(--rsx), var(--rsx) - 145)) + var(--rS147y1) * max(0, min(148 - var(--rsx), var(--rsx) - 146)) + var(--rS148y1) * max(0, min(149 - var(--rsx), var(--rsx) - 147)) + var(--rS149y1) * max(0, min(150 - var(--rsx), var(--rsx) - 148)) + var(--rS150y1) * max(0, min(151 - var(--rsx), var(--rsx) - 149)) + var(--rS151y1) * max(0, min(152 - var(--rsx), var(--rsx) - 150)) + var(--rS152y1) * max(0, min(153 - var(--rsx), var(--rsx) - 151)) + var(--rS153y1) * max(0, min(154 - var(--rsx), var(--rsx) - 152)) + var(--rS154y1) * max(0, min(155 - var(--rsx), var(--rsx) - 153)) + var(--rS155y1) * max(0, min(156 - var(--rsx), var(--rsx) - 154)) + var(--rS156y1) * max(0, min(157 - var(--rsx), var(--rsx) - 155)) + var(--rS157y1) * max(0, min(158 - var(--rsx), var(--rsx) - 156)) + var(--rS158y1) * max(0, min(159 - var(--rsx), var(--rsx) - 157)) + var(--rS159y1) * max(0, min(160 - var(--rsx), var(--rsx) - 158)) + var(--rS160y1) * max(0, min(161 - var(--rsx), var(--rsx) - 159)));
+ --rcy2: calc(var(--rS0y2) * max(0, 1 - var(--rsx)) + var(--rS1y2) * max(0, min(2 - var(--rsx), var(--rsx))) + var(--rS2y2) * max(0, min(3 - var(--rsx), var(--rsx) - 1)) + var(--rS3y2) * max(0, min(4 - var(--rsx), var(--rsx) - 2)) + var(--rS4y2) * max(0, min(5 - var(--rsx), var(--rsx) - 3)) + var(--rS5y2) * max(0, min(6 - var(--rsx), var(--rsx) - 4)) + var(--rS6y2) * max(0, min(7 - var(--rsx), var(--rsx) - 5)) + var(--rS7y2) * max(0, min(8 - var(--rsx), var(--rsx) - 6)) + var(--rS8y2) * max(0, min(9 - var(--rsx), var(--rsx) - 7)) + var(--rS9y2) * max(0, min(10 - var(--rsx), var(--rsx) - 8)) + var(--rS10y2) * max(0, min(11 - var(--rsx), var(--rsx) - 9)) + var(--rS11y2) * max(0, min(12 - var(--rsx), var(--rsx) - 10)) + var(--rS12y2) * max(0, min(13 - var(--rsx), var(--rsx) - 11)) + var(--rS13y2) * max(0, min(14 - var(--rsx), var(--rsx) - 12)) + var(--rS14y2) * max(0, min(15 - var(--rsx), var(--rsx) - 13)) + var(--rS15y2) * max(0, min(16 - var(--rsx), var(--rsx) - 14)) + var(--rS16y2) * max(0, min(17 - var(--rsx), var(--rsx) - 15)) + var(--rS17y2) * max(0, min(18 - var(--rsx), var(--rsx) - 16)) + var(--rS18y2) * max(0, min(19 - var(--rsx), var(--rsx) - 17)) + var(--rS19y2) * max(0, min(20 - var(--rsx), var(--rsx) - 18)) + var(--rS20y2) * max(0, min(21 - var(--rsx), var(--rsx) - 19)) + var(--rS21y2) * max(0, min(22 - var(--rsx), var(--rsx) - 20)) + var(--rS22y2) * max(0, min(23 - var(--rsx), var(--rsx) - 21)) + var(--rS23y2) * max(0, min(24 - var(--rsx), var(--rsx) - 22)) + var(--rS24y2) * max(0, min(25 - var(--rsx), var(--rsx) - 23)) + var(--rS25y2) * max(0, min(26 - var(--rsx), var(--rsx) - 24)) + var(--rS26y2) * max(0, min(27 - var(--rsx), var(--rsx) - 25)) + var(--rS27y2) * max(0, min(28 - var(--rsx), var(--rsx) - 26)) + var(--rS28y2) * max(0, min(29 - var(--rsx), var(--rsx) - 27)) + var(--rS29y2) * max(0, min(30 - var(--rsx), var(--rsx) - 28)) + var(--rS30y2) * max(0, min(31 - var(--rsx), var(--rsx) - 29)) + var(--rS31y2) * max(0, min(32 - var(--rsx), var(--rsx) - 30)) + var(--rS32y2) * max(0, min(33 - var(--rsx), var(--rsx) - 31)) + var(--rS33y2) * max(0, min(34 - var(--rsx), var(--rsx) - 32)) + var(--rS34y2) * max(0, min(35 - var(--rsx), var(--rsx) - 33)) + var(--rS35y2) * max(0, min(36 - var(--rsx), var(--rsx) - 34)) + var(--rS36y2) * max(0, min(37 - var(--rsx), var(--rsx) - 35)) + var(--rS37y2) * max(0, min(38 - var(--rsx), var(--rsx) - 36)) + var(--rS38y2) * max(0, min(39 - var(--rsx), var(--rsx) - 37)) + var(--rS39y2) * max(0, min(40 - var(--rsx), var(--rsx) - 38)) + var(--rS40y2) * max(0, min(41 - var(--rsx), var(--rsx) - 39)) + var(--rS41y2) * max(0, min(42 - var(--rsx), var(--rsx) - 40)) + var(--rS42y2) * max(0, min(43 - var(--rsx), var(--rsx) - 41)) + var(--rS43y2) * max(0, min(44 - var(--rsx), var(--rsx) - 42)) + var(--rS44y2) * max(0, min(45 - var(--rsx), var(--rsx) - 43)) + var(--rS45y2) * max(0, min(46 - var(--rsx), var(--rsx) - 44)) + var(--rS46y2) * max(0, min(47 - var(--rsx), var(--rsx) - 45)) + var(--rS47y2) * max(0, min(48 - var(--rsx), var(--rsx) - 46)) + var(--rS48y2) * max(0, min(49 - var(--rsx), var(--rsx) - 47)) + var(--rS49y2) * max(0, min(50 - var(--rsx), var(--rsx) - 48)) + var(--rS50y2) * max(0, min(51 - var(--rsx), var(--rsx) - 49)) + var(--rS51y2) * max(0, min(52 - var(--rsx), var(--rsx) - 50)) + var(--rS52y2) * max(0, min(53 - var(--rsx), var(--rsx) - 51)) + var(--rS53y2) * max(0, min(54 - var(--rsx), var(--rsx) - 52)) + var(--rS54y2) * max(0, min(55 - var(--rsx), var(--rsx) - 53)) + var(--rS55y2) * max(0, min(56 - var(--rsx), var(--rsx) - 54)) + var(--rS56y2) * max(0, min(57 - var(--rsx), var(--rsx) - 55)) + var(--rS57y2) * max(0, min(58 - var(--rsx), var(--rsx) - 56)) + var(--rS58y2) * max(0, min(59 - var(--rsx), var(--rsx) - 57)) + var(--rS59y2) * max(0, min(60 - var(--rsx), var(--rsx) - 58)) + var(--rS60y2) * max(0, min(61 - var(--rsx), var(--rsx) - 59)) + var(--rS61y2) * max(0, min(62 - var(--rsx), var(--rsx) - 60)) + var(--rS62y2) * max(0, min(63 - var(--rsx), var(--rsx) - 61)) + var(--rS63y2) * max(0, min(64 - var(--rsx), var(--rsx) - 62)) + var(--rS64y2) * max(0, min(65 - var(--rsx), var(--rsx) - 63)) + var(--rS65y2) * max(0, min(66 - var(--rsx), var(--rsx) - 64)) + var(--rS66y2) * max(0, min(67 - var(--rsx), var(--rsx) - 65)) + var(--rS67y2) * max(0, min(68 - var(--rsx), var(--rsx) - 66)) + var(--rS68y2) * max(0, min(69 - var(--rsx), var(--rsx) - 67)) + var(--rS69y2) * max(0, min(70 - var(--rsx), var(--rsx) - 68)) + var(--rS70y2) * max(0, min(71 - var(--rsx), var(--rsx) - 69)) + var(--rS71y2) * max(0, min(72 - var(--rsx), var(--rsx) - 70)) + var(--rS72y2) * max(0, min(73 - var(--rsx), var(--rsx) - 71)) + var(--rS73y2) * max(0, min(74 - var(--rsx), var(--rsx) - 72)) + var(--rS74y2) * max(0, min(75 - var(--rsx), var(--rsx) - 73)) + var(--rS75y2) * max(0, min(76 - var(--rsx), var(--rsx) - 74)) + var(--rS76y2) * max(0, min(77 - var(--rsx), var(--rsx) - 75)) + var(--rS77y2) * max(0, min(78 - var(--rsx), var(--rsx) - 76)) + var(--rS78y2) * max(0, min(79 - var(--rsx), var(--rsx) - 77)) + var(--rS79y2) * max(0, min(80 - var(--rsx), var(--rsx) - 78)) + var(--rS80y2) * max(0, min(81 - var(--rsx), var(--rsx) - 79)) + var(--rS81y2) * max(0, min(82 - var(--rsx), var(--rsx) - 80)) + var(--rS82y2) * max(0, min(83 - var(--rsx), var(--rsx) - 81)) + var(--rS83y2) * max(0, min(84 - var(--rsx), var(--rsx) - 82)) + var(--rS84y2) * max(0, min(85 - var(--rsx), var(--rsx) - 83)) + var(--rS85y2) * max(0, min(86 - var(--rsx), var(--rsx) - 84)) + var(--rS86y2) * max(0, min(87 - var(--rsx), var(--rsx) - 85)) + var(--rS87y2) * max(0, min(88 - var(--rsx), var(--rsx) - 86)) + var(--rS88y2) * max(0, min(89 - var(--rsx), var(--rsx) - 87)) + var(--rS89y2) * max(0, min(90 - var(--rsx), var(--rsx) - 88)) + var(--rS90y2) * max(0, min(91 - var(--rsx), var(--rsx) - 89)) + var(--rS91y2) * max(0, min(92 - var(--rsx), var(--rsx) - 90)) + var(--rS92y2) * max(0, min(93 - var(--rsx), var(--rsx) - 91)) + var(--rS93y2) * max(0, min(94 - var(--rsx), var(--rsx) - 92)) + var(--rS94y2) * max(0, min(95 - var(--rsx), var(--rsx) - 93)) + var(--rS95y2) * max(0, min(96 - var(--rsx), var(--rsx) - 94)) + var(--rS96y2) * max(0, min(97 - var(--rsx), var(--rsx) - 95)) + var(--rS97y2) * max(0, min(98 - var(--rsx), var(--rsx) - 96)) + var(--rS98y2) * max(0, min(99 - var(--rsx), var(--rsx) - 97)) + var(--rS99y2) * max(0, min(100 - var(--rsx), var(--rsx) - 98)) + var(--rS100y2) * max(0, min(101 - var(--rsx), var(--rsx) - 99)) + var(--rS101y2) * max(0, min(102 - var(--rsx), var(--rsx) - 100)) + var(--rS102y2) * max(0, min(103 - var(--rsx), var(--rsx) - 101)) + var(--rS103y2) * max(0, min(104 - var(--rsx), var(--rsx) - 102)) + var(--rS104y2) * max(0, min(105 - var(--rsx), var(--rsx) - 103)) + var(--rS105y2) * max(0, min(106 - var(--rsx), var(--rsx) - 104)) + var(--rS106y2) * max(0, min(107 - var(--rsx), var(--rsx) - 105)) + var(--rS107y2) * max(0, min(108 - var(--rsx), var(--rsx) - 106)) + var(--rS108y2) * max(0, min(109 - var(--rsx), var(--rsx) - 107)) + var(--rS109y2) * max(0, min(110 - var(--rsx), var(--rsx) - 108)) + var(--rS110y2) * max(0, min(111 - var(--rsx), var(--rsx) - 109)) + var(--rS111y2) * max(0, min(112 - var(--rsx), var(--rsx) - 110)) + var(--rS112y2) * max(0, min(113 - var(--rsx), var(--rsx) - 111)) + var(--rS113y2) * max(0, min(114 - var(--rsx), var(--rsx) - 112)) + var(--rS114y2) * max(0, min(115 - var(--rsx), var(--rsx) - 113)) + var(--rS115y2) * max(0, min(116 - var(--rsx), var(--rsx) - 114)) + var(--rS116y2) * max(0, min(117 - var(--rsx), var(--rsx) - 115)) + var(--rS117y2) * max(0, min(118 - var(--rsx), var(--rsx) - 116)) + var(--rS118y2) * max(0, min(119 - var(--rsx), var(--rsx) - 117)) + var(--rS119y2) * max(0, min(120 - var(--rsx), var(--rsx) - 118)) + var(--rS120y2) * max(0, min(121 - var(--rsx), var(--rsx) - 119)) + var(--rS121y2) * max(0, min(122 - var(--rsx), var(--rsx) - 120)) + var(--rS122y2) * max(0, min(123 - var(--rsx), var(--rsx) - 121)) + var(--rS123y2) * max(0, min(124 - var(--rsx), var(--rsx) - 122)) + var(--rS124y2) * max(0, min(125 - var(--rsx), var(--rsx) - 123)) + var(--rS125y2) * max(0, min(126 - var(--rsx), var(--rsx) - 124)) + var(--rS126y2) * max(0, min(127 - var(--rsx), var(--rsx) - 125)) + var(--rS127y2) * max(0, min(128 - var(--rsx), var(--rsx) - 126)) + var(--rS128y2) * max(0, min(129 - var(--rsx), var(--rsx) - 127)) + var(--rS129y2) * max(0, min(130 - var(--rsx), var(--rsx) - 128)) + var(--rS130y2) * max(0, min(131 - var(--rsx), var(--rsx) - 129)) + var(--rS131y2) * max(0, min(132 - var(--rsx), var(--rsx) - 130)) + var(--rS132y2) * max(0, min(133 - var(--rsx), var(--rsx) - 131)) + var(--rS133y2) * max(0, min(134 - var(--rsx), var(--rsx) - 132)) + var(--rS134y2) * max(0, min(135 - var(--rsx), var(--rsx) - 133)) + var(--rS135y2) * max(0, min(136 - var(--rsx), var(--rsx) - 134)) + var(--rS136y2) * max(0, min(137 - var(--rsx), var(--rsx) - 135)) + var(--rS137y2) * max(0, min(138 - var(--rsx), var(--rsx) - 136)) + var(--rS138y2) * max(0, min(139 - var(--rsx), var(--rsx) - 137)) + var(--rS139y2) * max(0, min(140 - var(--rsx), var(--rsx) - 138)) + var(--rS140y2) * max(0, min(141 - var(--rsx), var(--rsx) - 139)) + var(--rS141y2) * max(0, min(142 - var(--rsx), var(--rsx) - 140)) + var(--rS142y2) * max(0, min(143 - var(--rsx), var(--rsx) - 141)) + var(--rS143y2) * max(0, min(144 - var(--rsx), var(--rsx) - 142)) + var(--rS144y2) * max(0, min(145 - var(--rsx), var(--rsx) - 143)) + var(--rS145y2) * max(0, min(146 - var(--rsx), var(--rsx) - 144)) + var(--rS146y2) * max(0, min(147 - var(--rsx), var(--rsx) - 145)) + var(--rS147y2) * max(0, min(148 - var(--rsx), var(--rsx) - 146)) + var(--rS148y2) * max(0, min(149 - var(--rsx), var(--rsx) - 147)) + var(--rS149y2) * max(0, min(150 - var(--rsx), var(--rsx) - 148)) + var(--rS150y2) * max(0, min(151 - var(--rsx), var(--rsx) - 149)) + var(--rS151y2) * max(0, min(152 - var(--rsx), var(--rsx) - 150)) + var(--rS152y2) * max(0, min(153 - var(--rsx), var(--rsx) - 151)) + var(--rS153y2) * max(0, min(154 - var(--rsx), var(--rsx) - 152)) + var(--rS154y2) * max(0, min(155 - var(--rsx), var(--rsx) - 153)) + var(--rS155y2) * max(0, min(156 - var(--rsx), var(--rsx) - 154)) + var(--rS156y2) * max(0, min(157 - var(--rsx), var(--rsx) - 155)) + var(--rS157y2) * max(0, min(158 - var(--rsx), var(--rsx) - 156)) + var(--rS158y2) * max(0, min(159 - var(--rsx), var(--rsx) - 157)) + var(--rS159y2) * max(0, min(160 - var(--rsx), var(--rsx) - 158)) + var(--rS160y2) * max(0, min(161 - var(--rsx), var(--rsx) - 159)));
+ --rcy4: calc(var(--rS0y4) * max(0, 1 - var(--rsx)) + var(--rS1y4) * max(0, min(2 - var(--rsx), var(--rsx))) + var(--rS2y4) * max(0, min(3 - var(--rsx), var(--rsx) - 1)) + var(--rS3y4) * max(0, min(4 - var(--rsx), var(--rsx) - 2)) + var(--rS4y4) * max(0, min(5 - var(--rsx), var(--rsx) - 3)) + var(--rS5y4) * max(0, min(6 - var(--rsx), var(--rsx) - 4)) + var(--rS6y4) * max(0, min(7 - var(--rsx), var(--rsx) - 5)) + var(--rS7y4) * max(0, min(8 - var(--rsx), var(--rsx) - 6)) + var(--rS8y4) * max(0, min(9 - var(--rsx), var(--rsx) - 7)) + var(--rS9y4) * max(0, min(10 - var(--rsx), var(--rsx) - 8)) + var(--rS10y4) * max(0, min(11 - var(--rsx), var(--rsx) - 9)) + var(--rS11y4) * max(0, min(12 - var(--rsx), var(--rsx) - 10)) + var(--rS12y4) * max(0, min(13 - var(--rsx), var(--rsx) - 11)) + var(--rS13y4) * max(0, min(14 - var(--rsx), var(--rsx) - 12)) + var(--rS14y4) * max(0, min(15 - var(--rsx), var(--rsx) - 13)) + var(--rS15y4) * max(0, min(16 - var(--rsx), var(--rsx) - 14)) + var(--rS16y4) * max(0, min(17 - var(--rsx), var(--rsx) - 15)) + var(--rS17y4) * max(0, min(18 - var(--rsx), var(--rsx) - 16)) + var(--rS18y4) * max(0, min(19 - var(--rsx), var(--rsx) - 17)) + var(--rS19y4) * max(0, min(20 - var(--rsx), var(--rsx) - 18)) + var(--rS20y4) * max(0, min(21 - var(--rsx), var(--rsx) - 19)) + var(--rS21y4) * max(0, min(22 - var(--rsx), var(--rsx) - 20)) + var(--rS22y4) * max(0, min(23 - var(--rsx), var(--rsx) - 21)) + var(--rS23y4) * max(0, min(24 - var(--rsx), var(--rsx) - 22)) + var(--rS24y4) * max(0, min(25 - var(--rsx), var(--rsx) - 23)) + var(--rS25y4) * max(0, min(26 - var(--rsx), var(--rsx) - 24)) + var(--rS26y4) * max(0, min(27 - var(--rsx), var(--rsx) - 25)) + var(--rS27y4) * max(0, min(28 - var(--rsx), var(--rsx) - 26)) + var(--rS28y4) * max(0, min(29 - var(--rsx), var(--rsx) - 27)) + var(--rS29y4) * max(0, min(30 - var(--rsx), var(--rsx) - 28)) + var(--rS30y4) * max(0, min(31 - var(--rsx), var(--rsx) - 29)) + var(--rS31y4) * max(0, min(32 - var(--rsx), var(--rsx) - 30)) + var(--rS32y4) * max(0, min(33 - var(--rsx), var(--rsx) - 31)) + var(--rS33y4) * max(0, min(34 - var(--rsx), var(--rsx) - 32)) + var(--rS34y4) * max(0, min(35 - var(--rsx), var(--rsx) - 33)) + var(--rS35y4) * max(0, min(36 - var(--rsx), var(--rsx) - 34)) + var(--rS36y4) * max(0, min(37 - var(--rsx), var(--rsx) - 35)) + var(--rS37y4) * max(0, min(38 - var(--rsx), var(--rsx) - 36)) + var(--rS38y4) * max(0, min(39 - var(--rsx), var(--rsx) - 37)) + var(--rS39y4) * max(0, min(40 - var(--rsx), var(--rsx) - 38)) + var(--rS40y4) * max(0, min(41 - var(--rsx), var(--rsx) - 39)) + var(--rS41y4) * max(0, min(42 - var(--rsx), var(--rsx) - 40)) + var(--rS42y4) * max(0, min(43 - var(--rsx), var(--rsx) - 41)) + var(--rS43y4) * max(0, min(44 - var(--rsx), var(--rsx) - 42)) + var(--rS44y4) * max(0, min(45 - var(--rsx), var(--rsx) - 43)) + var(--rS45y4) * max(0, min(46 - var(--rsx), var(--rsx) - 44)) + var(--rS46y4) * max(0, min(47 - var(--rsx), var(--rsx) - 45)) + var(--rS47y4) * max(0, min(48 - var(--rsx), var(--rsx) - 46)) + var(--rS48y4) * max(0, min(49 - var(--rsx), var(--rsx) - 47)) + var(--rS49y4) * max(0, min(50 - var(--rsx), var(--rsx) - 48)) + var(--rS50y4) * max(0, min(51 - var(--rsx), var(--rsx) - 49)) + var(--rS51y4) * max(0, min(52 - var(--rsx), var(--rsx) - 50)) + var(--rS52y4) * max(0, min(53 - var(--rsx), var(--rsx) - 51)) + var(--rS53y4) * max(0, min(54 - var(--rsx), var(--rsx) - 52)) + var(--rS54y4) * max(0, min(55 - var(--rsx), var(--rsx) - 53)) + var(--rS55y4) * max(0, min(56 - var(--rsx), var(--rsx) - 54)) + var(--rS56y4) * max(0, min(57 - var(--rsx), var(--rsx) - 55)) + var(--rS57y4) * max(0, min(58 - var(--rsx), var(--rsx) - 56)) + var(--rS58y4) * max(0, min(59 - var(--rsx), var(--rsx) - 57)) + var(--rS59y4) * max(0, min(60 - var(--rsx), var(--rsx) - 58)) + var(--rS60y4) * max(0, min(61 - var(--rsx), var(--rsx) - 59)) + var(--rS61y4) * max(0, min(62 - var(--rsx), var(--rsx) - 60)) + var(--rS62y4) * max(0, min(63 - var(--rsx), var(--rsx) - 61)) + var(--rS63y4) * max(0, min(64 - var(--rsx), var(--rsx) - 62)) + var(--rS64y4) * max(0, min(65 - var(--rsx), var(--rsx) - 63)) + var(--rS65y4) * max(0, min(66 - var(--rsx), var(--rsx) - 64)) + var(--rS66y4) * max(0, min(67 - var(--rsx), var(--rsx) - 65)) + var(--rS67y4) * max(0, min(68 - var(--rsx), var(--rsx) - 66)) + var(--rS68y4) * max(0, min(69 - var(--rsx), var(--rsx) - 67)) + var(--rS69y4) * max(0, min(70 - var(--rsx), var(--rsx) - 68)) + var(--rS70y4) * max(0, min(71 - var(--rsx), var(--rsx) - 69)) + var(--rS71y4) * max(0, min(72 - var(--rsx), var(--rsx) - 70)) + var(--rS72y4) * max(0, min(73 - var(--rsx), var(--rsx) - 71)) + var(--rS73y4) * max(0, min(74 - var(--rsx), var(--rsx) - 72)) + var(--rS74y4) * max(0, min(75 - var(--rsx), var(--rsx) - 73)) + var(--rS75y4) * max(0, min(76 - var(--rsx), var(--rsx) - 74)) + var(--rS76y4) * max(0, min(77 - var(--rsx), var(--rsx) - 75)) + var(--rS77y4) * max(0, min(78 - var(--rsx), var(--rsx) - 76)) + var(--rS78y4) * max(0, min(79 - var(--rsx), var(--rsx) - 77)) + var(--rS79y4) * max(0, min(80 - var(--rsx), var(--rsx) - 78)) + var(--rS80y4) * max(0, min(81 - var(--rsx), var(--rsx) - 79)) + var(--rS81y4) * max(0, min(82 - var(--rsx), var(--rsx) - 80)) + var(--rS82y4) * max(0, min(83 - var(--rsx), var(--rsx) - 81)) + var(--rS83y4) * max(0, min(84 - var(--rsx), var(--rsx) - 82)) + var(--rS84y4) * max(0, min(85 - var(--rsx), var(--rsx) - 83)) + var(--rS85y4) * max(0, min(86 - var(--rsx), var(--rsx) - 84)) + var(--rS86y4) * max(0, min(87 - var(--rsx), var(--rsx) - 85)) + var(--rS87y4) * max(0, min(88 - var(--rsx), var(--rsx) - 86)) + var(--rS88y4) * max(0, min(89 - var(--rsx), var(--rsx) - 87)) + var(--rS89y4) * max(0, min(90 - var(--rsx), var(--rsx) - 88)) + var(--rS90y4) * max(0, min(91 - var(--rsx), var(--rsx) - 89)) + var(--rS91y4) * max(0, min(92 - var(--rsx), var(--rsx) - 90)) + var(--rS92y4) * max(0, min(93 - var(--rsx), var(--rsx) - 91)) + var(--rS93y4) * max(0, min(94 - var(--rsx), var(--rsx) - 92)) + var(--rS94y4) * max(0, min(95 - var(--rsx), var(--rsx) - 93)) + var(--rS95y4) * max(0, min(96 - var(--rsx), var(--rsx) - 94)) + var(--rS96y4) * max(0, min(97 - var(--rsx), var(--rsx) - 95)) + var(--rS97y4) * max(0, min(98 - var(--rsx), var(--rsx) - 96)) + var(--rS98y4) * max(0, min(99 - var(--rsx), var(--rsx) - 97)) + var(--rS99y4) * max(0, min(100 - var(--rsx), var(--rsx) - 98)) + var(--rS100y4) * max(0, min(101 - var(--rsx), var(--rsx) - 99)) + var(--rS101y4) * max(0, min(102 - var(--rsx), var(--rsx) - 100)) + var(--rS102y4) * max(0, min(103 - var(--rsx), var(--rsx) - 101)) + var(--rS103y4) * max(0, min(104 - var(--rsx), var(--rsx) - 102)) + var(--rS104y4) * max(0, min(105 - var(--rsx), var(--rsx) - 103)) + var(--rS105y4) * max(0, min(106 - var(--rsx), var(--rsx) - 104)) + var(--rS106y4) * max(0, min(107 - var(--rsx), var(--rsx) - 105)) + var(--rS107y4) * max(0, min(108 - var(--rsx), var(--rsx) - 106)) + var(--rS108y4) * max(0, min(109 - var(--rsx), var(--rsx) - 107)) + var(--rS109y4) * max(0, min(110 - var(--rsx), var(--rsx) - 108)) + var(--rS110y4) * max(0, min(111 - var(--rsx), var(--rsx) - 109)) + var(--rS111y4) * max(0, min(112 - var(--rsx), var(--rsx) - 110)) + var(--rS112y4) * max(0, min(113 - var(--rsx), var(--rsx) - 111)) + var(--rS113y4) * max(0, min(114 - var(--rsx), var(--rsx) - 112)) + var(--rS114y4) * max(0, min(115 - var(--rsx), var(--rsx) - 113)) + var(--rS115y4) * max(0, min(116 - var(--rsx), var(--rsx) - 114)) + var(--rS116y4) * max(0, min(117 - var(--rsx), var(--rsx) - 115)) + var(--rS117y4) * max(0, min(118 - var(--rsx), var(--rsx) - 116)) + var(--rS118y4) * max(0, min(119 - var(--rsx), var(--rsx) - 117)) + var(--rS119y4) * max(0, min(120 - var(--rsx), var(--rsx) - 118)) + var(--rS120y4) * max(0, min(121 - var(--rsx), var(--rsx) - 119)) + var(--rS121y4) * max(0, min(122 - var(--rsx), var(--rsx) - 120)) + var(--rS122y4) * max(0, min(123 - var(--rsx), var(--rsx) - 121)) + var(--rS123y4) * max(0, min(124 - var(--rsx), var(--rsx) - 122)) + var(--rS124y4) * max(0, min(125 - var(--rsx), var(--rsx) - 123)) + var(--rS125y4) * max(0, min(126 - var(--rsx), var(--rsx) - 124)) + var(--rS126y4) * max(0, min(127 - var(--rsx), var(--rsx) - 125)) + var(--rS127y4) * max(0, min(128 - var(--rsx), var(--rsx) - 126)) + var(--rS128y4) * max(0, min(129 - var(--rsx), var(--rsx) - 127)) + var(--rS129y4) * max(0, min(130 - var(--rsx), var(--rsx) - 128)) + var(--rS130y4) * max(0, min(131 - var(--rsx), var(--rsx) - 129)) + var(--rS131y4) * max(0, min(132 - var(--rsx), var(--rsx) - 130)) + var(--rS132y4) * max(0, min(133 - var(--rsx), var(--rsx) - 131)) + var(--rS133y4) * max(0, min(134 - var(--rsx), var(--rsx) - 132)) + var(--rS134y4) * max(0, min(135 - var(--rsx), var(--rsx) - 133)) + var(--rS135y4) * max(0, min(136 - var(--rsx), var(--rsx) - 134)) + var(--rS136y4) * max(0, min(137 - var(--rsx), var(--rsx) - 135)) + var(--rS137y4) * max(0, min(138 - var(--rsx), var(--rsx) - 136)) + var(--rS138y4) * max(0, min(139 - var(--rsx), var(--rsx) - 137)) + var(--rS139y4) * max(0, min(140 - var(--rsx), var(--rsx) - 138)) + var(--rS140y4) * max(0, min(141 - var(--rsx), var(--rsx) - 139)) + var(--rS141y4) * max(0, min(142 - var(--rsx), var(--rsx) - 140)) + var(--rS142y4) * max(0, min(143 - var(--rsx), var(--rsx) - 141)) + var(--rS143y4) * max(0, min(144 - var(--rsx), var(--rsx) - 142)) + var(--rS144y4) * max(0, min(145 - var(--rsx), var(--rsx) - 143)) + var(--rS145y4) * max(0, min(146 - var(--rsx), var(--rsx) - 144)) + var(--rS146y4) * max(0, min(147 - var(--rsx), var(--rsx) - 145)) + var(--rS147y4) * max(0, min(148 - var(--rsx), var(--rsx) - 146)) + var(--rS148y4) * max(0, min(149 - var(--rsx), var(--rsx) - 147)) + var(--rS149y4) * max(0, min(150 - var(--rsx), var(--rsx) - 148)) + var(--rS150y4) * max(0, min(151 - var(--rsx), var(--rsx) - 149)) + var(--rS151y4) * max(0, min(152 - var(--rsx), var(--rsx) - 150)) + var(--rS152y4) * max(0, min(153 - var(--rsx), var(--rsx) - 151)) + var(--rS153y4) * max(0, min(154 - var(--rsx), var(--rsx) - 152)) + var(--rS154y4) * max(0, min(155 - var(--rsx), var(--rsx) - 153)) + var(--rS155y4) * max(0, min(156 - var(--rsx), var(--rsx) - 154)) + var(--rS156y4) * max(0, min(157 - var(--rsx), var(--rsx) - 155)) + var(--rS157y4) * max(0, min(158 - var(--rsx), var(--rsx) - 156)) + var(--rS158y4) * max(0, min(159 - var(--rsx), var(--rsx) - 157)) + var(--rS159y4) * max(0, min(160 - var(--rsx), var(--rsx) - 158)) + var(--rS160y4) * max(0, min(161 - var(--rsx), var(--rsx) - 159)));
+ --rfs: calc(var(--rfb) * clamp(0, var(--rsx) - var(--rzb) + 1, 1));
+ --rview_sel: mod(mod(mod(var(--rcy4), 64), 6) + clamp(0, -1 * mod(var(--rcy4), 64), 1) * 4, 6);
+ --rview_on: min(1, max(var(--rcy2), -1 * var(--rcy2)));
+ --rview_dy: calc(var(--rcy1) * 8);
+ --rview_dx: calc(var(--rcs) * 8);
+ --rview_hits: var(--rcy4);
+ --rvg0: clamp(0, max(var(--rview_dy), -1 * var(--rview_dy)) - 999999, 1);
+ --rvg1: clamp(0, max(var(--rview_dx), -1 * var(--rview_dx)) - 999999, 1);
+ --rvf: max(var(--rvg0), var(--rvg1));
+ --rok: calc(1 - min(1, max(round(down, var(--rfs) / 2), var(--rvf))));
+}
+.rr-c { display: none; }
+.rr-c.rr-d { display: contents; }
+rr-n::after { content: counter(rr-n); }
+@container style(--rview_sel: 1) { .rr-s1-1 { display: contents; } .rr-c.rr-s1-0 { display: none; } }
+@container style(--rview_sel: 2) { .rr-s1-2 { display: contents; } .rr-c.rr-s1-0 { display: none; } }
+@container style(--rview_sel: 3) { .rr-s1-3 { display: contents; } .rr-c.rr-s1-0 { display: none; } }
+@container style(--rview_sel: 4) { .rr-s1-4 { display: contents; } .rr-c.rr-s1-0 { display: none; } }
+@container style(--rview_sel: 5) { .rr-s1-5 { display: contents; } .rr-c.rr-s1-0 { display: none; } }
+@container style(--rview_sel: 1) { .rr-s2-1 { display: contents; } .rr-c.rr-s2-0 { display: none; } }
+@container style(--rview_sel: 2) { .rr-s2-2 { display: contents; } .rr-c.rr-s2-0 { display: none; } }
+@container style(--rview_sel: 3) { .rr-s2-3 { display: contents; } .rr-c.rr-s2-0 { display: none; } }
+@container style(--rview_sel: 4) { .rr-s2-4 { display: contents; } .rr-c.rr-s2-0 { display: none; } }
+@container style(--rview_sel: 5) { .rr-s2-5 { display: contents; } .rr-c.rr-s2-0 { display: none; } }
+@container style(--rview_sel: 1) { .rr-s3-1 { display: contents; } .rr-c.rr-s3-0 { display: none; } }
+@container style(--rview_sel: 2) { .rr-s3-2 { display: contents; } .rr-c.rr-s3-0 { display: none; } }
+@container style(--rview_sel: 3) { .rr-s3-3 { display: contents; } .rr-c.rr-s3-0 { display: none; } }
+@container style(--rview_sel: 4) { .rr-s3-4 { display: contents; } .rr-c.rr-s3-0 { display: none; } }
+@container style(--rview_sel: 5) { .rr-s3-5 { display: contents; } .rr-c.rr-s3-0 { display: none; } }
+@container style(--rview_sel: 1) { .rr-s5-1 { display: contents; } .rr-c.rr-s5-0 { display: none; } }
+@container style(--rview_sel: 2) { .rr-s5-2 { display: contents; } .rr-c.rr-s5-0 { display: none; } }
+@container style(--rview_sel: 3) { .rr-s5-3 { display: contents; } .rr-c.rr-s5-0 { display: none; } }
+@container style(--rview_sel: 4) { .rr-s5-4 { display: contents; } .rr-c.rr-s5-0 { display: none; } }
+@container style(--rview_sel: 5) { .rr-s5-5 { display: contents; } .rr-c.rr-s5-0 { display: none; } }
+@container style(--rview_sel: 1) { .rr-s6-1 { display: contents; } .rr-c.rr-s6-0 { display: none; } }
+@container style(--rview_sel: 2) { .rr-s6-2 { display: contents; } .rr-c.rr-s6-0 { display: none; } }
+@container style(--rview_sel: 3) { .rr-s6-3 { display: contents; } .rr-c.rr-s6-0 { display: none; } }
+@container style(--rview_sel: 4) { .rr-s6-4 { display: contents; } .rr-c.rr-s6-0 { display: none; } }
+@container style(--rview_sel: 5) { .rr-s6-5 { display: contents; } .rr-c.rr-s6-0 { display: none; } }
+@container style(--rview_on: 0) and style(--rview_sel: 0) { .rr-s4-0 { display: contents; } .rr-c.rr-s4-6 { display: none; } }
+@container style(--rview_on: 0) and style(--rview_sel: 1) { .rr-s4-1 { display: contents; } .rr-c.rr-s4-6 { display: none; } }
+@container style(--rview_on: 0) and style(--rview_sel: 2) { .rr-s4-2 { display: contents; } .rr-c.rr-s4-6 { display: none; } }
+@container style(--rview_on: 0) and style(--rview_sel: 3) { .rr-s4-3 { display: contents; } .rr-c.rr-s4-6 { display: none; } }
+@container style(--rview_on: 0) and style(--rview_sel: 4) { .rr-s4-4 { display: contents; } .rr-c.rr-s4-6 { display: none; } }
+@container style(--rview_on: 0) and style(--rview_sel: 5) { .rr-s4-5 { display: contents; } .rr-c.rr-s4-6 { display: none; } }
+@container style(--rview_on: 1) and style(--rview_sel: 1) { .rr-s4-7 { display: contents; } .rr-c.rr-s4-6 { display: none; } }
+@container style(--rview_on: 1) and style(--rview_sel: 2) { .rr-s4-8 { display: contents; } .rr-c.rr-s4-6 { display: none; } }
+@container style(--rview_on: 1) and style(--rview_sel: 3) { .rr-s4-9 { display: contents; } .rr-c.rr-s4-6 { display: none; } }
+@container style(--rview_on: 1) and style(--rview_sel: 4) { .rr-s4-10 { display: contents; } .rr-c.rr-s4-6 { display: none; } }
+@container style(--rview_on: 1) and style(--rview_sel: 5) { .rr-s4-11 { display: contents; } .rr-c.rr-s4-6 { display: none; } }
+@container style(--rview_on: 0) { .rr-s0-0 { display: contents; } .rr-c.rr-s0-1 { display: none; } }
+
+svg{--rr-bg:#0d1117;--rr-line:#30363d;--rr-fg:#e6edf3;--rr-mut:#7d8590;--rr-acc:#3fb950;--rr-blue:#58a6ff;--rr-red:#f85149}
+@media (prefers-color-scheme:light){svg{--rr-bg:#ffffff;--rr-line:#d0d7de;--rr-fg:#1f2328;--rr-mut:#656d76;--rr-acc:#1a7f37;--rr-blue:#0969da;--rr-red:#cf222e}}
+.rr-t{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;fill:var(--rr-fg)}
+.rr-m{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;fill:var(--rr-mut)}
+.rr-bg{fill:var(--rr-bg);stroke:var(--rr-line)}
+.rr-l{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;font-size:11px;letter-spacing:.08em;font-weight:600;fill:var(--rr-mut)}
+.rr-sd text{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;font-weight:600;fill:var(--rr-fg)}
+.rr-ui{opacity:calc(.25 + .75 * var(--rok));background:transparent}
+.st-run{opacity:calc((1 - min(1, var(--rfs))) * (1 - clamp(0, var(--rsx) - 159, 1)) * var(--rok))}
+.st-end{opacity:calc((1 - min(1, var(--rfs))) * clamp(0, var(--rsx) - 159, 1) * var(--rok))}
+.st-halt{opacity:calc(mod(var(--rfs), 2) * var(--rok))}
+.st-err{opacity:calc(1 - var(--rok))}
+.s0 use{transform:translateY(calc(mod(round(down, var(--rsx) / 1), 10) * -18px))}
+.s1 use{transform:translateY(calc(mod(round(down, var(--rsx) / 10), 10) * -18px))}
+.s1{opacity:clamp(0, var(--rsx) - 9, 1)}
+.s2 use{transform:translateY(calc(mod(round(down, var(--rsx) / 100), 10) * -18px))}
+.s2{opacity:clamp(0, var(--rsx) - 99, 1)}
+]]></style>
+<defs><clipPath id="rrcs"><rect width="9" height="18"/></clipPath><g id="rrds" class="rr-sd" text-anchor="middle"><text x="4.5" y="14">0</text><text x="4.5" y="32">1</text><text x="4.5" y="50">2</text><text x="4.5" y="68">3</text><text x="4.5" y="86">4</text><text x="4.5" y="104">5</text><text x="4.5" y="122">6</text><text x="4.5" y="140">7</text><text x="4.5" y="158">8</text><text x="4.5" y="176">9</text></g></defs>
+<rect class="rr-bg" x=".5" y=".5" width="759" height="445" rx="10"/><text x="20" y="29" class="rr-t" font-size="15" font-weight="600">mockcraft · auto-pilot (state of …</text><text x="326" y="29" class="rr-m" font-size="12">state.wasm · step() + 5 views</text><circle class="rr-pulse" cx="628" cy="25" r="4" style="fill:var(--rr-acc)"/><text x="638" y="29" class="rr-l">LIVE · CSS RUNTIME</text><line x1="0" y1="44" x2="760" y2="44" stroke="var(--rr-line)"/><line x1="0" y1="402" x2="760" y2="402" stroke="var(--rr-line)"/>
+<g id="x5_3_0_1_0"/><g id="x20_9_1_0_21"/><g class="R" style="--rxb:0;--ry1b:0;--ry2b:1;--ry3b:1;--ry4b:0"><g class="A" style="--rS1:var(--rx);--rS1y1:var(--ry1a);--rS1y2:var(--ry2a);--rS1y4:var(--ry4a)"><g class="B" style="--rS2:var(--rx);--rS2y1:var(--ry1b);--rS2y2:var(--ry2b);--rS2y4:var(--ry4b)"><g class="A" style="--rS3:var(--rx);--rS3y1:var(--ry1a);--rS3y2:var(--ry2a);--rS3y4:var(--ry4a)"><g class="B" style="--rS4:var(--rx);--rS4y1:var(--ry1b);--rS4y2:var(--ry2b);--rS4y4:var(--ry4b)"><g class="A" style="--rS5:var(--rx);--rS5y1:var(--ry1a);--rS5y2:var(--ry2a);--rS5y4:var(--ry4a)"><g class="B" style="--rS6:var(--rx);--rS6y1:var(--ry1b);--rS6y2:var(--ry2b);--rS6y4:var(--ry4b)"><g class="A" style="--rS7:var(--rx);--rS7y1:var(--ry1a);--rS7y2:var(--ry2a);--rS7y4:var(--ry4a)"><g class="B" style="--rS8:var(--rx);--rS8y1:var(--ry1b);--rS8y2:var(--ry2b);--rS8y4:var(--ry4b)"><g class="A" style="--rS9:var(--rx);--rS9y1:var(--ry1a);--rS9y2:var(--ry2a);--rS9y4:var(--ry4a)"><g class="B" style="--rS10:var(--rx);--rS10y1:var(--ry1b);--rS10y2:var(--ry2b);--rS10y4:var(--ry4b)"><g class="A" style="--rS11:var(--rx);--rS11y1:var(--ry1a);--rS11y2:var(--ry2a);--rS11y4:var(--ry4a)"><g class="B" style="--rS12:var(--rx);--rS12y1:var(--ry1b);--rS12y2:var(--ry2b);--rS12y4:var(--ry4b)"><g class="A" style="--rS13:var(--rx);--rS13y1:var(--ry1a);--rS13y2:var(--ry2a);--rS13y4:var(--ry4a)"><g class="B" style="--rS14:var(--rx);--rS14y1:var(--ry1b);--rS14y2:var(--ry2b);--rS14y4:var(--ry4b)"><g class="A" style="--rS15:var(--rx);--rS15y1:var(--ry1a);--rS15y2:var(--ry2a);--rS15y4:var(--ry4a)"><g class="B" style="--rS16:var(--rx);--rS16y1:var(--ry1b);--rS16y2:var(--ry2b);--rS16y4:var(--ry4b)"><g class="A" style="--rS17:var(--rx);--rS17y1:var(--ry1a);--rS17y2:var(--ry2a);--rS17y4:var(--ry4a)"><g class="B" style="--rS18:var(--rx);--rS18y1:var(--ry1b);--rS18y2:var(--ry2b);--rS18y4:var(--ry4b)"><g class="A" style="--rS19:var(--rx);--rS19y1:var(--ry1a);--rS19y2:var(--ry2a);--rS19y4:var(--ry4a)"><g class="B" style="--rS20:var(--rx);--rS20y1:var(--ry1b);--rS20y2:var(--ry2b);--rS20y4:var(--ry4b)"><g class="A" style="--rS21:var(--rx);--rS21y1:var(--ry1a);--rS21y2:var(--ry2a);--rS21y4:var(--ry4a)"><g class="B" style="--rS22:var(--rx);--rS22y1:var(--ry1b);--rS22y2:var(--ry2b);--rS22y4:var(--ry4b)"><g class="A" style="--rS23:var(--rx);--rS23y1:var(--ry1a);--rS23y2:var(--ry2a);--rS23y4:var(--ry4a)"><g class="B" style="--rS24:var(--rx);--rS24y1:var(--ry1b);--rS24y2:var(--ry2b);--rS24y4:var(--ry4b)"><g class="A" style="--rS25:var(--rx);--rS25y1:var(--ry1a);--rS25y2:var(--ry2a);--rS25y4:var(--ry4a)"><g class="B" style="--rS26:var(--rx);--rS26y1:var(--ry1b);--rS26y2:var(--ry2b);--rS26y4:var(--ry4b)"><g class="A" style="--rS27:var(--rx);--rS27y1:var(--ry1a);--rS27y2:var(--ry2a);--rS27y4:var(--ry4a)"><g class="B" style="--rS28:var(--rx);--rS28y1:var(--ry1b);--rS28y2:var(--ry2b);--rS28y4:var(--ry4b)"><g class="A" style="--rS29:var(--rx);--rS29y1:var(--ry1a);--rS29y2:var(--ry2a);--rS29y4:var(--ry4a)"><g class="B" style="--rS30:var(--rx);--rS30y1:var(--ry1b);--rS30y2:var(--ry2b);--rS30y4:var(--ry4b)"><g class="A" style="--rS31:var(--rx);--rS31y1:var(--ry1a);--rS31y2:var(--ry2a);--rS31y4:var(--ry4a)"><g class="B" style="--rS32:var(--rx);--rS32y1:var(--ry1b);--rS32y2:var(--ry2b);--rS32y4:var(--ry4b)"><g class="A" style="--rS33:var(--rx);--rS33y1:var(--ry1a);--rS33y2:var(--ry2a);--rS33y4:var(--ry4a)"><g class="B" style="--rS34:var(--rx);--rS34y1:var(--ry1b);--rS34y2:var(--ry2b);--rS34y4:var(--ry4b)"><g class="A" style="--rS35:var(--rx);--rS35y1:var(--ry1a);--rS35y2:var(--ry2a);--rS35y4:var(--ry4a)"><g class="B" style="--rS36:var(--rx);--rS36y1:var(--ry1b);--rS36y2:var(--ry2b);--rS36y4:var(--ry4b)"><g class="A" style="--rS37:var(--rx);--rS37y1:var(--ry1a);--rS37y2:var(--ry2a);--rS37y4:var(--ry4a)"><g class="B" style="--rS38:var(--rx);--rS38y1:var(--ry1b);--rS38y2:var(--ry2b);--rS38y4:var(--ry4b)"><g class="A" style="--rS39:var(--rx);--rS39y1:var(--ry1a);--rS39y2:var(--ry2a);--rS39y4:var(--ry4a)"><g class="B" style="--rS40:var(--rx);--rS40y1:var(--ry1b);--rS40y2:var(--ry2b);--rS40y4:var(--ry4b)"><g class="A" style="--rS41:var(--rx);--rS41y1:var(--ry1a);--rS41y2:var(--ry2a);--rS41y4:var(--ry4a)"><g class="B" style="--rS42:var(--rx);--rS42y1:var(--ry1b);--rS42y2:var(--ry2b);--rS42y4:var(--ry4b)"><g class="A" style="--rS43:var(--rx);--rS43y1:var(--ry1a);--rS43y2:var(--ry2a);--rS43y4:var(--ry4a)"><g class="B" style="--rS44:var(--rx);--rS44y1:var(--ry1b);--rS44y2:var(--ry2b);--rS44y4:var(--ry4b)"><g class="A" style="--rS45:var(--rx);--rS45y1:var(--ry1a);--rS45y2:var(--ry2a);--rS45y4:var(--ry4a)"><g class="B" style="--rS46:var(--rx);--rS46y1:var(--ry1b);--rS46y2:var(--ry2b);--rS46y4:var(--ry4b)"><g class="A" style="--rS47:var(--rx);--rS47y1:var(--ry1a);--rS47y2:var(--ry2a);--rS47y4:var(--ry4a)"><g class="B" style="--rS48:var(--rx);--rS48y1:var(--ry1b);--rS48y2:var(--ry2b);--rS48y4:var(--ry4b)"><g class="A" style="--rS49:var(--rx);--rS49y1:var(--ry1a);--rS49y2:var(--ry2a);--rS49y4:var(--ry4a)"><g class="B" style="--rS50:var(--rx);--rS50y1:var(--ry1b);--rS50y2:var(--ry2b);--rS50y4:var(--ry4b)"><g class="A" style="--rS51:var(--rx);--rS51y1:var(--ry1a);--rS51y2:var(--ry2a);--rS51y4:var(--ry4a)"><g class="B" style="--rS52:var(--rx);--rS52y1:var(--ry1b);--rS52y2:var(--ry2b);--rS52y4:var(--ry4b)"><g class="A" style="--rS53:var(--rx);--rS53y1:var(--ry1a);--rS53y2:var(--ry2a);--rS53y4:var(--ry4a)"><g class="B" style="--rS54:var(--rx);--rS54y1:var(--ry1b);--rS54y2:var(--ry2b);--rS54y4:var(--ry4b)"><g class="A" style="--rS55:var(--rx);--rS55y1:var(--ry1a);--rS55y2:var(--ry2a);--rS55y4:var(--ry4a)"><g class="B" style="--rS56:var(--rx);--rS56y1:var(--ry1b);--rS56y2:var(--ry2b);--rS56y4:var(--ry4b)"><g class="A" style="--rS57:var(--rx);--rS57y1:var(--ry1a);--rS57y2:var(--ry2a);--rS57y4:var(--ry4a)"><g class="B" style="--rS58:var(--rx);--rS58y1:var(--ry1b);--rS58y2:var(--ry2b);--rS58y4:var(--ry4b)"><g class="A" style="--rS59:var(--rx);--rS59y1:var(--ry1a);--rS59y2:var(--ry2a);--rS59y4:var(--ry4a)"><g class="B" style="--rS60:var(--rx);--rS60y1:var(--ry1b);--rS60y2:var(--ry2b);--rS60y4:var(--ry4b)"><g class="A" style="--rS61:var(--rx);--rS61y1:var(--ry1a);--rS61y2:var(--ry2a);--rS61y4:var(--ry4a)"><g class="B" style="--rS62:var(--rx);--rS62y1:var(--ry1b);--rS62y2:var(--ry2b);--rS62y4:var(--ry4b)"><g class="A" style="--rS63:var(--rx);--rS63y1:var(--ry1a);--rS63y2:var(--ry2a);--rS63y4:var(--ry4a)"><g class="B" style="--rS64:var(--rx);--rS64y1:var(--ry1b);--rS64y2:var(--ry2b);--rS64y4:var(--ry4b)"><g class="A" style="--rS65:var(--rx);--rS65y1:var(--ry1a);--rS65y2:var(--ry2a);--rS65y4:var(--ry4a)"><g class="B" style="--rS66:var(--rx);--rS66y1:var(--ry1b);--rS66y2:var(--ry2b);--rS66y4:var(--ry4b)"><g class="A" style="--rS67:var(--rx);--rS67y1:var(--ry1a);--rS67y2:var(--ry2a);--rS67y4:var(--ry4a)"><g class="B" style="--rS68:var(--rx);--rS68y1:var(--ry1b);--rS68y2:var(--ry2b);--rS68y4:var(--ry4b)"><g class="A" style="--rS69:var(--rx);--rS69y1:var(--ry1a);--rS69y2:var(--ry2a);--rS69y4:var(--ry4a)"><g class="B" style="--rS70:var(--rx);--rS70y1:var(--ry1b);--rS70y2:var(--ry2b);--rS70y4:var(--ry4b)"><g class="A" style="--rS71:var(--rx);--rS71y1:var(--ry1a);--rS71y2:var(--ry2a);--rS71y4:var(--ry4a)"><g class="B" style="--rS72:var(--rx);--rS72y1:var(--ry1b);--rS72y2:var(--ry2b);--rS72y4:var(--ry4b)"><g class="A" style="--rS73:var(--rx);--rS73y1:var(--ry1a);--rS73y2:var(--ry2a);--rS73y4:var(--ry4a)"><g class="B" style="--rS74:var(--rx);--rS74y1:var(--ry1b);--rS74y2:var(--ry2b);--rS74y4:var(--ry4b)"><g class="A" style="--rS75:var(--rx);--rS75y1:var(--ry1a);--rS75y2:var(--ry2a);--rS75y4:var(--ry4a)"><g class="B" style="--rS76:var(--rx);--rS76y1:var(--ry1b);--rS76y2:var(--ry2b);--rS76y4:var(--ry4b)"><g class="A" style="--rS77:var(--rx);--rS77y1:var(--ry1a);--rS77y2:var(--ry2a);--rS77y4:var(--ry4a)"><g class="B" style="--rS78:var(--rx);--rS78y1:var(--ry1b);--rS78y2:var(--ry2b);--rS78y4:var(--ry4b)"><g class="A" style="--rS79:var(--rx);--rS79y1:var(--ry1a);--rS79y2:var(--ry2a);--rS79y4:var(--ry4a)"><g class="B" style="--rS80:var(--rx);--rS80y1:var(--ry1b);--rS80y2:var(--ry2b);--rS80y4:var(--ry4b)"><g class="A" style="--rS81:var(--rx);--rS81y1:var(--ry1a);--rS81y2:var(--ry2a);--rS81y4:var(--ry4a)"><g class="B" style="--rS82:var(--rx);--rS82y1:var(--ry1b);--rS82y2:var(--ry2b);--rS82y4:var(--ry4b)"><g class="A" style="--rS83:var(--rx);--rS83y1:var(--ry1a);--rS83y2:var(--ry2a);--rS83y4:var(--ry4a)"><g class="B" style="--rS84:var(--rx);--rS84y1:var(--ry1b);--rS84y2:var(--ry2b);--rS84y4:var(--ry4b)"><g class="A" style="--rS85:var(--rx);--rS85y1:var(--ry1a);--rS85y2:var(--ry2a);--rS85y4:var(--ry4a)"><g class="B" style="--rS86:var(--rx);--rS86y1:var(--ry1b);--rS86y2:var(--ry2b);--rS86y4:var(--ry4b)"><g class="A" style="--rS87:var(--rx);--rS87y1:var(--ry1a);--rS87y2:var(--ry2a);--rS87y4:var(--ry4a)"><g class="B" style="--rS88:var(--rx);--rS88y1:var(--ry1b);--rS88y2:var(--ry2b);--rS88y4:var(--ry4b)"><g class="A" style="--rS89:var(--rx);--rS89y1:var(--ry1a);--rS89y2:var(--ry2a);--rS89y4:var(--ry4a)"><g class="B" style="--rS90:var(--rx);--rS90y1:var(--ry1b);--rS90y2:var(--ry2b);--rS90y4:var(--ry4b)"><g class="A" style="--rS91:var(--rx);--rS91y1:var(--ry1a);--rS91y2:var(--ry2a);--rS91y4:var(--ry4a)"><g class="B" style="--rS92:var(--rx);--rS92y1:var(--ry1b);--rS92y2:var(--ry2b);--rS92y4:var(--ry4b)"><g class="A" style="--rS93:var(--rx);--rS93y1:var(--ry1a);--rS93y2:var(--ry2a);--rS93y4:var(--ry4a)"><g class="B" style="--rS94:var(--rx);--rS94y1:var(--ry1b);--rS94y2:var(--ry2b);--rS94y4:var(--ry4b)"><g class="A" style="--rS95:var(--rx);--rS95y1:var(--ry1a);--rS95y2:var(--ry2a);--rS95y4:var(--ry4a)"><g class="B" style="--rS96:var(--rx);--rS96y1:var(--ry1b);--rS96y2:var(--ry2b);--rS96y4:var(--ry4b)"><g class="A" style="--rS97:var(--rx);--rS97y1:var(--ry1a);--rS97y2:var(--ry2a);--rS97y4:var(--ry4a)"><g class="B" style="--rS98:var(--rx);--rS98y1:var(--ry1b);--rS98y2:var(--ry2b);--rS98y4:var(--ry4b)"><g class="A" style="--rS99:var(--rx);--rS99y1:var(--ry1a);--rS99y2:var(--ry2a);--rS99y4:var(--ry4a)"><g class="B" style="--rS100:var(--rx);--rS100y1:var(--ry1b);--rS100y2:var(--ry2b);--rS100y4:var(--ry4b)"><g class="A" style="--rS101:var(--rx);--rS101y1:var(--ry1a);--rS101y2:var(--ry2a);--rS101y4:var(--ry4a)"><g class="B" style="--rS102:var(--rx);--rS102y1:var(--ry1b);--rS102y2:var(--ry2b);--rS102y4:var(--ry4b)"><g class="A" style="--rS103:var(--rx);--rS103y1:var(--ry1a);--rS103y2:var(--ry2a);--rS103y4:var(--ry4a)"><g class="B" style="--rS104:var(--rx);--rS104y1:var(--ry1b);--rS104y2:var(--ry2b);--rS104y4:var(--ry4b)"><g class="A" style="--rS105:var(--rx);--rS105y1:var(--ry1a);--rS105y2:var(--ry2a);--rS105y4:var(--ry4a)"><g class="B" style="--rS106:var(--rx);--rS106y1:var(--ry1b);--rS106y2:var(--ry2b);--rS106y4:var(--ry4b)"><g class="A" style="--rS107:var(--rx);--rS107y1:var(--ry1a);--rS107y2:var(--ry2a);--rS107y4:var(--ry4a)"><g class="B" style="--rS108:var(--rx);--rS108y1:var(--ry1b);--rS108y2:var(--ry2b);--rS108y4:var(--ry4b)"><g class="A" style="--rS109:var(--rx);--rS109y1:var(--ry1a);--rS109y2:var(--ry2a);--rS109y4:var(--ry4a)"><g class="B" style="--rS110:var(--rx);--rS110y1:var(--ry1b);--rS110y2:var(--ry2b);--rS110y4:var(--ry4b)"><g class="A" style="--rS111:var(--rx);--rS111y1:var(--ry1a);--rS111y2:var(--ry2a);--rS111y4:var(--ry4a)"><g class="B" style="--rS112:var(--rx);--rS112y1:var(--ry1b);--rS112y2:var(--ry2b);--rS112y4:var(--ry4b)"><g class="A" style="--rS113:var(--rx);--rS113y1:var(--ry1a);--rS113y2:var(--ry2a);--rS113y4:var(--ry4a)"><g class="B" style="--rS114:var(--rx);--rS114y1:var(--ry1b);--rS114y2:var(--ry2b);--rS114y4:var(--ry4b)"><g class="A" style="--rS115:var(--rx);--rS115y1:var(--ry1a);--rS115y2:var(--ry2a);--rS115y4:var(--ry4a)"><g class="B" style="--rS116:var(--rx);--rS116y1:var(--ry1b);--rS116y2:var(--ry2b);--rS116y4:var(--ry4b)"><g class="A" style="--rS117:var(--rx);--rS117y1:var(--ry1a);--rS117y2:var(--ry2a);--rS117y4:var(--ry4a)"><g class="B" style="--rS118:var(--rx);--rS118y1:var(--ry1b);--rS118y2:var(--ry2b);--rS118y4:var(--ry4b)"><g class="A" style="--rS119:var(--rx);--rS119y1:var(--ry1a);--rS119y2:var(--ry2a);--rS119y4:var(--ry4a)"><g class="B" style="--rS120:var(--rx);--rS120y1:var(--ry1b);--rS120y2:var(--ry2b);--rS120y4:var(--ry4b)"><g class="A" style="--rS121:var(--rx);--rS121y1:var(--ry1a);--rS121y2:var(--ry2a);--rS121y4:var(--ry4a)"><g class="B" style="--rS122:var(--rx);--rS122y1:var(--ry1b);--rS122y2:var(--ry2b);--rS122y4:var(--ry4b)"><g class="A" style="--rS123:var(--rx);--rS123y1:var(--ry1a);--rS123y2:var(--ry2a);--rS123y4:var(--ry4a)"><g class="B" style="--rS124:var(--rx);--rS124y1:var(--ry1b);--rS124y2:var(--ry2b);--rS124y4:var(--ry4b)"><g class="A" style="--rS125:var(--rx);--rS125y1:var(--ry1a);--rS125y2:var(--ry2a);--rS125y4:var(--ry4a)"><g class="B" style="--rS126:var(--rx);--rS126y1:var(--ry1b);--rS126y2:var(--ry2b);--rS126y4:var(--ry4b)"><g class="A" style="--rS127:var(--rx);--rS127y1:var(--ry1a);--rS127y2:var(--ry2a);--rS127y4:var(--ry4a)"><g class="B" style="--rS128:var(--rx);--rS128y1:var(--ry1b);--rS128y2:var(--ry2b);--rS128y4:var(--ry4b)"><g class="A" style="--rS129:var(--rx);--rS129y1:var(--ry1a);--rS129y2:var(--ry2a);--rS129y4:var(--ry4a)"><g class="B" style="--rS130:var(--rx);--rS130y1:var(--ry1b);--rS130y2:var(--ry2b);--rS130y4:var(--ry4b)"><g class="A" style="--rS131:var(--rx);--rS131y1:var(--ry1a);--rS131y2:var(--ry2a);--rS131y4:var(--ry4a)"><g class="B" style="--rS132:var(--rx);--rS132y1:var(--ry1b);--rS132y2:var(--ry2b);--rS132y4:var(--ry4b)"><g class="A" style="--rS133:var(--rx);--rS133y1:var(--ry1a);--rS133y2:var(--ry2a);--rS133y4:var(--ry4a)"><g class="B" style="--rS134:var(--rx);--rS134y1:var(--ry1b);--rS134y2:var(--ry2b);--rS134y4:var(--ry4b)"><g class="A" style="--rS135:var(--rx);--rS135y1:var(--ry1a);--rS135y2:var(--ry2a);--rS135y4:var(--ry4a)"><g class="B" style="--rS136:var(--rx);--rS136y1:var(--ry1b);--rS136y2:var(--ry2b);--rS136y4:var(--ry4b)"><g class="A" style="--rS137:var(--rx);--rS137y1:var(--ry1a);--rS137y2:var(--ry2a);--rS137y4:var(--ry4a)"><g class="B" style="--rS138:var(--rx);--rS138y1:var(--ry1b);--rS138y2:var(--ry2b);--rS138y4:var(--ry4b)"><g class="A" style="--rS139:var(--rx);--rS139y1:var(--ry1a);--rS139y2:var(--ry2a);--rS139y4:var(--ry4a)"><g class="B" style="--rS140:var(--rx);--rS140y1:var(--ry1b);--rS140y2:var(--ry2b);--rS140y4:var(--ry4b)"><g class="A" style="--rS141:var(--rx);--rS141y1:var(--ry1a);--rS141y2:var(--ry2a);--rS141y4:var(--ry4a)"><g class="B" style="--rS142:var(--rx);--rS142y1:var(--ry1b);--rS142y2:var(--ry2b);--rS142y4:var(--ry4b)"><g class="A" style="--rS143:var(--rx);--rS143y1:var(--ry1a);--rS143y2:var(--ry2a);--rS143y4:var(--ry4a)"><g class="B" style="--rS144:var(--rx);--rS144y1:var(--ry1b);--rS144y2:var(--ry2b);--rS144y4:var(--ry4b)"><g class="A" style="--rS145:var(--rx);--rS145y1:var(--ry1a);--rS145y2:var(--ry2a);--rS145y4:var(--ry4a)"><g class="B" style="--rS146:var(--rx);--rS146y1:var(--ry1b);--rS146y2:var(--ry2b);--rS146y4:var(--ry4b)"><g class="A" style="--rS147:var(--rx);--rS147y1:var(--ry1a);--rS147y2:var(--ry2a);--rS147y4:var(--ry4a)"><g class="B" style="--rS148:var(--rx);--rS148y1:var(--ry1b);--rS148y2:var(--ry2b);--rS148y4:var(--ry4b)"><g class="A" style="--rS149:var(--rx);--rS149y1:var(--ry1a);--rS149y2:var(--ry2a);--rS149y4:var(--ry4a)"><g class="B" style="--rS150:var(--rx);--rS150y1:var(--ry1b);--rS150y2:var(--ry2b);--rS150y4:var(--ry4b)"><g class="A" style="--rS151:var(--rx);--rS151y1:var(--ry1a);--rS151y2:var(--ry2a);--rS151y4:var(--ry4a)"><g class="B" style="--rS152:var(--rx);--rS152y1:var(--ry1b);--rS152y2:var(--ry2b);--rS152y4:var(--ry4b)"><g class="A" style="--rS153:var(--rx);--rS153y1:var(--ry1a);--rS153y2:var(--ry2a);--rS153y4:var(--ry4a)"><g class="B" style="--rS154:var(--rx);--rS154y1:var(--ry1b);--rS154y2:var(--ry2b);--rS154y4:var(--ry4b)"><g class="A" style="--rS155:var(--rx);--rS155y1:var(--ry1a);--rS155y2:var(--ry2a);--rS155y4:var(--ry4a)"><g class="B" style="--rS156:var(--rx);--rS156y1:var(--ry1b);--rS156y2:var(--ry2b);--rS156y4:var(--ry4b)"><g class="A" style="--rS157:var(--rx);--rS157y1:var(--ry1a);--rS157y2:var(--ry2a);--rS157y4:var(--ry4a)"><g class="B" style="--rS158:var(--rx);--rS158y1:var(--ry1b);--rS158y2:var(--ry2b);--rS158y4:var(--ry4b)"><g class="A" style="--rS159:var(--rx);--rS159y1:var(--ry1a);--rS159y2:var(--ry2a);--rS159y4:var(--ry4a)"><g class="B" style="--rS160:var(--rx);--rS160y1:var(--ry1b);--rS160y2:var(--ry2b);--rS160y4:var(--ry4b)"><g class="C"><g class="D"><foreignObject x="24" y="60" width="712" height="330"><div xmlns="http://www.w3.org/1999/xhtml" class="rr-q" style="width:calc(712px + mod(var(--rsx), 64) * .25px);height:330px;container-type:inline-size"><div class="rr-ui" style="position:relative;width:712px;height:330px"><div style="position:relative;width:712px;height:330px;background:#f6f4ef;border-radius:14px;overflow:hidden"><rr-case class="rr-c rr-s1-0 rr-d"><div data-id="el1_1bhh" class="el el-box is-selected" style="left:calc((var(--rview_dx) + 16) * 1px);top:calc((var(--rview_dy) + 16) * 1px);width:300px;height:200px;z-index:1;background:#fff;border-radius:16px;border:1px solid #e7e4dd"></div></rr-case><rr-case class="rr-c rr-s1-1"><div data-id="el1_1bhh" class="el el-box" style="left:calc((var(--rview_dx) + 16) * 1px);top:calc((var(--rview_dy) + 16) * 1px);width:300px;height:200px;z-index:1;background:#fff;border-radius:16px;border:1px solid #e7e4dd"></div></rr-case><rr-case class="rr-c rr-s1-2"><div data-id="el1_1bhh" class="el el-box" style="left:calc((var(--rview_dx) + 16) * 1px);top:calc((var(--rview_dy) + 16) * 1px);width:300px;height:200px;z-index:1;background:#fff;border-radius:16px;border:1px solid #e7e4dd"></div></rr-case><rr-case class="rr-c rr-s1-3"><div data-id="el1_1bhh" class="el el-box" style="left:calc((var(--rview_dx) + 16) * 1px);top:calc((var(--rview_dy) + 16) * 1px);width:300px;height:200px;z-index:1;background:#fff;border-radius:16px;border:1px solid #e7e4dd"></div></rr-case><rr-case class="rr-c rr-s1-4"><div data-id="el1_1bhh" class="el el-box" style="left:calc((var(--rview_dx) + 16) * 1px);top:calc((var(--rview_dy) + 16) * 1px);width:300px;height:200px;z-index:1;background:#fff;border-radius:16px;border:1px solid #e7e4dd"></div></rr-case><rr-case class="rr-c rr-s1-5"><div data-id="el1_1bhh" class="el el-box" style="left:calc((var(--rview_dx) + 16) * 1px);top:calc((var(--rview_dy) + 16) * 1px);width:300px;height:200px;z-index:1;background:#fff;border-radius:16px;border:1px solid #e7e4dd"></div></rr-case><rr-case class="rr-c rr-s2-0 rr-d"><div data-id="el2_zycb" class="el el-icon" style="left:calc((var(--rview_dx) + 40) * 1px);top:calc((var(--rview_dy) + 40) * 1px);width:44px;height:44px;z-index:2;color:#ff6a45"><span class="mc-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3 6.5 7 1-5 5 1.2 7L12 18l-6.2 3.5L7 14l-5-5 7-1z"/></svg></span></div></rr-case><rr-case class="rr-c rr-s2-1"><div data-id="el2_zycb" class="el el-icon is-selected" style="left:calc((var(--rview_dx) + 40) * 1px);top:calc((var(--rview_dy) + 40) * 1px);width:44px;height:44px;z-index:2;color:#ff6a45"><span class="mc-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3 6.5 7 1-5 5 1.2 7L12 18l-6.2 3.5L7 14l-5-5 7-1z"/></svg></span></div></rr-case><rr-case class="rr-c rr-s2-2"><div data-id="el2_zycb" class="el el-icon" style="left:calc((var(--rview_dx) + 40) * 1px);top:calc((var(--rview_dy) + 40) * 1px);width:44px;height:44px;z-index:2;color:#ff6a45"><span class="mc-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3 6.5 7 1-5 5 1.2 7L12 18l-6.2 3.5L7 14l-5-5 7-1z"/></svg></span></div></rr-case><rr-case class="rr-c rr-s2-3"><div data-id="el2_zycb" class="el el-icon" style="left:calc((var(--rview_dx) + 40) * 1px);top:calc((var(--rview_dy) + 40) * 1px);width:44px;height:44px;z-index:2;color:#ff6a45"><span class="mc-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3 6.5 7 1-5 5 1.2 7L12 18l-6.2 3.5L7 14l-5-5 7-1z"/></svg></span></div></rr-case><rr-case class="rr-c rr-s2-4"><div data-id="el2_zycb" class="el el-icon" style="left:calc((var(--rview_dx) + 40) * 1px);top:calc((var(--rview_dy) + 40) * 1px);width:44px;height:44px;z-index:2;color:#ff6a45"><span class="mc-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3 6.5 7 1-5 5 1.2 7L12 18l-6.2 3.5L7 14l-5-5 7-1z"/></svg></span></div></rr-case><rr-case class="rr-c rr-s2-5"><div data-id="el2_zycb" class="el el-icon" style="left:calc((var(--rview_dx) + 40) * 1px);top:calc((var(--rview_dy) + 40) * 1px);width:44px;height:44px;z-index:2;color:#ff6a45"><span class="mc-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3 6.5 7 1-5 5 1.2 7L12 18l-6.2 3.5L7 14l-5-5 7-1z"/></svg></span></div></rr-case><rr-case class="rr-c rr-s3-0 rr-d"><div data-id="el3_6cq4" class="el el-text" style="left:calc((var(--rview_dx) + 40) * 1px);top:calc((var(--rview_dy) + 100) * 1px);width:250px;height:24px;z-index:3;color:#1b1a18;font-size:18px;font-weight:700;text-align:left;align-items:center"><span class="t">カードタイトル</span></div></rr-case><rr-case class="rr-c rr-s3-1"><div data-id="el3_6cq4" class="el el-text" style="left:calc((var(--rview_dx) + 40) * 1px);top:calc((var(--rview_dy) + 100) * 1px);width:250px;height:24px;z-index:3;color:#1b1a18;font-size:18px;font-weight:700;text-align:left;align-items:center"><span class="t">カードタイトル</span></div></rr-case><rr-case class="rr-c rr-s3-2"><div data-id="el3_6cq4" class="el el-text is-selected" style="left:calc((var(--rview_dx) + 40) * 1px);top:calc((var(--rview_dy) + 100) * 1px);width:250px;height:24px;z-index:3;color:#1b1a18;font-size:18px;font-weight:700;text-align:left;align-items:center"><span class="t">カードタイトル</span></div></rr-case><rr-case class="rr-c rr-s3-3"><div data-id="el3_6cq4" class="el el-text" style="left:calc((var(--rview_dx) + 40) * 1px);top:calc((var(--rview_dy) + 100) * 1px);width:250px;height:24px;z-index:3;color:#1b1a18;font-size:18px;font-weight:700;text-align:left;align-items:center"><span class="t">カードタイトル</span></div></rr-case><rr-case class="rr-c rr-s3-4"><div data-id="el3_6cq4" class="el el-text" style="left:calc((var(--rview_dx) + 40) * 1px);top:calc((var(--rview_dy) + 100) * 1px);width:250px;height:24px;z-index:3;color:#1b1a18;font-size:18px;font-weight:700;text-align:left;align-items:center"><span class="t">カードタイトル</span></div></rr-case><rr-case class="rr-c rr-s3-5"><div data-id="el3_6cq4" class="el el-text" style="left:calc((var(--rview_dx) + 40) * 1px);top:calc((var(--rview_dy) + 100) * 1px);width:250px;height:24px;z-index:3;color:#1b1a18;font-size:18px;font-weight:700;text-align:left;align-items:center"><span class="t">カードタイトル</span></div></rr-case><rr-case class="rr-c rr-s5-0 rr-d"><div data-id="el4_ysav" class="el el-para" style="left:calc((var(--rview_dx) + 40) * 1px);top:calc((var(--rview_dy) + 132) * 1px);width:252px;height:44px;z-index:4;color:#8c8881;font-size:13px;font-weight:400;text-align:left;align-items:flex-start"><span class="t">説明テキストが入ります。</span></div></rr-case><rr-case class="rr-c rr-s5-1"><div data-id="el4_ysav" class="el el-para" style="left:calc((var(--rview_dx) + 40) * 1px);top:calc((var(--rview_dy) + 132) * 1px);width:252px;height:44px;z-index:4;color:#8c8881;font-size:13px;font-weight:400;text-align:left;align-items:flex-start"><span class="t">説明テキストが入ります。</span></div></rr-case><rr-case class="rr-c rr-s5-2"><div data-id="el4_ysav" class="el el-para" style="left:calc((var(--rview_dx) + 40) * 1px);top:calc((var(--rview_dy) + 132) * 1px);width:252px;height:44px;z-index:4;color:#8c8881;font-size:13px;font-weight:400;text-align:left;align-items:flex-start"><span class="t">説明テキストが入ります。</span></div></rr-case><rr-case class="rr-c rr-s5-3"><div data-id="el4_ysav" class="el el-para is-selected" style="left:calc((var(--rview_dx) + 40) * 1px);top:calc((var(--rview_dy) + 132) * 1px);width:252px;height:44px;z-index:4;color:#8c8881;font-size:13px;font-weight:400;text-align:left;align-items:flex-start"><span class="t">説明テキストが入ります。</span></div></rr-case><rr-case class="rr-c rr-s5-4"><div data-id="el4_ysav" class="el el-para" style="left:calc((var(--rview_dx) + 40) * 1px);top:calc((var(--rview_dy) + 132) * 1px);width:252px;height:44px;z-index:4;color:#8c8881;font-size:13px;font-weight:400;text-align:left;align-items:flex-start"><span class="t">説明テキストが入ります。</span></div></rr-case><rr-case class="rr-c rr-s5-5"><div data-id="el4_ysav" class="el el-para" style="left:calc((var(--rview_dx) + 40) * 1px);top:calc((var(--rview_dy) + 132) * 1px);width:252px;height:44px;z-index:4;color:#8c8881;font-size:13px;font-weight:400;text-align:left;align-items:flex-start"><span class="t">説明テキストが入ります。</span></div></rr-case><rr-case class="rr-c rr-s6-0 rr-d"><div data-id="el5_sxt0" class="el el-button" style="left:calc((var(--rview_dx) + 40) * 1px);top:calc((var(--rview_dy) + 174) * 1px);width:120px;height:36px;z-index:5;background:#ff6a45;color:#fff;border-radius:8px;font-size:13px;font-weight:600"><span>詳細</span></div></rr-case><rr-case class="rr-c rr-s6-1"><div data-id="el5_sxt0" class="el el-button" style="left:calc((var(--rview_dx) + 40) * 1px);top:calc((var(--rview_dy) + 174) * 1px);width:120px;height:36px;z-index:5;background:#ff6a45;color:#fff;border-radius:8px;font-size:13px;font-weight:600"><span>詳細</span></div></rr-case><rr-case class="rr-c rr-s6-2"><div data-id="el5_sxt0" class="el el-button" style="left:calc((var(--rview_dx) + 40) * 1px);top:calc((var(--rview_dy) + 174) * 1px);width:120px;height:36px;z-index:5;background:#ff6a45;color:#fff;border-radius:8px;font-size:13px;font-weight:600"><span>詳細</span></div></rr-case><rr-case class="rr-c rr-s6-3"><div data-id="el5_sxt0" class="el el-button" style="left:calc((var(--rview_dx) + 40) * 1px);top:calc((var(--rview_dy) + 174) * 1px);width:120px;height:36px;z-index:5;background:#ff6a45;color:#fff;border-radius:8px;font-size:13px;font-weight:600"><span>詳細</span></div></rr-case><rr-case class="rr-c rr-s6-4"><div data-id="el5_sxt0" class="el el-button is-selected" style="left:calc((var(--rview_dx) + 40) * 1px);top:calc((var(--rview_dy) + 174) * 1px);width:120px;height:36px;z-index:5;background:#ff6a45;color:#fff;border-radius:8px;font-size:13px;font-weight:600"><span>詳細</span></div></rr-case><rr-case class="rr-c rr-s6-5"><div data-id="el5_sxt0" class="el el-button" style="left:calc((var(--rview_dx) + 40) * 1px);top:calc((var(--rview_dy) + 174) * 1px);width:120px;height:36px;z-index:5;background:#ff6a45;color:#fff;border-radius:8px;font-size:13px;font-weight:600"><span>詳細</span></div></rr-case><rr-case class="rr-c rr-s4-0"><div data-id="el6_z249" class="el el-text" style="left:540px;top:20px;width:150px;height:22px;z-index:1;color:#1b1a18;font-size:13px;font-weight:700;text-align:center;align-items:center"><span class="t">← 左へ移動中</span></div></rr-case><rr-case class="rr-c rr-s4-1"><div data-id="el6_z249" class="el el-text" style="left:540px;top:20px;width:150px;height:22px;z-index:1;color:#1b1a18;font-size:13px;font-weight:700;text-align:center;align-items:center"><span class="t">← 左へ移動中</span></div></rr-case><rr-case class="rr-c rr-s4-2"><div data-id="el6_z249" class="el el-text" style="left:540px;top:20px;width:150px;height:22px;z-index:1;color:#1b1a18;font-size:13px;font-weight:700;text-align:center;align-items:center"><span class="t">← 左へ移動中</span></div></rr-case><rr-case class="rr-c rr-s4-3"><div data-id="el6_z249" class="el el-text" style="left:540px;top:20px;width:150px;height:22px;z-index:1;color:#1b1a18;font-size:13px;font-weight:700;text-align:center;align-items:center"><span class="t">← 左へ移動中</span></div></rr-case><rr-case class="rr-c rr-s4-4"><div data-id="el6_z249" class="el el-text" style="left:540px;top:20px;width:150px;height:22px;z-index:1;color:#1b1a18;font-size:13px;font-weight:700;text-align:center;align-items:center"><span class="t">← 左へ移動中</span></div></rr-case><rr-case class="rr-c rr-s4-5"><div data-id="el6_z249" class="el el-text is-selected" style="left:540px;top:20px;width:150px;height:22px;z-index:1;color:#1b1a18;font-size:13px;font-weight:700;text-align:center;align-items:center"><span class="t">← 左へ移動中</span></div></rr-case><rr-case class="rr-c rr-s4-6 rr-d"><div data-id="el6_z249" class="el el-text" style="left:540px;top:20px;width:150px;height:22px;z-index:1;color:#1b1a18;font-size:13px;font-weight:700;text-align:center;align-items:center"><span class="t">→ 右へ移動中</span></div></rr-case><rr-case class="rr-c rr-s4-7"><div data-id="el6_z249" class="el el-text" style="left:540px;top:20px;width:150px;height:22px;z-index:1;color:#1b1a18;font-size:13px;font-weight:700;text-align:center;align-items:center"><span class="t">→ 右へ移動中</span></div></rr-case><rr-case class="rr-c rr-s4-8"><div data-id="el6_z249" class="el el-text" style="left:540px;top:20px;width:150px;height:22px;z-index:1;color:#1b1a18;font-size:13px;font-weight:700;text-align:center;align-items:center"><span class="t">→ 右へ移動中</span></div></rr-case><rr-case class="rr-c rr-s4-9"><div data-id="el6_z249" class="el el-text" style="left:540px;top:20px;width:150px;height:22px;z-index:1;color:#1b1a18;font-size:13px;font-weight:700;text-align:center;align-items:center"><span class="t">→ 右へ移動中</span></div></rr-case><rr-case class="rr-c rr-s4-10"><div data-id="el6_z249" class="el el-text" style="left:540px;top:20px;width:150px;height:22px;z-index:1;color:#1b1a18;font-size:13px;font-weight:700;text-align:center;align-items:center"><span class="t">→ 右へ移動中</span></div></rr-case><rr-case class="rr-c rr-s4-11"><div data-id="el6_z249" class="el el-text is-selected" style="left:540px;top:20px;width:150px;height:22px;z-index:1;color:#1b1a18;font-size:13px;font-weight:700;text-align:center;align-items:center"><span class="t">→ 右へ移動中</span></div></rr-case><rr-case class="rr-c rr-s0-0"><div data-id="el7_rd9x" class="el el-toggle" style="left:540px;top:52px;width:52px;height:30px;z-index:1;background:#ff6a45"><span class="knob"></span></div></rr-case><rr-case class="rr-c rr-s0-1 rr-d"><div data-id="el7_rd9x" class="el el-toggle is-on" style="left:540px;top:52px;width:52px;height:30px;z-index:1;background:#ff6a45"><span class="knob"></span></div></rr-case><div data-id="el8_8t1i" class="el el-badge" style="left:540px;top:100px;width:150px;height:30px;z-index:1;background:#ff6a45;color:#fff;font-size:12px;font-weight:700"><span>反射 <rr-n style="counter-reset:rr-n var(--rview_hits)"></rr-n> 回</span></div><div data-id="el9_ermo" class="el el-text" style="left:540px;top:146px;width:150px;height:20px;z-index:1;color:#5b5852;font-size:12px;font-weight:700;text-align:center;align-items:center"><span class="t">x <rr-n style="counter-reset:rr-n calc(var(--rview_dx) + 16)"></rr-n> · y <rr-n style="counter-reset:rr-n calc(var(--rview_dy) + 16)"></rr-n></span></div></div></div></div></foreignObject><text x="24" y="430" class="rr-l">STEP</text><g class="rr-sd s0" transform="translate(82 416)" clip-path="url(#rrcs)"><use href="#rrds"/></g><g class="rr-sd s1" transform="translate(73 416)" clip-path="url(#rrcs)"><use href="#rrds"/></g><g class="rr-sd s2" transform="translate(64 416)" clip-path="url(#rrcs)"><use href="#rrds"/></g><text x="96" y="430" class="rr-m" font-size="13">/ 160</text><g class="st-run"><circle class="rr-pulse" cx="150" cy="425" r="7" style="fill:var(--rr-acc);fill-opacity:.35"/><circle cx="150" cy="425" r="4" style="fill:var(--rr-acc)"/><text x="160" y="430" class="rr-l" style="fill:var(--rr-acc)">RUNNING</text></g><g class="st-end"><circle cx="150" cy="425" r="4" style="fill:var(--rr-mut)"/><text x="160" y="430" class="rr-l" style="fill:var(--rr-mut)">END</text></g><g class="st-halt"><circle cx="150" cy="425" r="4" style="fill:var(--rr-blue)"/><text x="160" y="430" class="rr-l" style="fill:var(--rr-blue)">HALTED</text></g><g class="st-err"><circle cx="150" cy="425" r="4" style="fill:var(--rr-red)"/><text x="160" y="430" class="rr-l" style="fill:var(--rr-red)">OUT OF RANGE</text></g><text x="736" y="430" class="rr-m" font-size="11" text-anchor="end">UI reused from UIdesign@2f97712 (unchanged)</text></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g></g>
+</svg>
