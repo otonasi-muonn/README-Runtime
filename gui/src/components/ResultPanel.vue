@@ -43,7 +43,7 @@ const source = computed(() => (s.preview?.source === 'saved' ? '保存済みの 
       </template>
 
       <h3 class="section-title">再生の流れ（ページを開いてから）</h3>
-      <PerfTimeline v-if="s.preview" :perf="result.perf" :end="result.end" :step-ms="s.preview.settings.stepMs" />
+      <PerfTimeline v-if="s.preview" :perf="result.perf" :end="result.end" :step-ms="s.preview.settings.stepMs" :hold="s.preview.settings.hold" />
 
       <h3 class="section-title">閲覧者への負荷の目安</h3>
       <PerfBars :perf="result.perf" />

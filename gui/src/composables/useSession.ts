@@ -72,6 +72,8 @@ export function useSession() {
   async function runPreview() {
     const name = selected.value;
     if (!name || !valid.value) return;
+    // not while this card is being saved: the save's result would land on another preview
+    if (attempts[name]?.kind === 'save' && attempts[name].status === 'running') return;
     controllers[name]?.abort();
     const ctrl = (controllers[name] = new AbortController());
     const n = (seq[name] = (seq[name] ?? 0) + 1);
@@ -105,7 +107,8 @@ export function useSession() {
       c.lastBuild = r.card;
       // the saved file changed: a new URL so the browser does not show the old image
       c.svgUrl = `${c.svgUrl.split('?')[0]}?r=${Date.now()}`;
-      previews[name] = { ...previews[name], card: r.card };
+      // the build result belongs to the saved settings: only a preview of those takes it
+      if (sameSettings(previews[name]?.settings, settings)) previews[name] = { ...previews[name], card: r.card };
       attempts[name] = { kind: 'save', status: 'ok' };
       checkState.value = { status: 'idle' };
     } catch (e) {

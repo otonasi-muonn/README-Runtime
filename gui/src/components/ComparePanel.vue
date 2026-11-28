@@ -110,11 +110,11 @@ const warningDiff = computed(() => {
       <div class="timelines">
         <div v-if="saved?.card">
           <p class="tl-label">保存済み</p>
-          <PerfTimeline :perf="saved.card.perf" :end="saved.card.end" :step-ms="saved.settings.stepMs" />
+          <PerfTimeline :perf="saved.card.perf" :end="saved.card.end" :step-ms="saved.settings.stepMs" :hold="saved.settings.hold" />
         </div>
         <div v-if="preview.card">
           <p class="tl-label">プレビュー #{{ s.preview?.generation }}</p>
-          <PerfTimeline :perf="preview.card.perf" :end="preview.card.end" :step-ms="preview.settings.stepMs" />
+          <PerfTimeline :perf="preview.card.perf" :end="preview.card.end" :step-ms="preview.settings.stepMs" :hold="preview.settings.hold" />
         </div>
       </div>
       <p class="note">時間の目盛りは、それぞれの長さに合わせています。</p>
