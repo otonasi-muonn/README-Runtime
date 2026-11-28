@@ -579,3 +579,10 @@ export function storeInteger(v, model) {
   const r = Math.floor(v + 0.5); // CSS rounds to the nearest integer, ties toward +infinity
   return model.store(r);
 }
+
+// Store a computed value into a registered <number> custom property under `model`.
+export function storeNumber(v, model) {
+  if (!Number.isFinite(v)) return 0;
+  const r = model.store(v);
+  return Object.is(r, -0) ? 0 : r;
+}

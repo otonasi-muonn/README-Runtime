@@ -50,7 +50,46 @@ const isSvg = (n) => n?.type === 'el' && n.tag.toLowerCase() === 'svg';
 // kept in the card); every other attribute change makes variants.
 const QUIET = (name) => /^(data-|aria-)/.test(name) || ['title', 'tabindex', 'role', 'name', 'for'].includes(name);
 
-// Compare two trees: numeric sites { path, where, index, a, b }, structural sites
+// CSS style properties whose grammar accepts <integer> only (substituting a <number> custom
+// property into them is invalid at computed-value time or changes discrete layout slots).
+export const DISCRETE_STYLE_PROPS = new Set([
+  'z-index', 'order',
+  'grid-area',
+  'grid-row', 'grid-row-start', 'grid-row-end',
+  'grid-column', 'grid-column-start', 'grid-column-end',
+  'columns', 'column-count', 'line-clamp', '-webkit-line-clamp',
+  'counter-reset', 'counter-increment', 'counter-set',
+  'orphans', 'widows', 'math-depth',
+]);
+
+export function stylePropAt(parts, index) {
+  const before = parts.slice(0, index).map(String).join('');
+  let depth = 0, quote = '', declStart = 0, colon = -1;
+  for (let i = 0; i < before.length; i++) {
+    const ch = before[i];
+    if (quote) {
+      if (ch === '\\') i++;
+      else if (ch === quote) quote = '';
+      continue;
+    }
+    if (ch === '"' || ch === "'") { quote = ch; continue; }
+    if (ch === '(') depth++;
+    else if (ch === ')' && depth > 0) depth--;
+    else if (depth === 0 && ch === ';') { declStart = i + 1; colon = -1; }
+    else if (depth === 0 && ch === ':' && colon < 0) colon = i;
+  }
+  return colon < 0 ? null : before.slice(declStart, colon).trim().toLowerCase();
+}
+
+export function isContinuousStyleSite(parts, index) {
+  const prop = stylePropAt(parts, index);
+  if (!prop || DISCRETE_STYLE_PROPS.has(prop)) return false;
+  const before = parts.slice(0, index).map(String).join('');
+  if (/\b(?:steps|repeat)\(\s*$/i.test(before)) return false;
+  return true;
+}
+
+// Compare two trees: numeric sites { path, where, index, a, b, continuous? }, structural sites
 // { path, why } and ignored attribute changes. ctx: { visual(name), svg }.
 function compare(a, b, ctx, path = [], out = { num: [], struct: [], ignored: [] }) {
   if (!a || !b) { out.struct.push({ path, why: 'structure' }); return out; }
@@ -80,7 +119,11 @@ function compare(a, b, ctx, path = [], out = { num: [], struct: [], ignored: [] 
         out.struct.push({ path, why });
         return;
       }
-      pa.forEach((x, j) => { if (isNum(x) && x.v !== pb[j].v) out.num.push({ path, where: `attr:${k}`, index: j, a: x.v, b: pb[j].v }); });
+      pa.forEach((x, j) => {
+        if (isNum(x) && x.v !== pb[j].v) {
+          out.num.push({ path, where: `attr:${k}`, index: j, a: x.v, b: pb[j].v, ...(k === 'style' && isContinuousStyleSite(pa, j) ? { continuous: true } : {}) });
+        }
+      });
     });
   }
   const inner = { ...ctx, svg: ctx.svg || isSvg(a) };
@@ -226,7 +269,7 @@ export function inferTemplate(bundle, views, { base, samples = [], cssAttrs = ne
   const regionOf = (props, p) => nodeAt(draw(props), p);
   const bind = (node, site, view, fit) => {
     node.binds ??= [];
-    node.binds.push({ where: site.where, index: site.index, view, ...fit });
+    node.binds.push({ where: site.where, index: site.index, view, ...(site.continuous ? { continuous: true } : {}), ...fit });
   };
 
   // Inside a switch, the other views are probed again in every variant: a number or an
@@ -314,8 +357,16 @@ export function inferTemplate(bundle, views, { base, samples = [], cssAttrs = ne
   // verification below therefore compares without them (they are not visual)
   const ignoredNames = new Set(ignored.map((x) => x.attr));
   template.ignore = [...ignoredNames];
+  const continuousSet = new Set();
+  const collectContinuous = (n) => {
+    if (n.type === 'switch') { n.variants.forEach((x) => collectContinuous(x.node)); return; }
+    for (const b of n.binds ?? []) if (b.continuous) continuousSet.add(b.view);
+    n.children?.forEach(collectContinuous);
+  };
+  collectContinuous(template);
   const info = {
     numeric: views.map((v) => ({ view: v.name, sites: [...numeric.get(v.name).values()].length })),
+    continuousViews: views.map((v) => v.name).filter((name) => continuousSet.has(name)),
     discrete: switches.map((s) => ({ views: s.views, path: pathKey(s.path), variants: s.variants.length })),
     ignoredAttributes: [...new Set(ignored.map((x) => `${x.attr} (${x.view})`))],
     renders: cache.size,
@@ -410,15 +461,17 @@ function ownDefs(node, suffix) {
   return { node: fix(node), ids };
 }
 
-// Serialize the template with CSS bindings. viewVar(name) -> CSS custom property name.
-export function templateToXhtml(template, viewVar) {
-  const expr = (b) => {
-    const v = `var(--${viewVar(b.view)})`;
+// Serialize the template with CSS bindings. viewVar(name) -> <integer> CSS custom property
+// name; optional lerpVar(name) -> <number> CSS custom property name for continuous style sites.
+export function templateToXhtml(template, viewVar, { lerpVar = null } = {}) {
+  const expr = (b, propName = viewVar(b.view)) => {
+    const v = `var(--${propName})`;
     const a = b.alpha === 1 ? v : `${v} * ${b.alpha}`;
     return b.beta === 0 ? a : `${a} + ${b.beta}`;
   };
   const rules = [];
   let variantBytes = 0;
+  let interpolatedSites = 0;
   const renamed = []; // { cls, ids: [[from, to]] } per variant whose SVG ids were renamed
   const hooks = {
     attrs(n) {
@@ -428,9 +481,11 @@ export function templateToXhtml(template, viewVar) {
         if (!binds.length) return [k, v];
         const p = tokenize(v);
         for (const b of binds) {
+          const lv = b.continuous ? lerpVar?.(b.view) : null;
+          if (lv) interpolatedSites++;
           const unitMatch = typeof p[b.index + 1] === 'string' ? /^[a-z%]+/i.exec(p[b.index + 1]) : null;
           const unit = unitMatch ? unitMatch[0] : '';
-          p[b.index] = unit ? `calc((${expr(b)}) * 1${unit})` : `calc(${expr(b)})`;
+          p[b.index] = unit ? `calc((${expr(b, lv || viewVar(b.view))}) * 1${unit})` : `calc(${expr(b, lv || viewVar(b.view))})`;
           if (unit) p[b.index + 1] = p[b.index + 1].slice(unit.length);
         }
         return [k, p.join('')];
@@ -464,5 +519,5 @@ export function templateToXhtml(template, viewVar) {
   };
   const markup = toXhtml(template, { hooks });
   const css = `.rr-c { display: none; }\n.rr-c.rr-d { display: contents; }\nrr-n::after { content: counter(rr-n); }\n${rules.join('\n')}\n`;
-  return { markup, css, variantBytes, renamed };
+  return { markup, css, variantBytes, renamed, interpolatedSites };
 }

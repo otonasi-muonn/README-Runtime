@@ -14,7 +14,7 @@
 import { compileStep } from '../compiler/program.js';
 import {
   MODELS, N, V, absV, add, clamp, div, evalAst, fn, max, min, mod, mul,
-  round, storeInteger, sub, toCss, translate, STORED_LIMIT,
+  round, storeInteger, storeNumber, sub, toCss, translate, STORED_LIMIT,
 } from '../compiler/css.js';
 import { topoOrder } from '../compiler/ir.js';
 import { analyzeRanges } from '../compiler/range.js';
@@ -331,6 +331,8 @@ export const flagAt = (machine, levels, k, f) => levels[k].get(machine.stepMeta[
 export const rangeFlagAt = (machine, levels, k) => levels[k].get(machine.stepMeta[k].rgProp);
 
 export const viewProp = (name) => `rview_${name}`;
+export const nextViewProp = (name) => `rnview_${name}`;
+export const lerpProp = (name) => `rlerp_${name}`;
 
 export const altInitId = (x) => `x${Array.isArray(x) ? x.join('_') : x}`;
 export const altInitAnchors = (altInits = []) => altInits.map((x) => `<g id="${altInitId(x)}"/>`).join('');
@@ -341,6 +343,133 @@ export const altInitCss = (machine, altInits = []) => altInits.map((x) => {
 
 export function clockAnimation(machine, { stepMs, loops = 'infinite' }) {
   return `rrclk ${(machine.T + 1) * stepMs}ms steps(${machine.T + 1},jump-none) ${loops === 'infinite' ? 'infinite' : `${loops} forwards`}`;
+}
+
+export function interpAnimation(machine, { stepMs, loops = 'infinite' }, { easing = 'linear' } = {}) {
+  return `rrf ${stepMs}ms ${easing} ${loops === 'infinite' ? 'infinite' : `${(machine.T + 1) * loops} forwards`}`;
+}
+
+// Sub-step visual interpolation (#4): keep .C and .D discrete (once per stepMs), select the
+// next valid state (--rsn) and its views (--rnview_<v>) in .D, and blend only continuous style
+// bindings on .rr-ui via a single <number> animation (--rf: 0..1 per stepMs).
+export function buildInterpolation(program, machine, viewNames, { easing = 'linear', periodic = false } = {}) {
+  if (!viewNames?.length) return null;
+  const views = (program.views ?? []).filter((v) => viewNames.includes(v.name));
+  if (!views.length) return null;
+  const nextShown = [...new Set(topoOrder(views.map((v) => v.node)).filter((x) => x.op === 'input').map((x) => x.index))].sort((a, b) => a - b);
+  const K = program.state?.length ?? 1;
+  const nextStateNames = Array.from({ length: K }, (_, i) => (!nextShown.includes(i) ? null : i === 0 ? 'rnc' : `rncy${i}`));
+  const innermost = blockParity(machine.blocks);
+  const Z = V(n('z', innermost)), H = V(n('h', innermost)), E = V(n('e', innermost));
+  const steps = machine.steps;
+  const intProps = new Map();
+  const numProps = new Map();
+  const dDefs = [];
+
+  // Last good step: z on a normal or halted run, and z - 1 when step z trapped or left range,
+  // so step z - 1 never selects or interpolates toward an invalid state x_z.
+  dDefs.push({ name: 'rlg', ast: sub(Z, E) });
+  intProps.set('rlg', false);
+  const stdNext = max(N(0), min(add(V('rt'), N(1)), V('rlg')));
+  const stdGo = clamp(N(0), sub(V('rlg'), V('rt')), N(1));
+  if (periodic) {
+    dDefs.push({ name: 'rpcyc', ast: sub(N(1), max(H, E)) });
+    intProps.set('rpcyc', false);
+    const atSteps = sub(N(1), clamp(N(0), sub(N(steps), V('rt')), N(1)));
+    dDefs.push({ name: 'rsn', ast: mul(stdNext, sub(N(1), mul(V('rpcyc'), atSteps))) });
+    intProps.set('rsn', false);
+  } else {
+    dDefs.push({ name: 'rsn', ast: stdNext });
+    intProps.set('rsn', false);
+  }
+
+  const SN = V('rsn');
+  const nextSelectionMode = steps > 400 || nextShown.length * (steps + 1) > FACTORED_THRESHOLD ? 'factored' : 'flat';
+  if (nextShown.length) {
+    if (nextSelectionMode === 'flat') {
+      const isStep = (k) => (k === 0 ? max(N(0), sub(N(1), SN)) : max(N(0), min(sub(N(k + 1), SN), sub(SN, N(k - 1)))));
+      for (const i of nextShown) {
+        let acc = mul(V(exportProp(0, i)), isStep(0));
+        for (let k = 1; k <= steps; k++) acc = add(acc, mul(V(exportProp(k, i)), isStep(k)));
+        dDefs.push({ name: nextStateNames[i], ast: acc });
+        intProps.set(nextStateNames[i], false);
+      }
+    } else {
+      const B = steps >= 1536 ? 64 : 32;
+      const Q = Math.ceil((steps + 1) / B);
+      const isAt = (expr, m, hi) => (hi === 0 ? N(1)
+        : m === 0 ? max(N(0), sub(N(1), expr))
+          : m === hi ? max(N(0), sub(expr, N(m - 1)))
+            : max(N(0), min(sub(N(m + 1), expr), sub(expr, N(m - 1)))));
+      dDefs.push(
+        { name: 'rnq', ast: round('down', div(SN, N(B))) },
+        { name: 'rnr', ast: mod(SN, N(B)) },
+      );
+      intProps.set('rnq', false);
+      intProps.set('rnr', false);
+      for (let m = 0; m < B; m++) {
+        dDefs.push({ name: `rnri${m}`, ast: isAt(V('rnr'), m, B - 1) });
+        intProps.set(`rnri${m}`, false);
+      }
+      for (let qIdx = 0; qIdx < Q; qIdx++) {
+        dDefs.push({ name: `rnqi${qIdx}`, ast: isAt(V('rnq'), qIdx, Q - 1) });
+        intProps.set(`rnqi${qIdx}`, false);
+      }
+      for (const i of nextShown) {
+        const parts = [];
+        for (let qIdx = 0; qIdx < Q; qIdx++) {
+          const lo = qIdx * B;
+          const hi = Math.min(steps, lo + B - 1);
+          let acc = mul(V(exportProp(lo, i)), V('rnri0'));
+          for (let k = lo + 1; k <= hi; k++) acc = add(acc, mul(V(exportProp(k, i)), V(`rnri${k - lo}`)));
+          const bName = `rnb${i}_${qIdx}`;
+          dDefs.push({ name: bName, ast: mul(acc, V(`rnqi${qIdx}`)) });
+          intProps.set(bName, false);
+          parts.push(V(bName));
+        }
+        let sum = parts[0];
+        for (let j = 1; j < parts.length; j++) sum = add(sum, parts[j]);
+        dDefs.push({ name: nextStateNames[i], ast: sum });
+        intProps.set(nextStateNames[i], false);
+      }
+    }
+  }
+
+  const domain = { lo: -STORED_LIMIT, hi: STORED_LIMIT };
+  const roots = views.map((v) => ({ node: v.node, name: nextViewProp(v.name) }));
+  const ntv = translate(roots, (i) => V(nextStateNames[i]), { tempPrefix: 'rnu', inputRange: domain });
+  dDefs.push(...ntv.defs);
+  for (const t of ntv.temps) intProps.set(t, false);
+  for (const v of views) intProps.set(nextViewProp(v.name), true);
+  if (ntv.guards.length) {
+    dDefs.push(...ntv.guards.map((g, i) => ({ name: `rnvg${i}`, ast: g })));
+    ntv.guards.forEach((_, i) => intProps.set(`rnvg${i}`, false));
+    dDefs.push({ name: 'rnvf', ast: ntv.guards.length === 1 ? V('rnvg0') : fn('max', ...ntv.guards.map((_, i) => V(`rnvg${i}`))) });
+    intProps.set('rnvf', false);
+  }
+  const baseGo = periodic ? max(stdGo, V('rpcyc')) : stdGo;
+  const viewErr = ntv.guards.length ? max(V('rvf'), V('rnvf')) : V('rvf');
+  dDefs.push({ name: 'rgo', ast: mul(baseGo, sub(N(1), viewErr)) });
+  intProps.set('rgo', true);
+
+  numProps.set('rf', false);
+  const uiDefs = views.map((v) => {
+    const lp = lerpProp(v.name), vp = viewProp(v.name), nvp = nextViewProp(v.name);
+    numProps.set(lp, true);
+    return { name: lp, ast: add(V(vp), mul(mul(sub(V(nvp), V(vp)), V('rf')), V('rgo'))) };
+  });
+
+  return {
+    views: views.map((v) => v.name),
+    easing,
+    periodic,
+    nextShown,
+    nextSelectionMode,
+    intProps,
+    numProps,
+    dDefs,
+    uiDefs,
+  };
 }
 
 export function evalDisplay(machine, shown, model = MODELS.exact) {
@@ -441,6 +570,29 @@ function evalSelectDefs(machine, dispBase, t, model) {
 // already-simulated chain (the chain itself never depends on `rt`).
 export function simulateSelect(machine, dispBase, t, model = MODELS.exact) {
   return evalSelectDefs(machine, dispBase, t, model);
+}
+
+// Evaluate .D and .rr-ui sub-step interpolation at integer clock `t` and fractional progress `rf` in [0, 1].
+export function simulateInterpolation(machine, dispBase, { t, rf = 0, model = MODELS.exact } = {}) {
+  const interp = machine.interpolation;
+  if (!interp) throw new Error('simulateInterpolation requires machine.interpolation');
+  const stats = { maxInline: 0 };
+  const dOwn = new Map();
+  const dEnv = (name) => (name === 'rt' ? t : dOwn.has(name) ? dOwn.get(name) : dispBase.get(name));
+  // machine.select and machine.display are already verified over 0..lastValid by verifyRun();
+  // track intermediate range on the interpolation declarations themselves.
+  for (const d of [...machine.select, ...machine.display]) {
+    dOwn.set(d.name, storeInteger(evalAst(d.ast, dEnv, model), model));
+  }
+  for (const d of interp.dDefs) {
+    dOwn.set(d.name, storeInteger(evalAst(d.ast, dEnv, model, stats), model));
+  }
+  const uiOwn = new Map([['rf', storeNumber(rf, model)]]);
+  const uiEnv = (name) => (uiOwn.has(name) ? uiOwn.get(name) : dOwn.has(name) ? dOwn.get(name) : dispBase.get(name));
+  for (const d of interp.uiDefs) {
+    uiOwn.set(d.name, storeNumber(evalAst(d.ast, uiEnv, model, stats), model));
+  }
+  return { d: dOwn, ui: uiOwn, stats };
 }
 
 export { compileStep };

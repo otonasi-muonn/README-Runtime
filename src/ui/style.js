@@ -43,7 +43,7 @@ async function tailwind3(css, abs, f, candidates, { cwd, deps }) {
 // Properties of an html/body rule that lay out the page itself (and would move or resize the
 // UI if applied to its wrapper) are dropped; everything else is handed down to the UI, which
 // includes text, colours, custom properties and resets such as box-sizing that * inherits.
-const PAGE_LAYOUT = /^(display|place-|align-|justify-|min-|max-|height$|width$|block-size|inline-size|margin|padding|overflow|position|inset|top$|left$|right$|bottom$|grid|flex|gap$|row-gap|column-gap|float|clear|z-index|transform|translate|scale|rotate|contain|container|zoom|scroll|overscroll)/;
+const PAGE_LAYOUT = /^(display|place-|align-|justify-|min-|max-|height$|width$|block-size|inline-size|margin|padding|overflow|position|inset|top$|left$|right$|bottom$|grid|flex|gap$|row-gap|column-gap|float|clear|z-index|transform|translate|scale|rotate|contain|container|zoom|scroll|overscroll|animation|transition)/;
 
 function pageRules(css) {
   // (a lookbehind: consecutive rules share the brace between them)

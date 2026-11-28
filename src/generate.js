@@ -2,16 +2,18 @@
 import crypto from 'node:crypto';
 import { compileStep, MAX_STATE } from './compiler/program.js';
 import { toCss, textDepth, MAX_DECL_DEPTH, STORED_LIMIT } from './compiler/css.js';
-import { buildMachine, MAX_STEPS, altInitId } from './runtime/machine.js';
+import { buildMachine, buildInterpolation, MAX_STEPS, altInitId } from './runtime/machine.js';
 import { renderCard } from './render/card.js';
 import { renderUiCard } from './render/ui-card.js';
 import { checkWellFormed } from './render/xml.js';
-import { verifyRun } from './verify.js';
+import { verifyRun, verifyInterpolation } from './verify.js';
 import { TOOL_VERSION } from './version.js';
 import { perfReport, resolveLoops } from './perf.js';
 
 export const DEFAULTS = { export: 'step', steps: 120, hold: 12, stepMs: 150, bits: 20, loops: 'auto', altInits: [] };
 export const MAX_ALT_INITS = 16;
+const INTERP_EASINGS = new Set(['linear', 'ease', 'ease-in', 'ease-out', 'ease-in-out']);
+const CUBIC_BEZIER = /^cubic-bezier\(\s*(?:0(?:\.\d+)?|1(?:\.0+)?|\.\d+)\s*,\s*-?(?:\d+(?:\.\d+)?|\.\d+)\s*,\s*(?:0(?:\.\d+)?|1(?:\.0+)?|\.\d+)\s*,\s*-?(?:\d+(?:\.\d+)?|\.\d+)\s*\)$/;
 
 export class OptionError extends Error {}
 
@@ -78,6 +80,42 @@ export function altInitEmbeds(o) {
   }));
 }
 
+function parseEasing(easing) {
+  if (typeof easing !== 'string') throw new OptionError('"interpolate" easing must be "linear", "ease", "ease-in", "ease-out", "ease-in-out", or "cubic-bezier(x1, y1, x2, y2)"');
+  const trimmed = easing.trim();
+  if (INTERP_EASINGS.has(trimmed)) return trimmed;
+  if (CUBIC_BEZIER.test(trimmed)) return trimmed.replace(/\s+/g, '');
+  throw new OptionError(`"interpolate" easing ${JSON.stringify(easing)} must be "linear", "ease", "ease-in", "ease-out", "ease-in-out", or "cubic-bezier(x1, y1, x2, y2)" (with x1, x2 in 0..1)`);
+}
+
+export function interpolateOptions(o, views) {
+  if (o.interpolate === undefined || o.interpolate === false || o.interpolate === null) return null;
+  if (!o.ui) {
+    throw new OptionError('"interpolate" requires "ui" (a UI card whose continuous style bindings move smoothly between steps); trace cards show discrete integer steps');
+  }
+  const known = new Set(views.map((v) => v.name));
+  if (o.interpolate === true) return { easing: 'linear', views: null };
+  if (typeof o.interpolate === 'string') return { easing: parseEasing(o.interpolate), views: null };
+  if (isObject(o.interpolate)) {
+    for (const k of Object.keys(o.interpolate)) {
+      if (k !== 'easing' && k !== 'views') throw new OptionError(`unknown key "interpolate.${k}" (allowed: easing, views)`);
+    }
+    const easing = o.interpolate.easing === undefined ? 'linear' : parseEasing(o.interpolate.easing);
+    if (o.interpolate.views === undefined) return { easing, views: null };
+    if (!Array.isArray(o.interpolate.views) || !o.interpolate.views.length || !o.interpolate.views.every((v) => typeof v === 'string')) {
+      throw new OptionError('"interpolate.views" must be a non-empty list of view names from "ui.views"');
+    }
+    if (new Set(o.interpolate.views).size !== o.interpolate.views.length) {
+      throw new OptionError(`"interpolate.views" lists a view name twice (${o.interpolate.views.join(', ')})`);
+    }
+    for (const v of o.interpolate.views) {
+      if (!known.has(v)) throw new OptionError(`"interpolate.views" names ${JSON.stringify(v)}, which is not in "ui.views" (${[...known].join(', ')})`);
+    }
+    return { easing, views: [...o.interpolate.views] };
+  }
+  throw new OptionError('"interpolate" must be a boolean, an easing string ("linear", "ease", ...), or an object { easing?, views? }');
+}
+
 export async function generate(wasmBytes, opts) {
   const o = { ...DEFAULTS, ...opts };
   const st = stateOptions(o);
@@ -107,6 +145,7 @@ export async function generate(wasmBytes, opts) {
       return { name, export: exp };
     });
   }
+  const interpSpec = interpolateOptions(o, views);
   const program = compileStep(wasmBytes, { exportName: o.export, haltExport: o.haltExport ?? null, views, state: st.names });
   const machine = buildMachine(program, { init: st.init, steps: o.steps, hold: o.hold, haltValue: o.haltValue ?? null });
   // Browsers silently drop calc() trees nested too deeply; the translation splits
@@ -119,11 +158,13 @@ export async function generate(wasmBytes, opts) {
   // the other initial values the card can show (img src="card.svg#x97"): each run is verified
   // like the main one, and the UI is checked on the states of every run
   verification.alt = [];
+  const altTraces = [];
   for (const init of st.altInits) {
     let v;
     const label = st.names ? `(${st.names.map((n, i) => `${n}=${init[i]}`).join(', ')})` : init;
     try { v = await verifyRun(wasmBytes, program, machine, { init }); } catch (e) { e.message = `altInits ${label}: ${e.message}`; throw e; }
     verification.alt.push({ init, end: v.trace.end, endAt: v.endAt });
+    altTraces.push({ init, label, trace: v.trace });
     const seen = new Set(verification.viewSamples.map((x) => JSON.stringify(x)));
     for (const x of v.viewSamples) if (!seen.has(JSON.stringify(x))) { seen.add(JSON.stringify(x)); verification.viewSamples.push(x); }
   }
@@ -134,6 +175,12 @@ export async function generate(wasmBytes, opts) {
   const args = st.names ? st.names.join(', ') : 'i32';
   const signature = program.abi === 'globals' ? `${o.export}() → ${args}`
     : program.abi === 'functions' && st.names.length > 1 ? `${steps.join(', ')}(${args})` : `${steps[0]}(i32) → i32`;
+  const loops = resolveLoops(o);
+  const end = verification.trace.end;
+  const cycle = verification.trace.cycle ?? null;
+  const isSeamlessTrace = (tr) => tr.end.kind === 'steps' && tr.cycle?.start === 0 && (o.steps + 1) % tr.cycle.period === 0;
+  const seamlessCycle = o.hold === 0 && loops === 'infinite' && isSeamlessTrace(verification.trace);
+  const allSeamlessCycles = seamlessCycle && altTraces.every((a) => isSeamlessTrace(a.trace));
   const meta = {
     title: o.title ?? exportName,
     wasmName: o.wasmName ?? 'module.wasm',
@@ -141,7 +188,7 @@ export async function generate(wasmBytes, opts) {
     signature,
     initLabel: st.names ? st.names.map((n, i) => `${n}=${st.init[i]}`).join(', ') : String(st.init),
     stepMs: o.stepMs,
-    loops: resolveLoops(o),
+    loops,
     altInits: st.altInits,
     toolVersion: TOOL_VERSION,
     wasmSha256: sha256(wasmBytes),
@@ -150,7 +197,18 @@ export async function generate(wasmBytes, opts) {
   let svg, ui = null;
   if (o.ui) {
     const { buildUi } = await import('./ui/index.js');
-    ui = await buildUi(o.ui, machine, verification, { cwd: o.cwd ?? process.cwd() });
+    ui = await buildUi(o.ui, machine, verification, { cwd: o.cwd ?? process.cwd(), interpolate: interpSpec });
+    if (ui.interpolatedViews.length) {
+      machine.interpolation = buildInterpolation(program, machine, ui.interpolatedViews, { easing: interpSpec.easing, periodic: allSeamlessCycles });
+      for (const d of [...machine.interpolation.dDefs, ...machine.interpolation.uiDefs]) {
+        const depth = textDepth(toCss(d.ast));
+        if (depth > MAX_DECL_DEPTH) throw new Error(`internal: --${d.name} is nested ${depth} levels deep (limit ${MAX_DECL_DEPTH})`);
+      }
+      verifyInterpolation(machine, verification.trace);
+      for (const a of altTraces) {
+        try { verifyInterpolation(machine, a.trace, { init: a.init }); } catch (e) { e.message = `altInits ${a.label}: ${e.message}`; throw e; }
+      }
+    }
     svg = renderUiCard(machine, { ...meta, credit: o.ui.credit ?? '' }, ui);
   } else {
     svg = renderCard(machine, meta, { bits: o.bits });
@@ -173,10 +231,6 @@ export async function generate(wasmBytes, opts) {
   //   - "halt": reaches a terminal halt state within `steps`
   //   - "finite-replay": replays the finite 0..endAt window from `init`
   //   - "finite": plays 0..endAt once and rests on the final state
-  const loops = meta.loops;
-  const end = verification.trace.end;
-  const cycle = verification.trace.cycle ?? null;
-  const seamlessCycle = end.kind === 'steps' && cycle?.start === 0 && (o.steps + 1) % cycle.period === 0 && o.hold === 0 && loops === 'infinite';
   const execution = {
     mode: seamlessCycle ? 'periodic' : end.kind === 'halt' ? 'halt' : (loops === 'infinite' || loops > 1) ? 'finite-replay' : 'finite',
     steps: o.steps,
@@ -184,6 +238,7 @@ export async function generate(wasmBytes, opts) {
     stepsPerLevel: machine.stride,
     selection: machine.selectionMode,
     cycle,
+    ...(ui?.info?.interpolation ? { interpolation: { ...ui.info.interpolation, ...(machine.interpolation ? { periodicWrap: machine.interpolation.periodic } : {}) } } : {}),
   };
   return { svg, verification, machine, program, state, execution, ui: ui?.info ?? null, uiInputs: ui?.inputs ?? [], perf: perfReport(o, svg) };
 }

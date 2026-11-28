@@ -1,6 +1,6 @@
 // SVG card whose body is the project's own UI (static markup + CSS bindings), driven by
 // the CSS machine. The machine is the same as for trace cards; only the display differs.
-import { altInitAnchors, altInitCss, altInitId, clockAnimation, declarations, levelClass, levelStyle, rootStyle } from '../runtime/machine.js';
+import { altInitAnchors, altInitCss, altInitId, clockAnimation, declarations, interpAnimation, levelClass, levelStyle, rootStyle } from '../runtime/machine.js';
 import { fitText, textWidth } from './text.js';
 import { toCss, V, absV } from '../compiler/css.js';
 
@@ -17,25 +17,34 @@ export function renderUiCard(machine, meta, ui) {
   const { W, H } = L;
   const out = machine.out;
   const steps = machine.steps;
+  const interp = machine.interpolation ?? null;
   const F = `var(--${out.f})`;
 
   let css = '';
   for (const [name, inherits] of machine.props) css += `@property --${name}{syntax:'<integer>';inherits:${inherits};initial-value:0}\n`;
+  if (interp) {
+    for (const [name, inherits] of interp.intProps) css += `@property --${name}{syntax:'<integer>';inherits:${inherits};initial-value:0}\n`;
+    for (const [name, inherits] of interp.numProps) css += `@property --${name}{syntax:'<number>';inherits:${inherits};initial-value:0}\n`;
+  }
   for (const name of ['rok']) css += `@property --${name}{syntax:'<integer>';inherits:true;initial-value:0}\n`;
   // the project's stylesheet first, so the card chrome below wins any overlap
   css += `${ui.css}\n`;
   css += `.R{\n${declarations(machine.root.filter((d) => !d.literal), ' ')}\n}\n`;
   css += altInitCss(machine, meta.altInits);
-  // the step clock is the only animation of the card and runs on .C around the display (see
-  // render/card.js); "reduce motion" (after .C's rule, which it overrides) stops it and any
-  // animation or transition of the project's own stylesheet in the UI
+  // the step clock runs on .C around the display (and when sub-step interpolation is enabled,
+  // one local 0..1 <number> clock runs on .rr-ui); "reduce motion" comes after both rules so
+  // its equal-specificity selectors stop all motion cleanly alongside any UI stylesheet rules
   css += `.C{animation:${clockAnimation(machine, meta)}}\n`;
   css += `@keyframes rrclk{from{--rt:0}to{--rt:${machine.T}}}\n`;
-  css += `@media (prefers-reduced-motion:reduce){.C{animation:none;--rt:${machine.T}}.rr-ui *,.rr-ui *::before,.rr-ui *::after{animation:none!important;transition:none!important}}\n`;
+  if (interp) {
+    css += `.rr-ui{animation:${interpAnimation(machine, meta, interp)}!important;\n${declarations(interp.uiDefs, ' ')}\n}\n`;
+    css += `@keyframes rrf{from{--rf:0}to{--rf:1}}\n`;
+  }
+  css += `@media (prefers-reduced-motion:reduce){.C{animation:none;--rt:${machine.T}}${interp ? '.rr-ui{animation:none!important;transition:none!important;--rf:0}' : ''}.rr-ui *,.rr-ui *::before,.rr-ui *::after{animation:none!important;transition:none!important}}\n`;
   css += `.A{\n${declarations(machine.level.A, ' ')}\n}\n.B{\n${declarations(machine.level.B, ' ')}\n}\n`;
   if (machine.level.T) css += `.T{\n${declarations(machine.level.T, ' ')}\n}\n`;
   // display: view values for the shown state, the step counter, the health of the run
-  css += `.D{\n${declarations([...machine.select, ...machine.display], ' ')}\n --rok: calc(1 - min(1, max(round(down, ${F} / 2), var(--rvf))));\n}\n`;
+  css += `.D{\n${declarations([...machine.select, ...machine.display, ...(interp ? interp.dDefs : [])], ' ')}\n --rok: calc(1 - min(1, max(round(down, ${F} / 2), var(--rvf))));\n}\n`;
   css += `${ui.bindingCss}`;
   css += `
 svg{--rr-bg:#0d1117;--rr-line:#30363d;--rr-fg:#e6edf3;--rr-mut:#7d8590;--rr-acc:#3fb950;--rr-blue:#58a6ff;--rr-red:#f85149}

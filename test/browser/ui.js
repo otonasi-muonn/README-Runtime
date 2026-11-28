@@ -47,11 +47,17 @@ fo.h = Number(gen.svg.match(/<foreignObject[^>]*height="(\d+)"/)[1]);
 // the initial state in the root's style attribute: a number, or an array for a named state
 const initStyle = (init) => `style="${gen.machine.initProps.map((p, i) => `--${p}:${Array.isArray(init) ? init[i] : init}`).join(';')}"`;
 const initAttr = initStyle(stateOptions(card.options).init);
-const pin = (svg, t) => svg.replace(/animation:rrclk [^}]*\}/, `--rt:${t}}`).replace(/@media \(prefers-reduced-motion:reduce\)\{[^\n]*\n/, '');
+const pin = (svg, t) => svg
+  .replace(/animation:rrclk [^}]*\}/, `--rt:${t}}`)
+  .replace(/animation:rrf [^;\n]*;/, '--rf:0;')
+  .replace(/@media \(prefers-reduced-motion:reduce\)\{[^\n]*\n/, '');
 // The real clock, paused at step t: the values then come from an animation, as on GitHub
 // (Firefox re-evaluates container queries differently for animated and for static values).
 const [, clockMs, clockSteps] = gen.svg.match(/animation:rrclk (\d+)ms steps\((\d+)/).map(Number);
-const pause = (svg, t) => svg.replace(/(animation:rrclk [^}]*)\}/, `$1;animation-delay:-${((t + 0.5) * clockMs) / clockSteps}ms;animation-play-state:paused}`).replace(/@media \(prefers-reduced-motion:reduce\)\{[^\n]*\n/, '');
+const pause = (svg, t) => svg
+  .replace(/(animation:rrclk [^}]*)\}/, `$1;animation-delay:-${((t + 0.5) * clockMs) / clockSteps}ms;animation-play-state:paused}`)
+  .replace(/animation:rrf ([^;!\n]*)(?:!important)?;/, 'animation:rrf $1!important;animation-delay:0ms!important;animation-play-state:paused!important;')
+  .replace(/@media \(prefers-reduced-motion:reduce\)\{[^\n]*\n/, '');
 // the reference is the component's own markup, every attribute included
 const UI_OPEN = /(<div class="rr-ui" style="[^"]*">)[\s\S]*?(<\/div><\/div><\/foreignObject>)/;
 

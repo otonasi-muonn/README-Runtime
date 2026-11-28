@@ -3,8 +3,8 @@
 //   2. IR, exact i32 semantics               -> validates the Wasm -> IR lifting
 //   3. generated CSS under browser models    -> validates the CSS translation and its range
 import { evalExact } from './compiler/ir.js';
-import { MODELS, STORED_LIMIT } from './compiler/css.js';
-import { simulateMachine, simulateSelect, evalDisplay, viewProp, stateAt, flagAt, rangeFlagAt } from './runtime/machine.js';
+import { MODELS, STORED_LIMIT, storeNumber } from './compiler/css.js';
+import { simulateMachine, simulateSelect, simulateInterpolation, evalDisplay, viewProp, lerpProp, stateAt, flagAt, rangeFlagAt } from './runtime/machine.js';
 import { referenceTrace, instantiate, stateAbi } from './runtime/reference.js';
 
 export class VerifyError extends Error {
@@ -143,4 +143,60 @@ export async function verifyRun(wasmBytes, program, machine, { init = machine.in
     }
   }
   return { trace, models, endAt, lastValid, viewSamples };
+}
+
+// Verify sub-step interpolation (--rsn, --rnview_<v>, --rgo, --rlerp_<v>) across all browser
+// arithmetic models: rf=0 matches the discrete view, rf=1 matches the next step's view (or
+// step 0 on a seamless periodic wrap), and halt/hold/trap/end states hold still (rgo=0).
+export function verifyInterpolation(machine, trace, { init = machine.init } = {}) {
+  const interp = machine.interpolation;
+  if (!interp) return;
+  const { end } = trace;
+  const endAt = Math.min(end.at, machine.steps);
+  const lastGood = end.kind === 'trap' ? endAt - 1 : endAt;
+  const sampleTimes = new Set(
+    [
+      0, 1, machine.stride - 1, machine.stride, 31, 32, 63, 64,
+      Math.floor(Math.max(0, lastGood) / 2), Math.max(0, lastGood - 1), Math.max(0, lastGood),
+      endAt, machine.steps, machine.T,
+    ].filter((t) => t >= 0 && t <= machine.T),
+  );
+  for (const [name, model] of Object.entries(MODELS)) {
+    const { dispBase } = simulateMachine(machine, { model, init });
+    const t0At0 = simulateInterpolation(machine, dispBase, { t: 0, rf: 0, model });
+    for (const t of sampleTimes) {
+      const at0 = t === 0 ? t0At0 : simulateInterpolation(machine, dispBase, { t, rf: 0, model });
+      const atHalf = simulateInterpolation(machine, dispBase, { t, rf: 0.5, model });
+      const at1 = simulateInterpolation(machine, dispBase, { t, rf: 1, model });
+      const trappedStep = end.kind === 'trap' && t >= endAt;
+      if (name === 'exact' && !trappedStep && Math.max(at0.stats.maxInline, atHalf.stats.maxInline, at1.stats.maxInline) > INLINE_EXACT) {
+        throw new VerifyError(`interpolation at t=${t}: intermediate value exceeds float32 exactness`, 'RANGE_INTERMEDIATE');
+      }
+      const wantGo = interp.periodic && end.kind === 'steps' ? 1 : (t < lastGood ? 1 : 0);
+      if (at0.d.get('rgo') !== wantGo) {
+        throw new VerifyError(`${name}: at t=${t} interpolation gate rgo=${at0.d.get('rgo')}, expected ${wantGo}`, 'INTERNAL');
+      }
+      if (wantGo === 1 && at0.d.has('rnvf') && at0.d.get('rnvf') !== 0) {
+        throw new VerifyError(`${name}: at t=${t} next-step view exceeds exact CSS range`, 'VIEW_RANGE');
+      }
+      const nextT = interp.periodic && t === machine.steps ? 0 : t + 1;
+      const nextAt0 = wantGo === 1 ? (nextT === 0 ? t0At0 : simulateInterpolation(machine, dispBase, { t: nextT, rf: 0, model })) : null;
+      for (const v of interp.views) {
+        const v0 = storeNumber(at0.d.get(viewProp(v)), model);
+        if (at0.ui.get(lerpProp(v)) !== v0) {
+          throw new VerifyError(`${name}: at t=${t}, rf=0 --${lerpProp(v)} is ${at0.ui.get(lerpProp(v))}, expected ${v0}`, 'INTERNAL');
+        }
+        if (wantGo === 0) {
+          if (atHalf.ui.get(lerpProp(v)) !== v0 || at1.ui.get(lerpProp(v)) !== v0) {
+            throw new VerifyError(`${name}: at resting step t=${t}, --${lerpProp(v)} moves instead of holding ${v0}`, 'INTERNAL');
+          }
+        } else {
+          const v1 = storeNumber(nextAt0.d.get(viewProp(v)), model);
+          if (at1.ui.get(lerpProp(v)) !== v1) {
+            throw new VerifyError(`${name}: at t=${t}, rf=1 --${lerpProp(v)} is ${at1.ui.get(lerpProp(v))}, expected ${v1}`, 'INTERNAL');
+          }
+        }
+      }
+    }
+  }
 }

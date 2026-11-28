@@ -2,6 +2,7 @@
 import { bundleEntry, renderWith, UiError } from './bundle.js';
 import { inferTemplate, templateToXhtml } from './infer.js';
 import { classCandidates, compileUiCss } from './style.js';
+import { lerpProp } from '../runtime/machine.js';
 
 export { UiError };
 
@@ -98,7 +99,7 @@ function scopedIdRules(css, renamed) {
 }
 
 // ui: { entry, tsconfig?, css?, views, width?, height?, credit? }  (paths relative to cwd)
-export async function buildUi(ui, machine, verification, { cwd = process.cwd() } = {}) {
+export async function buildUi(ui, machine, verification, { cwd = process.cwd(), interpolate = null } = {}) {
   const bundle = await bundleEntry(ui.entry, { tsconfig: ui.tsconfig, cwd });
   const views = Object.keys(machine.viewProps).map((name) => ({ name, range: machine.viewRanges[name] }));
   const samples = verification.viewSamples;
@@ -108,7 +109,14 @@ export async function buildUi(ui, machine, verification, { cwd = process.cwd() }
   const pre = await compileUiCss(ui.css ?? [], classCandidates([renderWith(bundle, samples[0])]), { cwd });
   const cssAttrs = new Set([...pre.css.matchAll(/(?:\[|\battr\()\s*([a-zA-Z_][\w:.-]*)/g)].map((m) => m[1].toLowerCase()));
   const { template, info } = inferTemplate(bundle, views, { base: samples[0], samples, cssAttrs });
-  const { markup, css: switchCss, variantBytes, renamed } = templateToXhtml(template, (v) => machine.viewProps[v]);
+  const continuousSet = new Set(info.continuousViews);
+  const activeViews = !interpolate ? [] : (interpolate.views ?? info.continuousViews).filter((v) => continuousSet.has(v));
+  const activeSet = new Set(activeViews);
+  const { markup, css: switchCss, variantBytes, renamed, interpolatedSites } = templateToXhtml(
+    template,
+    (v) => machine.viewProps[v],
+    { lerpVar: activeSet.size ? (v) => (activeSet.has(v) ? lerpProp(v) : null) : null },
+  );
   const style = await compileUiCss(ui.css ?? [], classCandidates([markup]), { cwd });
   const bindingCss = switchCss + scopedIdRules(style.css, renamed);
   const size = rootSize(template);
@@ -126,6 +134,20 @@ export async function buildUi(ui, machine, verification, { cwd = process.cwd() }
     code: 'UI_WHOLE_VARIANTS',
     message: `the whole UI is copied for each of ${d.variants} combinations of ${d.views.join(', ')}: an element appears or disappears directly under the root. Wrap each part that comes and goes (e.g. a component that renders null) in its own element, so only that element varies`,
   }));
+  if (interpolate?.views) {
+    const discreteOnly = interpolate.views.filter((v) => !continuousSet.has(v));
+    if (discreteOnly.length) {
+      warnings.push({
+        code: 'UI_INTERPOLATE_DISCRETE_ONLY',
+        message: `view${discreteOnly.length > 1 ? 's' : ''} ${discreteOnly.map((v) => `"${v}"`).join(', ')} ha${discreteOnly.length > 1 ? 've' : 's'} no continuous style bindings (only discrete text numbers, integer-only style properties, or switched markup), so ${discreteOnly.length > 1 ? 'they stay' : 'it stays'} discrete`,
+      });
+    }
+  } else if (interpolate && !activeViews.length) {
+    warnings.push({
+      code: 'UI_INTERPOLATE_DISCRETE_ONLY',
+      message: 'interpolate is enabled, but no view drives a continuous CSS style property (only discrete text numbers, integer-only style properties, or switched markup were found); sub-step animation was omitted so the card does not repaint between steps',
+    });
+  }
   // Variants are wrapped in <rr-case> elements and the hidden copies stay in the document, so
   // child/sibling selectors (li + li, :nth-child, :last-child, space-y-*) can match differently
   // around switched elements. Not detected per element: say that the card needs a look.
@@ -141,8 +163,17 @@ export async function buildUi(ui, machine, verification, { cwd = process.cwd() }
     });
   }
   return {
-    markup, bindingCss, css: style.css, width, height, inputs,
+    markup, bindingCss, css: style.css, width, height, inputs, interpolatedViews: activeViews,
     // how much of the UI markup is precomputed per value (variants) rather than bound
-    info: { ...info, fontFallbacks: style.fontFallbacks, inputs, markupBytes: markup.length, variantBytes, variantShare: Number((variantBytes / Math.max(1, markup.length)).toFixed(2)), ...(warnings.length ? { warnings } : {}) },
+    info: {
+      ...info,
+      ...(interpolate ? { interpolation: { active: activeViews.length > 0, easing: interpolate.easing, views: activeViews, sites: interpolatedSites } } : {}),
+      fontFallbacks: style.fontFallbacks,
+      inputs,
+      markupBytes: markup.length,
+      variantBytes,
+      variantShare: Number((variantBytes / Math.max(1, markup.length)).toFixed(2)),
+      ...(warnings.length ? { warnings } : {}),
+    },
   };
 }

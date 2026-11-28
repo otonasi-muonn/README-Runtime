@@ -1,7 +1,7 @@
 {
   "version": 1,
   "tool": "0.1.0",
-  "generator": "76767ba41b82fbfe27acef6e0233451a9472c73ff54fc7a7d55c5ac68003274d",
+  "generator": "797ea941e794bf32582011a3096445e1e3bb93496bbfe030a46a06d355d1533b",
   "cards": {
     "mockcraft-state": {
       "inputs": "555553d33a60a2da35c75bf37d75c21b762f5c294be7ec2342719cc1ddb147ea",
@@ -18,7 +18,23 @@
         "upstream/src/lib/icons.tsx": "288d28df6b9683782cad221a2c1499dda7dbe8c42aac8a7e225cfc39259219a9",
         "upstream/src/lib/templates.ts": "cced791479232b822d801fa922894a9dca39c2d08693653507f23b96b5f773f4"
       },
-      "render": "07ec6b94efa1cbe1c752ff87394fa1fa812a0c0fd6944ac9e9980d47b01613c4"
+      "render": "36d6f203be2d00ecb102895c4f9397ad75dfae29ab121e085226fe2486a2a1b9"
+    },
+    "mockcraft-smooth": {
+      "wasm": "7c7407e8df179e99e006d059d6c8e1e23c7b79dd916353095d5fe936bdd07fa9",
+      "out": "ab7e9384a856b5460cb09618800e7abc9a910926053982d72f70c64a29592ba1",
+      "uiInputs": {
+        "demo.tsx": "375d39a247e2ae478be8b27e587ee3cecb50e4bd91a24d6e1e9bdb9c56410658",
+        "tsconfig.json": "1217a666ab46a6bca330bc74ceb2d6f214ace1ada1c653f1e6fa5fedb9473275",
+        "upstream/src/app/globals.css": "ff78a060367d44163949b451077a288f26478570f8b08e209bb18ac08a9074df",
+        "upstream/src/components/board/ElementView.tsx": "6fa9bf29404d9b65546f71b3ed28d4caf75f37aba0d0286ef4f3a544855c8361",
+        "upstream/src/lib/cn.ts": "4cef1daee5cf1c2b45b045f966d58fa73351953836c685ac8375b8fc0f75dac0",
+        "upstream/src/lib/defaults.ts": "89cfe3ca6a55e181285b08c3c10f20cfccfec3cdb9d25bea156ab6829d7a91d9",
+        "upstream/src/lib/elementStyle.ts": "238b1df7b1bd9f37457d68cfc6c46e0fde762588d4509605c72f5bac15aa68ee",
+        "upstream/src/lib/icons.tsx": "288d28df6b9683782cad221a2c1499dda7dbe8c42aac8a7e225cfc39259219a9",
+        "upstream/src/lib/templates.ts": "cced791479232b822d801fa922894a9dca39c2d08693653507f23b96b5f773f4"
+      },
+      "render": "094a3cb06788ca1789d3d4084a0683a3a53ea354c6ec6489f93ea30fb5f1f424"
     }
   }
 }

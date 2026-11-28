@@ -31,18 +31,25 @@ export function perfReport(o, svg) {
   const displayElements = (display.match(/<[a-zA-Z][\w-]*/g) ?? []).length;
   const containerRules = (svg.match(/@container/g) ?? []).length;
   const selectionTerms = (svg.match(/var\(--rS\d/g) ?? []).length;
-  const selectedValues = Math.round(selectionTerms / (o.steps + 1));
+  const currentSelections = (svg.match(/--rc(?:s|y\d+)\s*:/g) ?? []).length;
+  const nextSelections = (svg.match(/--rnc(?:|y\d+)\s*:/g) ?? []).length;
+  const selectedValues = currentSelections || Math.round(selectionTerms / (o.steps + 1));
+  const totalSelections = selectedValues + nextSelections;
   const levels = (svg.match(/<g class="[ABT]"/g) ?? []).length;
   const stepsPerLevel = levels ? Math.ceil(o.steps / levels) : 1;
+  const interpolated = svg.includes('@keyframes rrf{');
   const loopSeconds = loopMs(o) / 1000;
   const loops = resolveLoops(o);
   const report = {
     updatesPerSecond: Number((1000 / o.stepMs).toFixed(1)),
+    interpolated,
     loopSeconds: Number(loopSeconds.toFixed(1)),
     // how long the card keeps updating while visible; null: as long as it is shown
     loops,
     activeSeconds: loops === 'infinite' ? null : Number((loopSeconds * loops).toFixed(1)),
-    steps: o.steps, levels, stepsPerLevel, displayElements, containerRules, selectedValues, selectionTerms,
+    steps: o.steps, levels, stepsPerLevel, displayElements, containerRules, selectedValues,
+    ...(nextSelections ? { nextSelectedValues: nextSelections } : {}),
+    selectionTerms,
     bytes: Buffer.byteLength(svg), gzipBytes: zlib.gzipSync(svg, { level: 9 }).length,
   };
   const warnings = [];
@@ -50,7 +57,7 @@ export function perfReport(o, svg) {
   // one stepMs that both clock warnings agree on, and one steps that both step-count ones do
   const slower = Math.max(o.stepMs, large ? 200 : 150);
   const wide = selectionTerms > PERF_LIMITS.selectionTerms;
-  const fewer = Math.min(o.steps > PERF_LIMITS.longRun ? PERF_LIMITS.longRun : Infinity, wide ? Math.max(1, Math.floor(PERF_LIMITS.selectionTerms / selectedValues) - 1) : Infinity);
+  const fewer = Math.min(o.steps > PERF_LIMITS.longRun ? PERF_LIMITS.longRun : Infinity, wide ? Math.max(1, Math.floor(PERF_LIMITS.selectionTerms / Math.max(1, totalSelections)) - 1) : Infinity);
   if (o.stepMs < PERF_LIMITS.minStepMs) {
     warnings.push({
       code: 'PERF_FAST_CLOCK',
@@ -61,7 +68,7 @@ export function perfReport(o, svg) {
   if (loops === 'infinite') {
     warnings.push({
       code: 'PERF_ENDLESS',
-      message: 'loops is "infinite": the card keeps updating for as long as the page is open and the card is on screen (WebKit also while it is scrolled out of view); "auto" plays for about a minute and then rests on the last step, which costs nothing',
+      message: `loops is "infinite": the card keeps updating${interpolated ? ' (and sub-step interpolation repaints at the display frame rate)' : ''} for as long as the page is open and the card is on screen (WebKit also while it is scrolled out of view); "auto" plays for about a minute and then rests on the last step, which costs nothing`,
       fix: { loops: 'auto' },
     });
   }
@@ -75,7 +82,7 @@ export function perfReport(o, svg) {
   if (wide) {
     warnings.push({
       code: 'PERF_WIDE_SELECTION',
-      message: `the display selects ${selectedValues} state values from ${o.steps + 1} levels (${selectionTerms} terms) on every step; fewer steps, or views that read fewer state values, keep each update cheap`,
+      message: `the display selects ${selectedValues} state values${nextSelections ? ` (+ ${nextSelections} next-step values for interpolation)` : ''} from ${o.steps + 1} levels (${selectionTerms} terms) on every step; fewer steps, or views that read fewer state values, keep each update cheap`,
       fix: { steps: fewer },
     });
   }

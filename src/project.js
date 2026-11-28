@@ -12,7 +12,7 @@ import { CodedError } from './errors.js';
 
 export const CONFIG_FILE = 'readme-runtime.json';
 export const LOCK_FILE = 'readme-runtime.lock.json';
-const CARD_KEYS = new Set(['name', 'wasm', 'build', 'export', 'state', 'init', 'altInits', 'steps', 'hold', 'stepMs', 'loops', 'bits', 'halt', 'haltExport', 'title', 'out', 'ui']);
+const CARD_KEYS = new Set(['name', 'wasm', 'build', 'export', 'state', 'init', 'altInits', 'steps', 'hold', 'stepMs', 'loops', 'interpolate', 'bits', 'halt', 'haltExport', 'title', 'out', 'ui']);
 const UI_KEYS = new Set(['entry', 'tsconfig', 'css', 'views', 'width', 'height', 'credit']);
 
 export class ConfigError extends Error {}
@@ -85,6 +85,7 @@ export function loadConfig(configPath) {
         hold: c.hold ?? DEFAULTS.hold,
         stepMs: c.stepMs ?? DEFAULTS.stepMs,
         loops: c.loops ?? DEFAULTS.loops,
+        ...(c.interpolate !== undefined ? { interpolate: c.interpolate } : {}),
         altInits: c.altInits ?? DEFAULTS.altInits,
         bits: c.bits ?? DEFAULTS.bits,
         haltValue: c.halt ?? null,
