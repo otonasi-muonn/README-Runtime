@@ -66,8 +66,12 @@ cannot install that URL: write `npm exec --yes --package=<archive URL> -- readme
    linear or the view smaller), `UI_RENDER` (missing props / browser APIs during render),
    `UI_BUNDLE` (framework-only import such as `next/font`: pass the value as a prop instead).
 6. Viewers' cost: while a card plays, the browser restyles its display once per step (not the
-   whole run). `build --json` returns `cards[].perf` (updates per second, `activeSeconds` it keeps
-   updating, display elements, gzip bytes) and `cards[].warnings` with `PERF_*` codes, each with a
+   whole run). `steps` may be 1..2,000 (above 400, multiple steps are unrolled per `<g>` so DOM
+   nesting stays <= 320 levels, and selection uses 2D power-of-two factoring). `build --json`
+   returns `cards[].perf` (updates per second, `activeSeconds` it keeps updating, `levels`,
+   `stepsPerLevel`, display elements, gzip bytes), `cards[].execution` (`mode`: `"finite"`,
+   `"finite-replay"`, `"halt"`, or `"periodic"` when `loops: "infinite"`, `hold: 0`, and
+   `step(x_steps) == x_0`; plus `cycle`), and `cards[].warnings` with `PERF_*` codes, each with a
    `fix` to merge into the card in `readme-runtime.json`. Defaults: `stepMs` 150, `loops: "auto"`
    (whole runs for about a minute from page load, then it rests on the last step and costs
    nothing); `"loops": "infinite"` keeps it running while it is on screen. Use `"infinite"` for the
