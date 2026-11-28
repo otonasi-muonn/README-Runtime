@@ -49,7 +49,7 @@ export function decodeCard(pngBuffer, machineInfo, { scale = 1 } = {}) {
 
   // Status: colour of the solid status dot (text colour is unreliable because of subpixel
   // antialiasing).
-  const dot = at(190, L.step.y + 10);
+  const dot = at(L.status.x, L.status.y);
   const [r, g, b] = dot;
   let status = 'other';
   if (r > g + 50 && r > b + 40) status = 'error';

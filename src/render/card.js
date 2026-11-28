@@ -3,11 +3,9 @@
 // the browser computes at view time; the markup only holds layout.
 import { N, V, toCss, signBit, absV, STORED_LIMIT } from '../compiler/css.js';
 import { altInitAnchors, altInitCss, altInitId, clockAnimation, declarations, levelClass, levelStyle, rootStyle } from '../runtime/machine.js';
-import { fitText, textWidth } from './text.js';
+import { MONO, SANS, esc, footerRule, frameAndHeader, themeCss } from './chrome.js';
 
 export const TEMPLATE_VERSION = 1;
-
-const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const r4 = (x) => Number(x.toFixed(4));
 
 // Layout constants (exported for the pixel-level browser tests).
@@ -24,6 +22,8 @@ export function layout(machine, opts = {}) {
     digits: { x: 40, y: 78, w: 30, h: 52, n: 7 },
     leds: { x: 40, y: 150, size: 5, pitch: 7, groupGap: 5 },
     step: { x: 40, y: 188 },
+    status: { x: 190, y: 198 },
+    foot: 40,
     ledX: (j) => 40 + (31 - j) * 7 + Math.floor((31 - j) / 8) * 5,
   };
 }
@@ -65,15 +65,12 @@ export function renderCard(machine, meta, opts = {}) {
   if (machine.level.T) css += `.T{\n${declarations(machine.level.T, ' ')}\n}\n`;
 
   // ---------------------------------------------------------------- theme
-  css += `
-svg{--bg:#0d1117;--panel:#161b22;--line:#30363d;--fg:#e6edf3;--mut:#7d8590;--acc:#3fb950;--blue:#58a6ff;--red:#f85149;--led:#3fb950}
-@media (prefers-color-scheme:light){svg{--bg:#ffffff;--panel:#f6f8fa;--line:#d0d7de;--fg:#1f2328;--mut:#656d76;--acc:#1a7f37;--blue:#0969da;--red:#cf222e;--led:#1a7f37}}
-text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;fill:var(--fg)}
-.mono,.dg text{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
-.bg{fill:var(--bg);stroke:var(--line)}.pn{fill:var(--panel);stroke:var(--line)}
-.mut{fill:var(--mut)}.lbl{font-size:11px;letter-spacing:.08em;fill:var(--mut);font-weight:600}
+  css += themeCss();
+  css += `text{font-family:${SANS};fill:var(--rr-fg)}
+.mono,.dg text{font-family:${MONO}}
+.mut{fill:var(--rr-mut)}.lbl{font-size:11px;letter-spacing:.08em;fill:var(--rr-mut);font-weight:600}
 .big text{font-size:44px;font-weight:600}.sm text{font-size:15px;font-weight:600}
-.live{fill:var(--acc)}
+.code{fill:var(--rr-fg);font-weight:600}
 `;
   // trace columns: when stride === 1, each step k sits at k * cw (width cw); when stride > 1,
   // root sits at 0 (width cw), full blocks cover [rk - stride + 1, rk + 1] * cw, and an optional
@@ -87,11 +84,11 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
   }
   for (let b = 0; b < bits; b++) {
     const hue = Math.round(150 - (b / Math.max(1, bits - 1)) * 150 + 360) % 360;
-    css += `.j${b}{fill:hsl(${hue} 70% 55%);opacity:calc(${toCss(cellBit(b))} * var(--ra))}\n`;
+    css += `.j${b}{fill:hsl(${hue} 70% var(--rr-tl));opacity:calc(${toCss(cellBit(b))} * var(--ra))}\n`;
   }
-  css += `.js{fill:var(--red);opacity:calc(${toCss(signBit(V('rx')))} * var(--ra))}\n`;
-  css += `.jo{fill:#d29922;opacity:calc(clamp(0, max(var(--rx) - ${2 ** bits - 1}, -1 * var(--rx) - ${2 ** bits}), 1) * var(--ra))}\n`;
-  css += `.jm{fill:var(--mut);opacity:var(--ra)}\n`;
+  css += `.js{fill:var(--rr-red);opacity:calc(${toCss(signBit(V('rx')))} * var(--ra))}\n`;
+  css += `.jo{fill:var(--rr-amber);opacity:calc(clamp(0, max(var(--rx) - ${2 ** bits - 1}, -1 * var(--rx) - ${2 ** bits}), 1) * var(--ra))}\n`;
+  css += `.jm{fill:var(--rr-mut);opacity:var(--ra)}\n`;
   // display (innermost level)
   css += `.D{\n${declarations(machine.select, ' ')}\n --rdv:${toCss(absV(V(out.c)))}}\n`;
   // the trace columns are not restyled by the clock: a cover hides the steps not reached yet
@@ -173,31 +170,26 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
   // ---------------------------------------------------------------- static chrome
   const title = esc(meta.title);
   // the header line: title, then the module and signature, before the LIVE badge
-  const shownTitle = fitText(meta.title, 320, 15);
-  const metaX = Math.round(20 + Math.min(320, textWidth(shownTitle, 15)) + 14);
-  const metaText = fitText(`${meta.wasmName} · ${meta.signature ?? `${meta.exportName}(i32) → i32`}`, W - 142 - metaX, 12, { mono: true });
-  let body = '';
-  body += `<rect class="bg" x=".5" y=".5" width="${W - 1}" height="${H - 1}" rx="10"/>`;
-  body += `<text x="20" y="29" font-size="15" font-weight="600">${esc(shownTitle)}</text>`;
-  body += `<text x="${metaX}" y="29" class="mono mut" font-size="12">${esc(metaText)}</text>`;
-  body += `<circle class="live pulse" cx="${W - 132}" cy="25" r="4"/><text x="${W - 122}" y="29" class="lbl" font-size="11">LIVE · CSS RUNTIME</text>`;
-  body += `<line x1="0" y1="44" x2="${W}" y2="44" stroke="var(--line)"/>`;
+  const info = `${meta.wasmName} · ${meta.signature ?? `${meta.exportName}(i32) → i32`}`;
+  let body = frameAndHeader({ W, H, title: meta.title, info, titleMax: 320 });
   body += `<text x="40" y="70" class="lbl">STATE</text>`;
   const traceLabel = machine.stride > 1
     ? `TRACE · EVERY ${machine.stride} STEPS · BITS OF THE STATE`
     : 'TRACE · ONE COLUMN PER step() CALL · BITS OF THE STATE';
   body += `<text x="${tr.x}" y="70" class="lbl">${traceLabel}</text>`;
-  body += `<rect class="pn" x="${tr.x - 6}" y="${tr.y - 6}" width="${tr.w + 12}" height="${tr.h + 12}" rx="6"/>`;
+  body += `<rect class="rr-pn" x="${tr.x - 6}" y="${tr.y - 6}" width="${tr.w + 12}" height="${tr.h + 12}" rx="6"/>`;
   body += `<text x="${tr.x}" y="${tr.y + tr.h + 22}" class="mono mut" font-size="11">0</text>`;
   body += `<text x="${tr.x + tr.w}" y="${tr.y + tr.h + 22}" class="mono mut" font-size="11" text-anchor="end">${steps}</text>`;
   body += `<text x="${tr.x + tr.w / 2}" y="${tr.y + tr.h + 22}" class="mut" font-size="11" text-anchor="middle">step →</text>`;
-  body += `<line x1="0" y1="${H - 40}" x2="${W}" y2="${H - 40}" stroke="var(--line)"/>`;
+  body += footerRule({ W, y: H - L.foot });
   const snippet = meta.cssSnippet.length > 112 ? `${meta.cssSnippet.slice(0, 111)}…` : meta.cssSnippet;
-  body += `<text x="20" y="${H - 15}" class="mono mut" font-size="11">${esc(snippet)}</text>`;
+  const arrow = snippet.indexOf(' → ');
+  const snippetText = arrow > 0 ? `<tspan class="code">${esc(snippet.slice(0, arrow))}</tspan>${esc(snippet.slice(arrow))}` : esc(snippet);
+  body += `<text x="20" y="${H - 15}" class="mono mut" font-size="11">${snippetText}</text>`;
 
   // ---------------------------------------------------------------- display (innermost)
   let disp = '<g class="C"><g class="D">';
-  disp += `<g clip-path="url(#tmc)"><rect class="tm" x="${tr.x}" y="${tr.y - 1}" width="${tr.w + 1}" height="${tr.h + 5}" style="fill:var(--panel)"/></g>`;
+  disp += `<g clip-path="url(#tmc)"><rect class="tm" x="${tr.x}" y="${tr.y - 1}" width="${tr.w + 1}" height="${tr.h + 5}" style="fill:var(--rr-panel)"/></g>`;
   const dg = L.digits;
   disp += '<g class="num">';
   disp += `<text class="neg mono" x="${dg.x - 2}" y="${dg.y + dg.h * 0.74}" font-size="40" font-weight="600">−</text>`;
@@ -206,10 +198,10 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
     disp += `<g class="dg d${d}" transform="translate(${x} ${dg.y})" clip-path="url(#cb)"><use href="#db"/></g>`;
   }
   disp += '</g>';
-  disp += `<text class="st-range" x="${dg.x}" y="${dg.y + 34}" font-size="22" font-weight="600" style="fill:var(--red)">OUT OF RANGE</text>`;
-  disp += `<text class="st-trap" x="${dg.x}" y="${dg.y + 34}" font-size="22" font-weight="600" style="fill:var(--red)">TRAP</text>`;
+  disp += `<text class="st-range" x="${dg.x}" y="${dg.y + 34}" font-size="22" font-weight="600" style="fill:var(--rr-red)">OUT OF RANGE</text>`;
+  disp += `<text class="st-trap" x="${dg.x}" y="${dg.y + 34}" font-size="22" font-weight="600" style="fill:var(--rr-red)">TRAP</text>`;
   for (let j = 0; j < 32; j++) {
-    disp += `<rect class="L${j}" x="${L.ledX(j)}" y="${L.leds.y}" width="${L.leds.size}" height="${L.leds.size + 4}" rx="1" style="fill:var(--led)"/>`;
+    disp += `<rect class="L${j}" x="${L.ledX(j)}" y="${L.leds.y}" width="${L.leds.size}" height="${L.leds.size + 4}" rx="1" style="fill:var(--rr-acc)"/>`;
   }
   disp += `<text x="40" y="${L.leds.y + 26}" class="mono mut" font-size="10">i32 register · bit 31 … 0</text>`;
   // step counter
@@ -224,20 +216,20 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
   for (let d = 0; d < stepDigits; d++) disp += `<g class="dg sm q${d}" transform="translate(${qxBase + (stepDigits - 1 - d) * 10} ${sy})" clip-path="url(#cs)"><use href="#ds"/></g>`;
   disp += `</g><text class="tot-n mono mut" x="${qxBase}" y="${sy + 15}" font-size="15">${steps}</text>`;
   // status
-  const stx = 190;
-  disp += `<g class="st-run"><circle class="pulse" cx="${stx}" cy="${sy + 10}" r="7" style="fill:var(--acc);fill-opacity:.35"/><circle cx="${stx}" cy="${sy + 10}" r="4" style="fill:var(--acc)"/><text x="${stx + 10}" y="${sy + 15}" class="lbl" style="fill:var(--acc)">RUNNING</text></g>`;
-  disp += `<g class="st-end"><circle cx="${stx}" cy="${sy + 10}" r="4" style="fill:var(--mut)"/><text x="${stx + 10}" y="${sy + 15}" class="lbl">END</text></g>`;
-  disp += `<g class="st-halt"><circle cx="${stx}" cy="${sy + 10}" r="4" style="fill:var(--blue)"/><text x="${stx + 10}" y="${sy + 15}" class="lbl" style="fill:var(--blue)">HALTED</text></g>`;
-  disp += `<g class="st-err"><circle cx="${stx}" cy="${sy + 10}" r="4" style="fill:var(--red)"/><text x="${stx + 10}" y="${sy + 15}" class="lbl" style="fill:var(--red)">STOPPED</text></g>`;
+  const stx = L.status.x;
+  disp += `<g class="st-run"><circle class="pulse" cx="${stx}" cy="${sy + 10}" r="7" style="fill:var(--rr-acc);fill-opacity:.35"/><circle cx="${stx}" cy="${sy + 10}" r="4" style="fill:var(--rr-acc)"/><text x="${stx + 10}" y="${sy + 15}" class="lbl" style="fill:var(--rr-acc)">RUNNING</text></g>`;
+  disp += `<g class="st-end"><circle cx="${stx}" cy="${sy + 10}" r="4" style="fill:var(--rr-mut)"/><text x="${stx + 10}" y="${sy + 15}" class="lbl">END</text></g>`;
+  disp += `<g class="st-halt"><circle cx="${stx}" cy="${sy + 10}" r="4" style="fill:var(--rr-blue)"/><text x="${stx + 10}" y="${sy + 15}" class="lbl" style="fill:var(--rr-blue)">HALTED</text></g>`;
+  disp += `<g class="st-err"><circle cx="${stx}" cy="${sy + 10}" r="4" style="fill:var(--rr-red)"/><text x="${stx + 10}" y="${sy + 15}" class="lbl" style="fill:var(--rr-red)">STOPPED</text></g>`;
   // highlight of the current trace column
-  disp += `<rect class="hl" x="${r4(tr.x - 1)}" y="${tr.y - 3}" width="${r4(Math.max(2, cw + 1))}" height="${tr.h + 3}" rx="1" fill="none" stroke="var(--fg)" stroke-opacity=".55"/>`; // ends above the marker row
+  disp += `<rect class="hl" x="${r4(tr.x - 1)}" y="${tr.y - 3}" width="${r4(Math.max(2, cw + 1))}" height="${tr.h + 3}" rx="1" fill="none" stroke="var(--rr-fg)" stroke-opacity=".55"/>`; // ends above the marker row
   disp += '</g></g>';
 
   // x0 label (lives in the root level, reads the init value directly)
   let x0 = `<g class="x0"><text x="40" y="${sy + 45}" class="lbl">INPUT x₀</text>`;
   x0 += `<text class="zn mono" x="104" y="${sy + 46}" font-size="15" font-weight="600">−</text>`;
   for (let d = 0; d < dg.n; d++) x0 += `<g class="dg sm z${d}" transform="translate(${114 + (dg.n - 1 - d) * 10} ${sy + 31})" clip-path="url(#cs)"><use href="#ds"/></g>`;
-  x0 += `<text class="zr" x="114" y="${sy + 45}" font-size="11" style="fill:var(--red)">out of range</text>`;
+  x0 += `<text class="zr" x="114" y="${sy + 45}" font-size="11" style="fill:var(--rr-red)">out of range</text>`;
   x0 += `<text x="${196}" y="${sy + 45}" class="mut" font-size="11">← the only input</text></g>`;
 
   // ---------------------------------------------------------------- nested levels

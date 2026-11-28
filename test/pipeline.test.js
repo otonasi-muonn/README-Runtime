@@ -116,10 +116,10 @@ test('a wide (Japanese) title does not run into the header info; a long one is s
   assert.equal(textWidth('日本', 15), 30);
   const title = '小さなステップで達成を見える化';
   const r = await generate(collatz, { ...opts, title });
-  const metaX = Number(/<text x="(\d+)" y="29" class="mono mut"/.exec(r.svg)[1]);
+  const metaX = Number(/<text x="(\d+)" y="30" class="rr-m"/.exec(r.svg)[1]);
   assert.ok(metaX >= 20 + textWidth(title, 15), `${metaX}`);
   const long = await generate(collatz, { ...opts, title: 'あ'.repeat(40) });
-  assert.match(long.svg, /<text x="20" y="29" font-size="15" font-weight="600">あ{20}…<\/text>/);
+  assert.match(long.svg, /<text x="20" y="30" class="rr-t" font-size="15" font-weight="600">あ{20}…<\/text>/);
   assert.ok(long.svg.includes(`<title id="rrt">${'あ'.repeat(40)} — README Runtime</title>`), 'the accessible title stays whole');
 });
 
