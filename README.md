@@ -185,7 +185,8 @@ cd gui && npm install && npm run dev   # http://127.0.0.1:5175/（ループバ�
 - 画面外にあるカードの時計は、Chromium と WebKit では表示中と同じように進み、Firefox では画面に入るまで止まります（実測）。そのため Chromium と WebKit では、ページの下の方のカードが、読み手が着く前に再生を終えていることがあります。ずっと動かすには `"loops": "infinite"` にします。
 - WebKit（Windows の Playwright）は、画面外のカードも描き続けます（無限ループで 1コアの約 2〜3%）。この README の mockcraft を無限ループで表示し続けると、メモリ（ワーキングセット）は 1分で +70 MB、5分で +112 MB まで増え、その後 15分までは +107〜117 MB でほぼ横ばいでした。README の画像3枚を一度に表示したときは 5分で +239 MB、15分までは +235〜244 MB でした（どちらも1回の計測。それより長い時間と実機の Safari は未計測）。Chromium と Firefox は、5分間ほぼ一定でした（mockcraft で +34〜44 MB）。有限回の再生では、止まった後のメモリは増えませんでした（WebKit、40 ステップのカードを3分間）。
 - OS の「動きを減らす」設定（`prefers-reduced-motion`）では、アニメーションせずに最後の状態を表示します。
-- `build --json` は、カードごとに1秒あたりの更新回数、再生が続く秒数、表示部分の要素数、gzip のサイズを `perf` で返し、重くなりそうな設定を `PERF_*` の警告（設定の直し方 `fix` つき）で知らせます。
+- UI カードで `"interpolate": true`（または `"ease"` など）を有効にすると、離散状態選択（`.D`）は `stepMs` ごとのまま、位置や変形などの連続スタイル値だけをフレームレートで滑らかに補間します（`mockcraft` 160ステップで gzip 13.4 → 15.5 KB、Chromium style 30 → 50 ms/秒・paint 5 → 25 ms/秒。既定の `"loops": "auto"` では再生終了後に 0% になります。詳細は [`bench/README.md`](bench/README.md#サブステップ連続補間42026-11-28)）。
+- `build --json` は、カードごとに1秒あたりの更新回数、サブステップ補間の有無（`interpolated`）、再生が続く秒数、表示部分の要素数、gzip のサイズを `perf` で返し、重くなりそうな設定を `PERF_*` の警告（設定の直し方 `fix` つき）で知らせます。
 
 ## 安全性
 
@@ -208,12 +209,12 @@ your code (C / Rust / AssemblyScript ...)  ──build command──▶  .wasm  
 4. 区間解析で、CSS で正確に表せない値になりうる箇所を見つけ、そこに範囲ガードを入れます。ガードが働くと、そのステップで `OUT OF RANGE` と表示して止まります。
 5. アニメーションする時計 `--rt` は、最も内側の表示部分だけにあり、書き出された状態から何ステップ目を表示するかを選びます（長い実行や複数値の状態では、2の冪ブロックによる2次元因数分解で選択式の評価負荷とサイズを抑えます）。時計が進んでも、実行全体（入れ子の段）は計算し直されません。
 
-既存 UI のカードでは、デモの TSX を esbuild で束ね、React の `renderToStaticMarkup` で静的 HTML にします。view 値を変えて何度か描画し、出力の違いから束縛を推定します（style の数値は `calc(var(--view) * a + b)`、テキスト中の数値は CSS カウンタ、クラス名・文言・要素の有無の違いは値ごとの変種を `@container style(--view: k)` で切り替え）。推定したテンプレートは、実行中のすべての状態でコンポーネントの直接描画と一致することを確かめてから出力します。
+既存 UI のカードでは、デモの TSX を esbuild で束ね、React の `renderToStaticMarkup` で静的 HTML にします。view 値を変えて何度か描画し、出力の違いから束縛を推定します（style の数値は `calc(var(--view) * a + b)`、テキスト中の数値は CSS カウンタ、クラス名・文言・要素の有無の違いは値ごとの変種を `@container style(--view: k)` で切り替え）。推定したテンプレートは、実行中のすべての状態でコンポーネントの直接描画と一致することを確かめてから出力します。さらに `"interpolate": true` を指定すると、テキストのカウンタ・`@container` の切り替え・整数専用プロパティ（`z-index` や `grid-*`）・`halt`/`hold`/`trap` の停止境界は離散のまま保ちつつ、位置や `transform` などの連続スタイル束縛だけを次ステップの view 値へ向かってサブステップ補間します。
 
 ## ほかの例
 
 - [Rust の 16 ビット LFSR](examples/lfsr-rust/README.md): 言語を問わないこと（`build.command` を `rustc …` にするだけ）。
-- [mockcraft を複数の値の状態で](examples/mockcraft/state.ts): 先頭のカードと同じ動きを、ビットパッキングせずに export したグローバル5つで書いた例（[カード](examples/mockcraft/readme-runtime/mockcraft-state.svg)。設定は [`examples/mockcraft/readme-runtime.json`](examples/mockcraft/readme-runtime.json) で、`readme-runtime build --config examples/mockcraft/readme-runtime.json` で作ります）。
+- [mockcraft を複数の値の状態で](examples/mockcraft/state.ts): 先頭のカードと同じ動きを、ビットパッキングせずに export したグローバル5つで書いた例（離散: [カード](examples/mockcraft/readme-runtime/mockcraft-state.svg)、サブステップ補間つき: [カード](examples/mockcraft/readme-runtime/mockcraft-smooth.svg)。設定は [`examples/mockcraft/readme-runtime.json`](examples/mockcraft/readme-runtime.json) で、`readme-runtime build --config examples/mockcraft/readme-runtime.json` で作ります）。
 - [air-drawing-board](examples/air-drawing/README.md): Canvas アプリの描画処理 `renderStroke()` を、ビルド時に SVG の path として再利用した例と、再利用できなかった部分の記録。
 
 <details>
@@ -253,6 +254,7 @@ your code (C / Rust / AssemblyScript ...)  ──build command──▶  .wasm  
 | `haltExport` | 停止判定に使う export 関数（`(i32) -> i32`、非0で停止。複数の値では状態全体を受け取る）。これも CSS に変換されます | なし |
 | `stepMs` | 1ステップのミリ秒 | 150 |
 | `loops` | 再生の回数。`"auto"` はページを開いてから約1分ぶん、`"infinite"` は止まらない。終わると最後の状態で止まる | `"auto"` |
+| `interpolate` | UI カードのサブステップ連続補間。`true`（`"linear"`）、`"ease"` / `"ease-in"` / `"ease-out"` / `"ease-in-out"` / `"cubic-bezier(...)"`、または `{"easing", "views"}`（対象 view を限定） | `false` |
 | `build.command` | `.wasm` を作るコマンド。言語非依存で、シェルでそのまま実行します | なし |
 | `build.inputs` | コマンドが読むソース（glob可）。これが変わったときだけ `command` を実行します | `build` があれば必須 |
 | `ui` | 既存UIのカードにする: `entry`（デモのTSX/JSX）、`views`（view名→export関数）、`css`（スタイルシート）、`tsconfig`、`width`/`height`、`credit` | なし |
@@ -394,7 +396,7 @@ node bin/readme-runtime.js check
 - 約100の命令パターンについて、境界値を含むサンプル入力（2²³〜2²⁴の窓、49や65521の倍数を含む）と4つの演算モデルで「本物のWasmと一致するか、範囲フラグが立つか」を確認します（[`test/compiler.test.js`](test/compiler.test.js)）。
 - 出力の決定性、範囲エラー、トラップ、停止判定、時計の各時刻で表示部分が選ぶ値（書き換えた初期値を含む）、`altInits` を確認します（[`test/pipeline.test.js`](test/pipeline.test.js)）。
 - 2回の敵対的レビューで見つかった不具合の再現ケースを回帰テストにしています（[`test/soundness.test.js`](test/soundness.test.js)）。
-- 複数の値を持つ状態（globals ABI / functions ABI、最大8変数）と、400ステップ超の1要素内複数ステップ展開・2次元因数分解選択・実行モード判定を確認します（[`test/state.test.js`](test/state.test.js)、[`test/steps.test.js`](test/steps.test.js)）。
+- 複数の値を持つ状態（globals ABI / functions ABI、最大8変数）、400ステップ超の1要素内複数ステップ展開・2次元因数分解選択・実行モード判定、およびUIカードのサブステップ連続補間を確認します（[`test/state.test.js`](test/state.test.js)、[`test/steps.test.js`](test/steps.test.js)、[`test/interp.test.js`](test/interp.test.js)）。
 - キャッシュ・差分ビルド・`check` の挙動を確認します（[`test/project.test.js`](test/project.test.js)）。
 - 既存UIのカード: 上流ファイルのハッシュ、束縛の推定（条件付きで現れる要素を含む）、非一次式の拒否、Tailwind 3 / 4、描画の決定性、部品やCSSの変更による再生成、時計が唯一のアニメーションであることを確認します（[`test/ui.test.js`](test/ui.test.js)）。
 - CLI: `--json` の形式、エラーコード、`analyze` の判定、`init --ui` からビルドまで、CI ワークフローのコミット固定を確認します（[`test/cli.test.js`](test/cli.test.js)）。再生回数と負荷の報告・警告は [`test/perf.test.js`](test/perf.test.js) です。

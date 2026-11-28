@@ -292,6 +292,32 @@ https://github.com/otonasi-muonn/README-Runtime を開き、カードの UI 部�
 - **上限の判断（`MAX_STEPS = 2000`）**: 3,200ステップでも動作しますが、90分岐の `chain90.wasm` のような式が大きいプログラムでは1,600ステップで初回描画が 1.8〜2.7 秒になります。一般的なカードで初回描画を約0.3秒以内・gzip を数十 KB 以内に保つ実用上限として `2,000`（従来の5倍）を採用しました。トレースカードでは `stride > 1` のとき段ごとに1列（最大321列）を描画し、38,000個超の `<use>` 要素によるラスタライズ負荷を避けています。
 - **CSS計算モデル上の継続実行の限界**: `<img>` 内SVGのCSSアニメーションは時刻 `t` からスタイルへの純粋関数であり、フレーム間で状態を保持・帰還する手段がありません（同一要素のカスタムプロパティ循環は無効化され、継承は親→子のみ、float32の `2^24` 精度制約により一般の閉形式・べき乗圧縮も不可）。したがって非周期な一般の `step()` は展開した `steps` の範囲でのみ実計算可能です。一方、`step(x_steps) == x_0` かつ `hold = 0` の周期軌道では無限ループが厳密な継続実行（`periodic`）と一致します。
 
+## サブステップ連続補間（#4、2026-11-28）
+
+離散ステップ更新（`stepMs` ごと）と連続描画を分離し、`<img>` 内 SVG で滑らかな移動・変形・不透明度補間を行う `"interpolate"` オプションを実装・計測しました（[`bench/interp.mjs`](interp.mjs)、結果: [`results/interp.json`](results/interp.json)）。
+
+### 方式の比較と選択理由
+
+`mockcraft`（160ステップ、`stepMs = 150 ms`）上で以下の方式を3エンジンで比較しました。
+
+- **採用方式（`.C`/`.D` 離散 + `.rr-ui` 単一 `--rf` 補間）**: `.C`（`rrclk`、`steps(T+1, jump-none)`）と `.D`（現在ステップ `--rsx` と次ステップ `--rsn` の状態選択＋view評価）は従来どおり `stepMs` に1回（6.7 Hz）だけ評価し、`.rr-ui` 上の1つの `@keyframes rrf { from { --rf: 0 } to { --rf: 1 } }`（`<number>`）で連続 `style` バインディング専用の `--rlerp_<v>` だけを補間します。連続バインディングを持つ view（`mockcraft` では `dx, dy` のみ）が読む状態成分（5値中 `x, y` の2値）だけを次ステップ用に選択します。
+- **不採用方式1（グローバル `<number>` 時計 `--rtm`）**: `.C` を連続 `<number>` アニメーションにして `floor(--rtm)` でステップを選ぶ方式は、`.D` の全状態選択式が毎フレーム再評価されるため、Chromium のスタイル計算が 50.3 → **95.3 ms/秒** に倍増し、Firefox / WebKit の CPU も約 60% に達しました。
+- **不採用方式2（葉要素ごとの `rrf` アニメーション）**: 30個の `<rr-case>` 変種内の移動要素それぞれに `animation: rrf` を付与する方式は、`KeyframeEffect` が30個生成されるため、`.rr-ui` 単一アニメーションに比べて Firefox（38% → 52.5%）と WebKit（33.6% → 48.6%）の CPU が増加しました。
+
+### 実カード計測（`examples/mockcraft` 5変数状態、160ステップ、`stepMs = 150 ms`、4秒窓）
+
+- **描画滑らかさの確認方法**: JS無効・GitHub画像CSP下の `<img>` に対し、最初の水平移動区間（約900 ms＝約6ステップ）を2 px高の走査線クリップで連続スクリーンショットし、移動カードの左端 X 座標の異なる描画位置数（`distinctX / samples`）と、ステップ境界での1フレーム逆行（`backwardGlitches`）を計測しました。
+- **離散ステップでの直接描画一致**: `test/browser/ui.js --config examples/mockcraft/readme-runtime.json --card mockcraft-smooth`（`t = 0, 23, 37, 101, 172` および `altInits`・初期値書き換えを含む19ケース × 3エンジン = **57/57**）で、Firefox・WebKit は **全ケース 0 px 差**、Chromium は CSS カウンタ隣接文字の字送り差のみ（0〜72 px、許容上限 150 px）で一致しました。
+
+| モード | gzip | 描画位置数 `distinctX / samples`（Chr / FF / WK） | 境界逆行 | 動きを減らす設定 `distinctX`（Chr / FF） | Chromium `style` / `paint`（ms/秒） | 再生中 CPU（Chr / FF / WK） |
+|---|---|---|---|---|---|---|
+| `none`（離散既定） | 13.4 KB | 7/17、7/21、7/29（8 px 刻み） | 0 | – | 29.9 / 4.7 | 12.4 / 22.0 / 6.6 % |
+| `linear`（`interpolate: true`） | 15.5 KB | **17/17、21/21、29/29**（連続） | **0** | **1 / 1（静止）** | 50.3 / 25.2 | 36.3 / 68.9 / 54.4 % |
+| `ease`（`interpolate: "ease"`） | 15.5 KB | **16/17、19/21、22/28**（加減速） | **0** | – | 52.9 / 26.0 | 46.5 / 73.0 / 17.3 % |
+
+- **離散と連続の分離・終端安全性**: テキストカウンタ（`<rr-n>`）、`@container style()` スイッチ、整数専用 CSS プロパティ（`z-index`, `order`, `grid-*`, `columns`, `repeat()`）は離散 `--rview_<v>`（`<integer>`）のまま維持します。また `--rlg = Z - E` により、`halt` 後・`hold` 中・有限再生終了時、および `trap` / `OUT OF RANGE` の**直前ステップ**（`errAt - 1`）では `--rgo = 0` となり、不正な次状態への補間は発生しません。`periodic`（`hold = 0`・無限ループ・全初期値が周期軌道）では最終ステップ `x_steps` から `x_0` へ切れ目なく補間折り返しを行います。
+- **トレードオフ**: 補間有効時は `<img>` がフレームレートで再ラスタライズされるため、再生中の CPU と Chromium `paint` 時間が増加します（既定の `"loops": "auto"` では約1分後に `.C` と `.rr-ui` の両アニメーションが `forwards` で終了し、停止後の CPU は 0% になります）。
+
 ## 条件
 
 - **同じUI**: mockcraft カード（UIdesign の実コンポーネント、[`examples/mockcraft`](../examples/mockcraft)）。録画は、同じWasmで各状態を計算し、同じReactコンポーネントと同じCSSをヘッドレスChromiumのページに描画してスクリーンショットします（アプリを録画するのと同じ方法、[`record.mjs`](record.mjs)）。UI 部分は同じで、Firefox・WebKit では画素単位で一致します。カードの枠（タイトルと STEP 表示）は簡略化した HTML です。

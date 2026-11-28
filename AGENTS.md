@@ -53,8 +53,14 @@ cannot install that URL: write `npm exec --yes --package=<archive URL> -- readme
 4. `demo.tsx`: render the project's own components with props computed from the views. Numbers in
    style values or text may be any `a*view + b`; anything else (class names, texts, whether an element
    exists) needs a view with at most 64 values. Give the root element an inline width/height in px.
-   The display selects, on every step, the first state value and the values the views read
-   (`cards[].perf.selectedValues`; `PERF_WIDE_SELECTION` when it gets expensive).
+   Set `"interpolate": true` (or `"ease"`, `"cubic-bezier(...)"`, or `{"easing": "ease-in-out", "views": ["dx"]}`)
+   on a UI card to smoothly interpolate continuous `style` bindings (`left`, `top`, `transform`, `width`,
+   `opacity`, etc.) across each `stepMs` via a local `--rf` (`0..1`) animation on `.rr-ui`, while keeping
+   `.C`/`.D` discrete once per `stepMs` and keeping text counters, `@container` switches, integer-only
+   CSS properties (`z-index`, `grid-*`, `columns`, `repeat()`), and `halt`/`hold`/`trap` boundaries discrete
+   (`UI_INTERPOLATE_DISCRETE_ONLY` warns when a listed view has no continuous style bindings).
+   The display selects, on every step, the state values the views read (`cards[].perf.selectedValues`,
+   plus `nextSelectedValues` when interpolated; `PERF_WIDE_SELECTION` when it gets expensive).
    Build warnings (`cards[].ui.warnings`): `UI_WHOLE_VARIANTS` means the whole UI is copied per view
    value: wrap each part that appears or disappears (e.g. a component that renders null) in its own
    element. `UI_STRUCTURAL_CSS` means child/sibling selectors may style switched elements
@@ -68,10 +74,10 @@ cannot install that URL: write `npm exec --yes --package=<archive URL> -- readme
 6. Viewers' cost: while a card plays, the browser restyles its display once per step (not the
    whole run). `steps` may be 1..2,000 (above 400, multiple steps are unrolled per `<g>` so DOM
    nesting stays <= 320 levels, and selection uses 2D power-of-two factoring). `build --json`
-   returns `cards[].perf` (updates per second, `activeSeconds` it keeps updating, `levels`,
+   returns `cards[].perf` (updates per second, `interpolated`, `activeSeconds` it keeps updating, `levels`,
    `stepsPerLevel`, display elements, gzip bytes), `cards[].execution` (`mode`: `"finite"`,
    `"finite-replay"`, `"halt"`, or `"periodic"` when `loops: "infinite"`, `hold: 0`, and
-   `step(x_steps) == x_0`; plus `cycle`), and `cards[].warnings` with `PERF_*` codes, each with a
+   `step(x_steps) == x_0`; plus `cycle` and `interpolation`), and `cards[].warnings` with `PERF_*` codes, each with a
    `fix` to merge into the card in `readme-runtime.json`. Defaults: `stepMs` 150, `loops: "auto"`
    (whole runs for about a minute from page load, then it rests on the last step and costs
    nothing); `"loops": "infinite"` keeps it running while it is on screen. Use `"infinite"` for the

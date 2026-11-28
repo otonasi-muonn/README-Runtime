@@ -1,0 +1,145 @@
+{
+ "environment": {
+  "date": "2026-11-28T07:27:29.563Z",
+  "os": "Windows_NT 10.0.26200 x64",
+  "cpu": "AMD Ryzen 7 8845HS w/ Radeon 780M Graphics      (16 threads)",
+  "ramGB": 31.3,
+  "node": "v24.19.0",
+  "ffmpeg": null,
+  "git": "git version 2.49.0.windows.1"
+ },
+ "windowMs": 4000,
+ "card": "examples/mockcraft (5-value state, 160 steps, stepMs=150)",
+ "modes": {
+  "none": {
+   "interpolate": false,
+   "generateMs": 2549.4,
+   "bytes": 103963,
+   "gzipBytes": 13757,
+   "selectedValues": 4,
+   "interpolation": null,
+   "browsers": {
+    "chromium": {
+     "samples": 17,
+     "distinctX": 7,
+     "maxStepPx": 8,
+     "backwardGlitches": 0,
+     "cpuPct": 12.4,
+     "wsMB": 346,
+     "styleMsPerSec": 29.9,
+     "paintMsPerSec": 4.7
+    },
+    "firefox": {
+     "samples": 21,
+     "distinctX": 7,
+     "maxStepPx": 8,
+     "backwardGlitches": 0,
+     "cpuPct": 22,
+     "wsMB": 514
+    },
+    "webkit": {
+     "samples": 29,
+     "distinctX": 7,
+     "maxStepPx": 8,
+     "backwardGlitches": 0,
+     "cpuPct": 6.6,
+     "wsMB": 220
+    }
+   }
+  },
+  "linear": {
+   "interpolate": true,
+   "generateMs": 3928.7,
+   "bytes": 126259,
+   "gzipBytes": 15889,
+   "selectedValues": 4,
+   "nextSelectedValues": 2,
+   "interpolation": {
+    "active": true,
+    "easing": "linear",
+    "views": [
+     "dx",
+     "dy"
+    ],
+    "sites": 60,
+    "periodicWrap": false
+   },
+   "browsers": {
+    "chromium": {
+     "samples": 17,
+     "distinctX": 17,
+     "maxStepPx": 4,
+     "backwardGlitches": 0,
+     "reducedMotionDistinctX": 1,
+     "cpuPct": 36.3,
+     "wsMB": 371,
+     "styleMsPerSec": 50.3,
+     "paintMsPerSec": 25.2
+    },
+    "firefox": {
+     "samples": 21,
+     "distinctX": 21,
+     "maxStepPx": 10,
+     "backwardGlitches": 0,
+     "reducedMotionDistinctX": 1,
+     "cpuPct": 68.9,
+     "wsMB": 545
+    },
+    "webkit": {
+     "samples": 29,
+     "distinctX": 29,
+     "maxStepPx": 3,
+     "backwardGlitches": 0,
+     "cpuPct": 54.4,
+     "wsMB": 262
+    }
+   }
+  },
+  "ease": {
+   "interpolate": "ease",
+   "generateMs": 4349,
+   "bytes": 126257,
+   "gzipBytes": 15888,
+   "selectedValues": 4,
+   "nextSelectedValues": 2,
+   "interpolation": {
+    "active": true,
+    "easing": "ease",
+    "views": [
+     "dx",
+     "dy"
+    ],
+    "sites": 60,
+    "periodicWrap": false
+   },
+   "browsers": {
+    "chromium": {
+     "samples": 17,
+     "distinctX": 16,
+     "maxStepPx": 7,
+     "backwardGlitches": 0,
+     "cpuPct": 46.5,
+     "wsMB": 369,
+     "styleMsPerSec": 52.9,
+     "paintMsPerSec": 26
+    },
+    "firefox": {
+     "samples": 21,
+     "distinctX": 19,
+     "maxStepPx": 14,
+     "backwardGlitches": 0,
+     "cpuPct": 73,
+     "wsMB": 544
+    },
+    "webkit": {
+     "samples": 28,
+     "distinctX": 22,
+     "maxStepPx": 5,
+     "backwardGlitches": 0,
+     "cpuPct": 17.3,
+     "wsMB": 263
+    }
+   }
+  }
+ }
+}
