@@ -19,12 +19,19 @@ export const PERF_LIMITS = {
   longRun: 240, // steps: first render and file size grow with the run
   displayElements: 600, // elements restyled and repainted on every step
   containerRules: 120, // @container style() rules (switched markup) re-evaluated on every step
+  // terms of the sums that select the shown state (state values the views read x levels),
+  // re-evaluated on every step: 3 values at 400 steps. Measured at 400 steps, 150 ms per step
+  // (bench/results/state.json): Chromium style 19 ms/s for one value, 35 for four, 54 for eight;
+  // showing eight numbers of one value costs as much as one (bench/results/state-control.json)
+  selectionTerms: 1203,
 };
 
 export function perfReport(o, svg) {
   const display = svg.slice(svg.indexOf('<g class="C">'));
   const displayElements = (display.match(/<[a-zA-Z][\w-]*/g) ?? []).length;
   const containerRules = (svg.match(/@container/g) ?? []).length;
+  const selectionTerms = (svg.match(/var\(--rS\d/g) ?? []).length;
+  const selectedValues = Math.round(selectionTerms / (o.steps + 1));
   const loopSeconds = loopMs(o) / 1000;
   const loops = resolveLoops(o);
   const report = {
@@ -33,13 +40,15 @@ export function perfReport(o, svg) {
     // how long the card keeps updating while visible; null: as long as it is shown
     loops,
     activeSeconds: loops === 'infinite' ? null : Number((loopSeconds * loops).toFixed(1)),
-    steps: o.steps, displayElements, containerRules,
+    steps: o.steps, displayElements, containerRules, selectedValues, selectionTerms,
     bytes: Buffer.byteLength(svg), gzipBytes: zlib.gzipSync(svg, { level: 9 }).length,
   };
   const warnings = [];
   const large = displayElements > PERF_LIMITS.displayElements || containerRules > PERF_LIMITS.containerRules;
-  // one stepMs that both clock warnings agree on
+  // one stepMs that both clock warnings agree on, and one steps that both step-count ones do
   const slower = Math.max(o.stepMs, large ? 200 : 150);
+  const wide = selectionTerms > PERF_LIMITS.selectionTerms;
+  const fewer = Math.min(o.steps > PERF_LIMITS.longRun ? PERF_LIMITS.longRun : Infinity, wide ? Math.max(1, Math.floor(PERF_LIMITS.selectionTerms / selectedValues) - 1) : Infinity);
   if (o.stepMs < PERF_LIMITS.minStepMs) {
     warnings.push({
       code: 'PERF_FAST_CLOCK',
@@ -58,7 +67,14 @@ export function perfReport(o, svg) {
     warnings.push({
       code: 'PERF_LONG_RUN',
       message: `${o.steps} steps: the first render computes every step and the file grows with each one (${(report.gzipBytes / 1024).toFixed(1)} kB gzip); a shorter run or a halt condition keeps both small`,
-      fix: { steps: PERF_LIMITS.longRun },
+      fix: { steps: fewer },
+    });
+  }
+  if (wide) {
+    warnings.push({
+      code: 'PERF_WIDE_SELECTION',
+      message: `the display selects ${selectedValues} state values from ${o.steps + 1} levels (${selectionTerms} terms) on every step; fewer steps, or views that read fewer state values, keep each update cheap`,
+      fix: { steps: fewer },
     });
   }
   if (large) {

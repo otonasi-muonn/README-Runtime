@@ -5,7 +5,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import url from 'node:url';
-import { unary, op, c, get, set, I32 } from '../helpers/wasm-builder.js';
+import { unary, buildModule, op, c, get, set, I32 } from '../helpers/wasm-builder.js';
 
 const root = path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), '../..');
 const file = (p) => fs.readFileSync(path.join(root, p));
@@ -42,4 +42,18 @@ export const PROGRAMS = {
   nanhash: { wasm: asm([get(0), ...[0, 1, 2, 3, 4].flatMap(() => [c(0x5bd1e995), op.mul]), set(1), get(1), get(1), c(7), op.shr_s, op.xor, c(0xffff), op.and], [I32]), export: 'f', init: 0, edits: [5, 12345] },
   // a trap (division by zero at the third step) stops the card with TRAP
   trap: { wasm: asm([c(100), get(0), c(3), op.sub, op.div_s]), export: 'f', init: 6, edits: [10] },
+  // a state of two values (#6, one step function per value; the card shows p):
+  //   p' = p + 3 + (v & 1),   v' = 2v (+ (p - 13) / (p - 13) - 1: traps when p = 13)
+  //   halts when p >= 40 or v = 96 (a predicate on the whole state)
+  // init halts on v at step 5; the edits trap at step 5, halt on p at step 13, take v out of the
+  // exact range at step 2 and at the start, and run to the last step.
+  'state2-c': {
+    wasm: buildModule({ funcs: [
+      { name: 'step_p', params: [I32, I32], results: [I32], body: [get(0), c(3), op.add, get(1), c(1), op.and, op.add].flat() },
+      { name: 'step_v', params: [I32, I32], results: [I32], body: [get(1), c(2), op.mul, get(0), c(13), op.sub, get(0), c(13), op.sub, op.div_s, op.add, c(1), op.sub].flat() },
+      { name: 'stop', params: [I32, I32], results: [I32], body: [get(0), c(40), op.ge_s, get(1), c(96), op.eq, op.or].flat() },
+    ] }),
+    export: { p: 'step_p', v: 'step_v' }, state: ['p', 'v'], haltExport: 'stop',
+    init: { p: 1, v: 3 }, edits: [{ p: 1, v: 2 }, { p: 2, v: 2 }, { p: 0, v: 300000 }, { p: 0, v: 1000000 }, { p: -999999, v: 0 }],
+  },
 };

@@ -40,7 +40,7 @@ export const tee = (i) => [op.local_tee, ...uleb(i)];
 
 // funcs: [{ name?, params: [types], results: [types], locals?: [types], body: [bytes], export? }]
 // imports: [{ module, name, params, results }]   (function imports, indices come first)
-// globals: [{ type, mutable, init }]
+// globals: [{ type, mutable, init, export? }]   (export: the name to export the global under)
 export function buildModule({ funcs, imports = [], globals = [], memory = false }) {
   const types = [];
   const typeIndex = (params, results) => {
@@ -53,6 +53,7 @@ export function buildModule({ funcs, imports = [], globals = [], memory = false 
   const funcTypes = funcs.map((f) => uleb(typeIndex(f.params, f.results)));
   const exportsList = [];
   funcs.forEach((f, i) => { if (f.export !== false) exportsList.push([...str(f.name ?? `f${i}`), 0x00, ...uleb(imports.length + i)]); });
+  globals.forEach((g, i) => { if (g.export) exportsList.push([...str(g.export), 0x03, ...uleb(i)]); });
   const codes = funcs.map((f) => {
     const locals = f.locals ?? [];
     const groups = locals.map((t) => [1, t]);

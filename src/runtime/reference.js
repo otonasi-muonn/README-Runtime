@@ -23,31 +23,55 @@ export async function instantiate(wasmBytes) {
   return instance.exports;
 }
 
+// How the module takes and returns its state (see compiler/program.js), on the real engine.
+// A state is an array of K i32 values. step(x) returns the next state; read(fn, x) calls a
+// halt or view export on x.
+//   abi "single" / "functions": next[i] = step_i(...x), every function on the same x
+//   abi "globals": the state globals are set to x, step() runs, the globals are the next state
+export function stateAbi(ex, { abi = 'single', stateNames = null, exportName = 'step' } = {}) {
+  if (abi === 'globals') {
+    const set = (x) => stateNames.forEach((n, i) => { ex[n].value = x[i]; });
+    return {
+      step: (x) => { set(x); ex[exportName](); return stateNames.map((n) => ex[n].value | 0); },
+      read: (fn, x) => { set(x); return ex[fn](...x.slice(0, ex[fn].length)) | 0; },
+    };
+  }
+  const fns = typeof exportName === 'string' ? [exportName] : stateNames.map((n) => exportName[n]);
+  return {
+    step: (x) => fns.map((f) => ex[f](...x) | 0),
+    read: (fn, x) => ex[fn](...x) | 0,
+  };
+}
+
 // x0, step(x0), step(step(x0)), ... until `steps`, a halt, a trap, or a value outside the
-// CSS-exact range. Each entry is a plain signed i32.
-export async function referenceTrace(wasmBytes, { exportName = 'step', haltExport = null, haltValue = null, init, steps, rangeLimit }) {
+// CSS-exact range. `states` holds each state as an array of its values; `values` is the same
+// trace for the original ABI (one plain signed i32 per step), or `states` for a named state.
+// `init`: a number (original ABI) or an array of the state values in order.
+// `program`: { abi, stateNames, exportName } from compileStep (default: step(i32) -> i32).
+export async function referenceTrace(wasmBytes, { exportName = 'step', haltExport = null, haltValue = null, init, steps, rangeLimit, program = null }) {
   const ex = await instantiate(wasmBytes);
-  const step = ex[exportName];
-  const halt = haltExport ? ex[haltExport] : null;
-  const isHalt = (x) => (halt ? halt(x) !== 0 : haltValue !== null && x === haltValue);
-  const values = [init | 0];
+  const abi = stateAbi(ex, program ?? { exportName });
+  const isHalt = (x) => (haltExport ? abi.read(haltExport, x) !== 0 : haltValue !== null && x.length === 1 && x[0] === haltValue);
+  const x0 = (Array.isArray(init) ? init : [init]).map((v) => v | 0);
+  const states = [x0];
   let end = { kind: 'steps', at: steps };
-  const outOfRange = (x) => rangeLimit !== undefined && Math.abs(x) > rangeLimit;
-  if (outOfRange(values[0])) end = { kind: 'range', at: 0 };
-  else if (isHalt(values[0])) end = { kind: 'halt', at: 0 };
+  const outOfRange = (x) => rangeLimit !== undefined && x.some((v) => Math.abs(v) > rangeLimit);
+  if (outOfRange(x0)) end = { kind: 'range', at: 0 };
+  else if (isHalt(x0)) end = { kind: 'halt', at: 0 };
   else {
     for (let k = 1; k <= steps; k++) {
       let x;
       try {
-        x = step(values[k - 1]) | 0;
+        x = abi.step(states[k - 1]);
       } catch (e) {
         if (e instanceof WebAssembly.RuntimeError) { end = { kind: 'trap', at: k, message: e.message }; break; }
         throw e;
       }
-      values.push(x);
+      states.push(x);
       if (outOfRange(x)) { end = { kind: 'range', at: k }; break; }
       if (isHalt(x)) { end = { kind: 'halt', at: k }; break; }
     }
   }
-  return { values, end };
+  const named = program?.stateNames != null;
+  return { values: named ? states : states.map((x) => x[0]), states, end };
 }

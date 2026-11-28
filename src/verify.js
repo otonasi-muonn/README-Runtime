@@ -4,8 +4,8 @@
 //   3. generated CSS under browser models    -> validates the CSS translation and its range
 import { evalExact } from './compiler/ir.js';
 import { MODELS, STORED_LIMIT } from './compiler/css.js';
-import { simulateMachine, evalDisplay, viewProp } from './runtime/machine.js';
-import { referenceTrace, instantiate } from './runtime/reference.js';
+import { simulateMachine, evalDisplay, viewProp, stateAt } from './runtime/machine.js';
+import { referenceTrace, instantiate, stateAbi } from './runtime/reference.js';
 
 export class VerifyError extends Error {
   constructor(message, code = 'INTERNAL') {
@@ -17,39 +17,46 @@ export class VerifyError extends Error {
 // Firefox computes calc() in float32: integers are exact only up to 2^24.
 const INLINE_EXACT = 2 ** 24;
 
-const stateAt = (machine, levels, k) => levels[k].get(k === 0 ? machine.initProp : `rx${k % 2 === 1 ? 'a' : 'b'}`);
 const flagAt = (levels, k, f) => levels[k].get(`r${f}${k === 0 ? 'b' : k % 2 === 1 ? 'a' : 'b'}`);
 
-// `init`: the run to verify (an alternative initial value of the card, see altInits).
+const same = (a, b) => a.length === b.length && a.every((v, i) => v === b[i]);
+
+// `init`: the run to verify (an alternative initial value of the card, see altInits): a number,
+// or an array of the state's values.
 export async function verifyRun(wasmBytes, program, machine, { init = machine.init } = {}) {
   const trace = await referenceTrace(wasmBytes, {
     exportName: program.exportName, haltExport: program.haltExport, haltValue: machine.haltValue,
-    init, steps: machine.steps, rangeLimit: STORED_LIMIT,
+    init, steps: machine.steps, rangeLimit: STORED_LIMIT, program,
   });
-  const { values, end } = trace;
+  const { states, end } = trace;
+  const K = states[0].length;
+  // a state in messages: 27, or (x=3, y=5) for a named state
+  const show = (x) => (program.stateNames ? `(${program.stateNames.map((name, i) => `${name}=${x[i]}`).join(', ')})` : String(x[0]));
   if (end.kind === 'range') {
     throw new VerifyError(
-      `step ${end.at}: state ${values[end.at]} is outside the CSS-exact range (|x| <= ${STORED_LIMIT.toLocaleString('en-US')}). ` +
+      `step ${end.at}: state ${show(states[end.at])} is outside the CSS-exact range (|x| <= ${STORED_LIMIT.toLocaleString('en-US')}${K > 1 ? ' for every value' : ''}). ` +
       `Chromium keeps only 6 significant digits of computed custom properties, so this value cannot be shown faithfully. ` +
       `Use a smaller "init", fewer "steps", or a halt condition.`, 'RANGE_STATE');
   }
-  const lastValid = end.kind === 'trap' ? end.at - 1 : values.length - 1;
+  const lastValid = end.kind === 'trap' ? end.at - 1 : states.length - 1;
+  const nexts = program.state ? program.state.map((x) => x.node) : [program.step];
 
   // 2. IR vs real Wasm
   for (let k = 1; k <= Math.min(end.at, machine.steps); k++) {
-    const prev = values[k - 1];
-    const [next, trapped] = evalExact([program.step, program.trap ?? program.step], [prev]);
-    const trapFlag = program.trap ? trapped : 0;
+    const prev = states[k - 1];
+    const out = evalExact([...nexts, program.trap ?? nexts[0]], prev);
+    const next = out.slice(0, K);
+    const trapFlag = program.trap ? out[K] : 0;
     if (end.kind === 'trap' && k === end.at) {
-      if (trapFlag !== 1) throw new VerifyError(`internal: IR misses the trap at step ${k} (input ${prev})`, 'INTERNAL');
+      if (trapFlag !== 1) throw new VerifyError(`internal: IR misses the trap at step ${k} (input ${show(prev)})`, 'INTERNAL');
       break;
     }
-    if (trapFlag !== 0) throw new VerifyError(`internal: IR predicts a trap at step ${k} (input ${prev}) but Wasm returned ${values[k]}`, 'INTERNAL');
-    if (next !== values[k]) throw new VerifyError(`internal: IR computes ${next} at step ${k} (input ${prev}) but Wasm returned ${values[k]}`, 'INTERNAL');
+    if (trapFlag !== 0) throw new VerifyError(`internal: IR predicts a trap at step ${k} (input ${show(prev)}) but Wasm returned ${show(states[k])}`, 'INTERNAL');
+    if (!same(next, states[k])) throw new VerifyError(`internal: IR computes ${show(next)} at step ${k} (input ${show(prev)}) but Wasm returned ${show(states[k])}`, 'INTERNAL');
   }
   if (program.halt) {
     for (let k = 0; k <= lastValid; k++) {
-      const [h] = evalExact([program.halt], [values[k]]);
+      const [h] = evalExact([program.halt], states[k]);
       const expect = end.kind === 'halt' && k === end.at ? 1 : 0;
       if (h !== expect) throw new VerifyError(`internal: IR halt predicate gives ${h} at step ${k} (expected ${expect})`, 'INTERNAL');
     }
@@ -58,7 +65,7 @@ export async function verifyRun(wasmBytes, program, machine, { init = machine.in
   // 3. CSS under each browser model, full chain
   const models = {};
   const endAt = Math.min(end.at, machine.steps);
-  const call = (k) => (k === 0 ? `the initial value ${values[0]}` : `step(${values[k - 1]})`);
+  const call = (k) => (k === 0 ? `the initial value ${show(states[0])}` : `step(${show(states[k - 1])})`);
   for (const [name, model] of Object.entries(MODELS)) {
     const { levels, stats } = simulateMachine(machine, { model, init });
     for (let k = 0; k <= lastValid; k++) {
@@ -76,12 +83,12 @@ export async function verifyRun(wasmBytes, program, machine, { init = machine.in
           `Keep intermediate values smaller, or use fewer "steps" / a halt condition.`, 'RANGE_GUARD');
       }
       const got = stateAt(machine, levels, k);
-      if (got !== values[k]) {
+      if (!same(got, states[k])) {
         if (name === 'exact') {
-          throw new VerifyError(`internal error: the CSS translation computes ${got} for ${call(k)} but WebAssembly computes ${values[k]}. Please report this with the .wasm file.`, 'INTERNAL');
+          throw new VerifyError(`internal error: the CSS translation computes ${show(got)} for ${call(k)} but WebAssembly computes ${show(states[k])}. Please report this with the .wasm file.`, 'INTERNAL');
         }
         throw new VerifyError(
-          `step ${k}: under the ${name} arithmetic model the CSS computes ${got} for ${call(k)}, but WebAssembly computes ${values[k]} ` +
+          `step ${k}: under the ${name} arithmetic model the CSS computes ${show(got)} for ${call(k)}, but WebAssembly computes ${show(states[k])} ` +
           `(largest intermediate ${stats.levels[k].maxInline}). The values involved exceed what CSS can represent exactly in that browser.`, 'MODEL_MISMATCH');
       }
     }
@@ -95,9 +102,13 @@ export async function verifyRun(wasmBytes, program, machine, { init = machine.in
       const sim = simulateMachine(machine, { model, t, init });
       const inner = sim.levels[machine.steps];
       const shownStep = Math.min(t, endAt);
-      const want = end.kind === 'trap' && shownStep === endAt ? null : values[shownStep];
+      const want = end.kind === 'trap' && shownStep === endAt ? null : states[shownStep];
       if (inner.get(out.s) !== shownStep) throw new VerifyError(`${name}: at t=${t} the display shows step ${inner.get(out.s)}, expected ${shownStep}`, 'INTERNAL');
-      if (want !== null && inner.get(out.c) !== want) throw new VerifyError(`${name}: at t=${t} the display shows ${inner.get(out.c)}, expected ${want}`, 'INTERNAL');
+      // the values the display selects (the first one and those the views read)
+      for (const i of machine.shown) {
+        const got = inner.get(out.cs[i]);
+        if (want !== null && got !== want[i]) throw new VerifyError(`${name}: at t=${t} the display shows ${got} for value ${program.stateNames?.[i] ?? i} of ${show(want)}`, 'INTERNAL');
+      }
       // the status it shows: halted + 2*out-of-range + 4*trap, only on the step where the run
       // stops (a trap may also raise the conservative range flag, and the halt predicate of its
       // meaningless value)
@@ -112,20 +123,21 @@ export async function verifyRun(wasmBytes, program, machine, { init = machine.in
   //    Wasm view exports under every model, without a range flag
   const viewSamples = [];
   if (program.views?.length) {
-    const ex = await instantiate(wasmBytes);
+    const abi = stateAbi(await instantiate(wasmBytes), program);
     const seen = new Set();
-    for (const x of values.slice(0, lastValid + 1)) {
-      if (seen.has(x)) continue;
-      seen.add(x);
-      const want = Object.fromEntries(program.views.map((v) => [v.name, ex[v.export](x) | 0]));
+    for (const x of states.slice(0, lastValid + 1)) {
+      const key = x.join(',');
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const want = Object.fromEntries(program.views.map((v) => [v.name, abi.read(v.export, x)]));
       for (const [name, model] of Object.entries(MODELS)) {
         const env = evalDisplay(machine, x, model);
         if (env.get('rvf') !== 0) {
-          throw new VerifyError(`state ${x}: a view function computes a value outside the range CSS represents exactly (${name} model, 'VIEW_RANGE'); keep view values within ±${STORED_LIMIT.toLocaleString('en-US')}`);
+          throw new VerifyError(`state ${show(x)}: a view function computes a value outside the range CSS represents exactly (${name} model, 'VIEW_RANGE'); keep view values within ±${STORED_LIMIT.toLocaleString('en-US')}`, 'VIEW_RANGE');
         }
         for (const v of program.views) {
           const got = env.get(viewProp(v.name));
-          if (got !== want[v.name]) throw new VerifyError(`state ${x}: view "${v.name}" (${v.export}) is ${want[v.name]} in WebAssembly but ${got} in the generated CSS under the ${name} model`, 'VIEW_MISMATCH');
+          if (got !== want[v.name]) throw new VerifyError(`state ${show(x)}: view "${v.name}" (${v.export}) is ${want[v.name]} in WebAssembly but ${got} in the generated CSS under the ${name} model`, 'VIEW_MISMATCH');
         }
       }
       viewSamples.push(want);

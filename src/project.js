@@ -5,14 +5,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 import url from 'node:url';
 import { spawnSync } from 'node:child_process';
-import { generate, sha256, DEFAULTS } from './generate.js';
+import { generate, sha256, DEFAULTS, altInitEmbeds } from './generate.js';
 import { perfReport } from './perf.js';
 import { TOOL_VERSION } from './version.js';
 import { CodedError } from './errors.js';
 
 export const CONFIG_FILE = 'readme-runtime.json';
 export const LOCK_FILE = 'readme-runtime.lock.json';
-const CARD_KEYS = new Set(['name', 'wasm', 'build', 'export', 'init', 'altInits', 'steps', 'hold', 'stepMs', 'loops', 'bits', 'halt', 'haltExport', 'title', 'out', 'ui']);
+const CARD_KEYS = new Set(['name', 'wasm', 'build', 'export', 'state', 'init', 'altInits', 'steps', 'hold', 'stepMs', 'loops', 'bits', 'halt', 'haltExport', 'title', 'out', 'ui']);
 const UI_KEYS = new Set(['entry', 'tsconfig', 'css', 'views', 'width', 'height', 'credit']);
 
 export class ConfigError extends Error {}
@@ -57,7 +57,7 @@ export function loadConfig(configPath) {
     if (names.has(c.name)) throw new ConfigError(`${where}: duplicate name "${c.name}"`);
     names.add(c.name);
     if (typeof c.wasm !== 'string') throw new ConfigError(`${where}: "wasm" (path to the .wasm file) is required`);
-    if (!Number.isInteger(c.init)) throw new ConfigError(`${where}: "init" (initial state, an integer) is required`);
+    if (!Number.isInteger(c.init) && !(c.init && typeof c.init === 'object' && !Array.isArray(c.init))) throw new ConfigError(`${where}: "init" (the initial state: an integer, or an object of named integers such as {"x": 3, "y": 5}) is required`);
     const out = c.out ?? `readme-runtime/${c.name}.svg`;
     if (outs.has(out)) throw new ConfigError(`${where}: duplicate output "${out}"`);
     outs.add(out);
@@ -79,6 +79,7 @@ export function loadConfig(configPath) {
       out,
       options: {
         export: c.export ?? DEFAULTS.export,
+        ...(c.state !== undefined ? { state: c.state } : {}),
         init: c.init,
         steps: c.steps ?? DEFAULTS.steps,
         hold: c.hold ?? DEFAULTS.hold,
@@ -294,8 +295,8 @@ export async function build(configPath, { only = [], force = false, log = consol
     const perf = lastGen ? lastGen.perf : perfReport({ ...DEFAULTS, ...card.options }, normalizeEol(fs.readFileSync(outPath, 'utf8')));
     // what to paste into README.md: the card, and each other initial value under its own URL
     // (WebKit shares the document of images with the same URL and would switch it per paint)
-    const embed = [`![${card.name}](${card.out})`, ...(card.options.altInits ?? []).map((x) => `![${card.name} from ${x}](${card.out}?x${x}#x${x})`)];
-    results.push({ name: card.name, build: buildState, card: cardState, out: card.out, summary, reason, ...(lastGen ? { steps: lastGen.verification.endAt, end: lastGen.verification.trace.end, ui: lastGen.ui } : {}), perf: perf.report, ...(perf.warnings.length ? { warnings: perf.warnings } : {}), embed });
+    const embed = [`![${card.name}](${card.out})`, ...altInitEmbeds(card.options).map((a) => `![${card.name} from ${a.label}](${card.out}?${a.id}#${a.id})`)];
+    results.push({ name: card.name, build: buildState, card: cardState, out: card.out, summary, reason, ...(lastGen ? { steps: lastGen.verification.endAt, end: lastGen.verification.trace.end, ui: lastGen.ui, ...(lastGen.state ? { state: lastGen.state } : {}) } : {}), perf: perf.report, ...(perf.warnings.length ? { warnings: perf.warnings } : {}), embed });
     log(`${card.name}: wasm ${buildState === 'none' ? 'prebuilt' : buildState === 'cached' ? 'up to date (sources unchanged)' : 'rebuilt'} · card ${cardState === 'cached' ? 'up to date' : cardState === 'unchanged' ? 'regenerated (identical)' : `written ${card.out}`}${summary ? ` · ${summary}` : ''}`);
     for (const w of perf.warnings) log(`${card.name}: warning ${w.code}: ${w.message} (fix: ${JSON.stringify(w.fix)} in ${CONFIG_FILE})`);
   }

@@ -8,7 +8,7 @@
 // UI region of both screenshots must match pixel for pixel. The initial value is also edited
 // inside the generated SVG. Different clock values must show different pictures.
 //
-//   node test/browser/ui.js [--browsers chromium,firefox,webkit] [--card mockcraft]
+//   node test/browser/ui.js [--browsers chromium,firefox,webkit] [--card mockcraft] [--config readme-runtime.json]
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -16,8 +16,8 @@ import url from 'node:url';
 import { chromium, firefox, webkit } from 'playwright';
 import { PNG } from 'pngjs';
 import { loadConfig } from '../../src/project.js';
-import { generate } from '../../src/generate.js';
-import { referenceTrace, instantiate as wasmInstance } from '../../src/runtime/reference.js';
+import { generate, stateOptions } from '../../src/generate.js';
+import { referenceTrace, instantiate as wasmInstance, stateAbi } from '../../src/runtime/reference.js';
 import { bundleEntry, renderWith } from '../../src/ui/bundle.js';
 import { parseHtml, toXhtml } from '../../src/ui/html.js';
 import { uiLayout } from '../../src/render/ui-card.js';
@@ -30,21 +30,23 @@ const cardName = opt('--card', 'mockcraft');
 const outDir = path.join(root, 'test-results', 'browser-ui');
 fs.mkdirSync(outDir, { recursive: true });
 
-const cfg = loadConfig(path.join(root, 'readme-runtime.json'));
+const cfg = loadConfig(path.resolve(root, opt('--config', 'readme-runtime.json')));
 const card = cfg.cards.find((c) => c.name === cardName);
 if (!card?.options.ui) throw new Error(`no UI card named ${cardName}`);
 const wasm = fs.readFileSync(path.join(cfg.dir, card.wasm));
 const gen = await generate(wasm, card.options);
 const ui = card.options.ui;
 const bundle = await bundleEntry(ui.entry, { tsconfig: ui.tsconfig, cwd: cfg.dir });
-const ex = await wasmInstance(wasm);
+const abi = stateAbi(await wasmInstance(wasm), gen.program);
 const T = gen.machine.T;
 const L = uiLayout({ width: gen.svg.match(/<foreignObject[^>]*width="(\d+)"/)[1] * 1, height: gen.svg.match(/<foreignObject[^>]*height="(\d+)"/)[1] * 1 });
 const fo = { x: Number(gen.svg.match(/<foreignObject x="(\d+)"/)[1]), y: Number(gen.svg.match(/<foreignObject x="\d+" y="(\d+)"/)[1]), w: L.W, h: 0 };
 fo.w = Number(gen.svg.match(/<foreignObject[^>]*width="(\d+)"/)[1]);
 fo.h = Number(gen.svg.match(/<foreignObject[^>]*height="(\d+)"/)[1]);
 
-const initAttr = `style="--${gen.machine.initProp}:${card.options.init}"`;
+// the initial state in the root's style attribute: a number, or an array for a named state
+const initStyle = (init) => `style="${gen.machine.initProps.map((p, i) => `--${p}:${Array.isArray(init) ? init[i] : init}`).join(';')}"`;
+const initAttr = initStyle(stateOptions(card.options).init);
 const pin = (svg, t) => svg.replace(/animation:rrclk [^}]*\}/, `--rt:${t}}`).replace(/@media \(prefers-reduced-motion:reduce\)\{[^\n]*\n/, '');
 // The real clock, paused at step t: the values then come from an animation, as on GitHub
 // (Firefox re-evaluates container queries differently for animated and for static values).
@@ -54,21 +56,24 @@ const pause = (svg, t) => svg.replace(/(animation:rrclk [^}]*)\}/, `$1;animation
 const UI_OPEN = /(<div class="rr-ui" style="[^"]*">)[\s\S]*?(<\/div><\/div><\/foreignObject>)/;
 
 async function expected(init, t) {
-  const tr = await referenceTrace(wasm, { exportName: card.options.export, init, steps: card.options.steps });
-  const shown = Math.min(t, tr.values.length - 1);
-  const state = tr.values[shown];
-  const views = Object.fromEntries(Object.entries(ui.views).map(([name, exp]) => [name, ex[exp](state) | 0]));
+  const tr = await referenceTrace(wasm, { program: gen.program, init, steps: card.options.steps });
+  const shown = Math.min(t, tr.states.length - 1);
+  const state = tr.states[shown];
+  const views = Object.fromEntries(Object.entries(ui.views).map(([name, exp]) => [name, abi.read(exp, state)]));
   return { state, views, shown };
 }
 
 // cases: [name, init, t]
-const cases = [['gen', card.options.init, 0], ['gen', card.options.init, 23], ['gen', card.options.init, 37], ['gen', card.options.init, 101], ['gen', card.options.init, T]];
-const edited = [0, 1 | (3 << 5), 7 | (9 << 5) | (1 << 9) | (21 << 11)];
-for (const x of edited) cases.push([`init${x}`, x, 50]);
+const st = stateOptions(card.options);
+const cases = [['gen', st.init, 0], ['gen', st.init, 23], ['gen', st.init, 37], ['gen', st.init, 101], ['gen', st.init, T]];
+// initial states the generator did not run from (written into the generated SVG): for a named
+// state its altInits, which the card's own build verified, and the same with its first two values swapped
+const edited = st.names ? [...st.altInits, ...(st.names.length > 1 ? st.altInits.map((v) => [v[1], v[0], ...v.slice(2)]) : [])] : [0, 1 | (3 << 5), 7 | (9 << 5) | (1 << 9) | (21 << 11)];
+for (const x of edited) cases.push([`init${[x].flat().join('_')}`, x, 50]);
 for (const [label, init, t] of [...cases]) cases.push([`${label}-anim`, init, t]);
 const svgs = new Map();
 for (const [label, init, t] of cases) {
-  const live = (label.endsWith('-anim') ? pause : pin)(gen.svg.replace(initAttr, `style="--${gen.machine.initProp}:${init}"`), t);
+  const live = (label.endsWith('-anim') ? pause : pin)(gen.svg.replace(initAttr, initStyle(init)), t);
   const e = await expected(init, t);
   const direct = toXhtml(parseHtml(renderWith(bundle, e.views)));
   const ref = live.replace(UI_OPEN, (_, a, b) => `${a}${direct}${b}`);

@@ -2,7 +2,7 @@
 // Everything that depends on the program's values is driven by CSS custom properties that
 // the browser computes at view time; the markup only holds layout.
 import { N, V, toCss, signBit, absV, STORED_LIMIT } from '../compiler/css.js';
-import { altInitAnchors, altInitCss, clockAnimation, declarations, levelStyle } from '../runtime/machine.js';
+import { altInitAnchors, altInitCss, altInitId, clockAnimation, declarations, levelStyle, rootStyle } from '../runtime/machine.js';
 import { fitText, textWidth } from './text.js';
 
 export const TEMPLATE_VERSION = 1;
@@ -146,7 +146,7 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
   // the header line: title, then the module and signature, before the LIVE badge
   const shownTitle = fitText(meta.title, 320, 15);
   const metaX = Math.round(20 + Math.min(320, textWidth(shownTitle, 15)) + 14);
-  const metaText = fitText(`${meta.wasmName} · ${meta.exportName}(i32) → i32`, W - 142 - metaX, 12, { mono: true });
+  const metaText = fitText(`${meta.wasmName} · ${meta.signature ?? `${meta.exportName}(i32) → i32`}`, W - 142 - metaX, 12, { mono: true });
   let body = '';
   body += `<rect class="bg" x=".5" y=".5" width="${W - 1}" height="${H - 1}" rx="10"/>`;
   body += `<text x="20" y="29" font-size="15" font-weight="600">${esc(shownTitle)}</text>`;
@@ -206,10 +206,10 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
   x0 += `<text x="${196}" y="${sy + 45}" class="mut" font-size="11">← the only input</text></g>`;
 
   // ---------------------------------------------------------------- nested levels
-  let levels = `${altInitAnchors(meta.altInits)}<g class="R" style="--${machine.initProp}:${machine.init}"><use href="#col" class="col"/>${x0}`;
+  let levels = `${altInitAnchors(meta.altInits)}<g class="R" style="${rootStyle(machine)}"><use href="#col" class="col"/>${x0}`;
   let close = '</g>';
   for (let k = 1; k <= steps; k++) {
-    levels += `\n<g class="${k % 2 === 1 ? 'A' : 'B'}" style="${levelStyle(k)}"><use href="#col" class="col"/>`;
+    levels += `\n<g class="${k % 2 === 1 ? 'A' : 'B'}" style="${levelStyle(k, machine)}"><use href="#col" class="col"/>`;
     close += '</g>';
   }
   levels += disp + close;
@@ -220,13 +220,13 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
      Every number on this card is computed by CSS when it is displayed: the rules .A and .B are the
      exported step function compiled to CSS math, applied once per nested g element (the run is unrolled
      into ${steps} levels when the card is built; no value is stored). The only input is the custom
-     property ${machine.initProp} in the style attribute of g.R: change it and the browser recomputes the run;
-     a value that CSS cannot compute exactly shows OUT OF RANGE.${meta.altInits?.length ? ` The URL fragments ${meta.altInits.map((x) => `#x${x}`).join(' ')}
+     property ${machine.initProps.join(', ')} in the style attribute of g.R: change it and the browser recomputes the run;
+     a value that CSS cannot compute exactly shows OUT OF RANGE.${meta.altInits?.length ? ` The URL fragments ${meta.altInits.map((x) => `#${altInitId(x)}`).join(' ')}
      start the same run from those values instead.` : ''} Regenerate with: readme-runtime build -->`;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="rrt rrd">
 ${header}
 <title id="rrt">${title} — README Runtime</title>
-<desc id="rrd">${esc(meta.wasmName)} ${esc(meta.exportName)}() runs live in CSS: starting from the initial value in the SVG (${machine.init} as generated), the browser computes up to ${steps} steps and animates them.</desc>
+<desc id="rrd">${esc(meta.wasmName)} ${esc(meta.exportName)}() runs live in CSS: starting from the initial value in the SVG (${esc(meta.initLabel ?? machine.init)} as generated), the browser computes up to ${steps} steps and animates them.</desc>
 <style><![CDATA[
 ${css}]]></style>
 <defs>${defs}</defs>

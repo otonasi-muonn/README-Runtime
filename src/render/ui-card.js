@@ -1,6 +1,6 @@
 // SVG card whose body is the project's own UI (static markup + CSS bindings), driven by
 // the CSS machine. The machine is the same as for trace cards; only the display differs.
-import { altInitAnchors, altInitCss, clockAnimation, declarations, levelStyle } from '../runtime/machine.js';
+import { altInitAnchors, altInitCss, altInitId, clockAnimation, declarations, levelStyle, rootStyle } from '../runtime/machine.js';
 import { fitText, textWidth } from './text.js';
 import { toCss, V, absV } from '../compiler/css.js';
 
@@ -90,16 +90,16 @@ svg{--rr-bg:#0d1117;--rr-line:#30363d;--rr-fg:#e6edf3;--rr-mut:#7d8590;--rr-acc:
   body += `<circle class="rr-pulse" cx="${W - 132}" cy="25" r="4" style="fill:var(--rr-acc)"/><text x="${W - 122}" y="29" class="rr-l">LIVE · CSS RUNTIME</text>`;
   body += `<line x1="0" y1="44" x2="${W}" y2="44" stroke="var(--rr-line)"/><line x1="0" y1="${H - L.foot}" x2="${W}" y2="${H - L.foot}" stroke="var(--rr-line)"/>`;
 
-  let levels = `${altInitAnchors(meta.altInits)}<g class="R" style="--${machine.initProp}:${machine.init}">`;
+  let levels = `${altInitAnchors(meta.altInits)}<g class="R" style="${rootStyle(machine)}">`;
   let close = '</g>';
-  for (let k = 1; k <= steps; k++) { levels += `<g class="${k % 2 === 1 ? 'A' : 'B'}" style="${levelStyle(k)}">`; close += '</g>'; }
+  for (let k = 1; k <= steps; k++) { levels += `<g class="${k % 2 === 1 ? 'A' : 'B'}" style="${levelStyle(k, machine)}">`; close += '</g>'; }
   levels += disp + close;
 
   const header = `<!-- README Runtime ${meta.toolVersion} - generated card, wasm sha256:${meta.wasmSha256.slice(0, 16)}.
      The UI below is the project's own component markup (rendered once, statically) whose
      view-dependent parts are CSS bindings. The view values are computed by CSS from the live
      state, which the rules .A and .B advance one step per nested g element. The only input is
-     the custom property ${machine.initProp} in the style attribute of g.R.${meta.altInits?.length ? ` The URL fragments ${meta.altInits.map((x) => `#x${x}`).join(' ')}
+     the custom property ${machine.initProps.join(', ')} in the style attribute of g.R.${meta.altInits?.length ? ` The URL fragments ${meta.altInits.map((x) => `#${altInitId(x)}`).join(' ')}
      start the same run from those values instead.` : ''} Regenerate with: readme-runtime build -->`;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="rrt rrd">
 ${header}

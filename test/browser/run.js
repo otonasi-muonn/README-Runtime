@@ -26,7 +26,10 @@ import url from 'node:url';
 import { chromium, firefox, webkit } from 'playwright';
 import { generate } from '../../src/generate.js';
 import { referenceTrace } from '../../src/runtime/reference.js';
-import { simulateMachine } from '../../src/runtime/machine.js';
+import { simulateMachine, stateAt, rootStyle, altInitId, buildMachine } from '../../src/runtime/machine.js';
+import { compileStep } from '../../src/compiler/program.js';
+import { verifyRun } from '../../src/verify.js';
+import { renderCard } from '../../src/render/card.js';
 import { MODELS } from '../../src/compiler/css.js';
 import { decodeCard } from './decode.js';
 import { PROGRAMS } from './programs.js';
@@ -41,9 +44,10 @@ fs.mkdirSync(outDir, { recursive: true });
 const STEPS = 120;
 
 // ------------------------------------------------------------------ expectations
-// What the card must show at clock t for initial value `init`.
+// What the card must show at clock t for initial value `init` (an array for a named state: the
+// card shows its first value).
 async function expectation(p, gen, init, t) {
-  const tr = await referenceTrace(p.wasm, { exportName: p.export, haltValue: p.haltValue ?? null, init, steps: STEPS });
+  const tr = await referenceTrace(p.wasm, { program: gen.program, haltExport: p.haltExport ?? null, haltValue: p.haltValue ?? null, init, steps: STEPS });
   const m = gen.machine;
   const sims = Object.fromEntries(Object.entries(MODELS).map(([k, model]) => [k, simulateMachine(m, { model, init }).levels]));
   const lv = sims.exact;
@@ -62,12 +66,12 @@ async function expectation(p, gen, init, t) {
   const lastGood = kind === 'error' ? endAt - 1 : endAt;
   for (const [name, levels] of Object.entries(sims)) {
     for (let k = 0; k <= lastGood; k++) {
-      const v = levels[k].get(k === 0 ? m.initProp : `rx${par(k)}`);
-      if (v !== tr.values[k]) throw new Error(`model ${name} disagrees with Wasm at step ${k} for init ${init}: ${v} vs ${tr.values[k]}`);
+      const v = stateAt(m, levels, k);
+      if (v.join() !== tr.states[k].join()) throw new Error(`model ${name} disagrees with Wasm at step ${k} for init ${init}: ${v} vs ${tr.states[k]}`);
     }
   }
   const shown = Math.min(t, endAt);
-  return { values: tr.values, endAt, kind, shown, lastGood: Math.min(lastGood, shown) };
+  return { values: tr.states.map((x) => x[0]), endAt, kind, shown, lastGood: Math.min(lastGood, shown) };
 }
 
 // How the trace shows a value: rows hold the low `bits` bits; outside [-2^bits, 2^bits) the
@@ -94,17 +98,30 @@ const pin = (svg, t) => {
   if (out === svg || out.includes('rrclk ')) throw new Error('could not pin the clock');
   return out;
 };
+// A state of several values is shown by a UI card (generate() refuses a trace card for it). To
+// see its machine in browsers (every value through every level, the halt predicate on the whole
+// state, a trap in one value's step, the range of every value, the clock), this builds the trace
+// card from the pieces generate() uses; the card shows the first value.
+async function stateTraceCard(p, name) {
+  const program = compileStep(p.wasm, { exportName: p.export, haltExport: p.haltExport ?? null, state: p.state });
+  const machine = buildMachine(program, { init: p.state.map((n) => p.init[n]), steps: STEPS });
+  await verifyRun(p.wasm, program, machine);
+  const meta = { title: name, wasmName: `${name}.wasm`, exportName: 'step', stepMs: 150, loops: 'infinite', altInits: [], toolVersion: 'test', wasmSha256: '0'.repeat(64), cssSnippet: '', signature: '', initLabel: '' };
+  return { svg: renderCard(machine, meta, { bits: p.bits ?? 20 }), machine, program };
+}
 const programNames = opt('--programs', null)?.split(',') ?? (quick ? ['collatz', 'lfsr-rust', 'chain90-c', 'sext20'] : Object.keys(PROGRAMS));
 for (const name of programNames) {
   const p = PROGRAMS[name];
-  const gen = await generate(p.wasm, { export: p.export, init: p.init, steps: STEPS, haltValue: p.haltValue ?? null, bits: p.bits ?? 20, title: name, wasmName: `${name}.wasm` });
-  const attr = `style="--${gen.machine.initProp}:${p.init}"`;
+  const gen = p.state ? await stateTraceCard(p, name) : await generate(p.wasm, { export: p.export, init: p.init, steps: STEPS, haltValue: p.haltValue ?? null, bits: p.bits ?? 20, title: name, wasmName: `${name}.wasm` });
+  // a named state: init and edits are objects, the style attribute holds every value
+  const vec = (x) => (p.state ? p.state.map((n) => x[n]) : x);
+  const attr = `style="${rootStyle(gen.machine)}"`;
   if (gen.svg.split(attr).length !== 2) throw new Error(`${name}: init attribute not found exactly once`);
-  const withInit = (x) => gen.svg.replace(attr, `style="--${gen.machine.initProp}:${x}"`);
+  const withInit = (x) => gen.svg.replace(attr, `style="${rootStyle({ ...gen.machine, initValues: [vec(x)].flat() })}"`);
   const T = gen.machine.T;
   const edits = quick ? p.edits.slice(0, 2) : p.edits;
-  cards.set(`${name}--gen`, { svg: pin(gen.svg, T), p, gen, init: p.init, t: T });
-  for (const x of edits) cards.set(`${name}--x${x}`, { svg: pin(withInit(x), T), p, gen, init: x, t: T });
+  cards.set(`${name}--gen`, { svg: pin(gen.svg, T), p, gen, init: vec(p.init), t: T });
+  for (const x of edits) cards.set(`${name}--${altInitId(vec(x))}`, { svg: pin(withInit(x), T), p, gen, init: vec(x), t: T });
   if (name === 'collatz') {
     for (const [x, t] of quick ? [[97, 40]] : [[27, 0], [27, 7], [97, 40], [871, 99]]) cards.set(`${name}--x${x}-t${t}`, { svg: pin(withInit(x), t), p, gen, init: x, t });
     cards.set('collatz--live97', { svg: withInit(97), p, gen, init: 97, live: true });
