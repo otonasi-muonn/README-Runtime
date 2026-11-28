@@ -10,6 +10,8 @@
 // state and the template follows them. The result is checked against direct renders.
 import { parseHtml, toXhtml } from './html.js';
 import { renderWith, UiError } from './bundle.js';
+import { normalizeLengthZeros } from './style-values.js';
+import { optimizeVariants, KEEP_WHOLE } from './variants.js';
 
 export const MAX_DISCRETE = 64; // values of one discrete view
 export const MAX_COMBINATIONS = 512; // variants of one group of interacting views
@@ -39,6 +41,7 @@ function tokenize(s) {
 }
 const isNum = (p) => p instanceof Num;
 const skeleton = (parts) => parts.map((p) => (isNum(p) ? '#' : p)).join('');
+const styleTokens = (s) => tokenize(normalizeLengthZeros(s));
 
 const nodeAt = (tree, path) => path.reduce((n, i) => n?.children?.[i], tree);
 const pathKey = (p) => p.join('.');
@@ -113,7 +116,7 @@ function compare(a, b, ctx, path = [], out = { num: [], struct: [], ignored: [] 
       const vb = b.attrs[i][1];
       if (va === vb) return;
       if (QUIET(k) && !ctx.visual(k)) { out.ignored.push({ path, attr: k }); return; }
-      const pa = tokenize(va), pb = tokenize(vb);
+      const pa = k === 'style' ? styleTokens(va) : tokenize(va), pb = k === 'style' ? styleTokens(vb) : tokenize(vb);
       if (k !== 'style' || skeleton(pa) !== skeleton(pb)) {
         const why = k === 'style' && unitlessZero(va, vb) ? 'unit-zero' : ctx.svg && skeleton(pa) === skeleton(pb) ? `svg-attr:${k}` : `attr:${k}`;
         out.struct.push({ path, why });
@@ -201,8 +204,11 @@ export function inferTemplate(bundle, views, { base, samples = [], cssAttrs = ne
   const ctx = { visual, svg: false };
   const cmp = (a, b) => compare(a, b, ctx);
   const R0 = draw(base);
-  // a region inside inline SVG is lifted to the <svg> element: variant wrappers are HTML
-  const lift = (p) => { for (let k = 0; k < p.length; k++) if (isSvg(nodeAt(R0, p.slice(0, k + 1)))) return p.slice(0, k + 1); return p; };
+  // a region inside inline SVG is lifted to the <svg> element (variant wrappers are HTML), and
+  // one inside an element whose rendering depends on its direct children or text (a <select>'s
+  // options, a <textarea>'s value, table rows) to that element: no wrapper goes inside them
+  const whole = (n) => n?.type === 'el' && KEEP_WHOLE.has(n.tag.toLowerCase());
+  const lift = (p) => { for (let k = 0; k < p.length; k++) if (whole(nodeAt(R0, p.slice(0, k + 1)))) return p.slice(0, k + 1); return p; };
   const numeric = new Map(); // view -> Map(siteKey -> { site, points })
   const regions = new Map(); // view -> [paths]
   const ignored = [];
@@ -336,7 +342,7 @@ export function inferTemplate(bundle, views, { base, samples = [], cssAttrs = ne
   const inSwitch = (p) => switches.find((s) => isPrefix(s.path, p));
 
   // numeric bindings outside switches go on the base tree (inside, bindVariants did them)
-  const template = structuredClone(R0);
+  let template = structuredClone(R0);
   for (const v of views) {
     for (const { site, points } of numeric.get(v.name).values()) {
       if (inSwitch(site.path)) continue;
@@ -357,6 +363,11 @@ export function inferTemplate(bundle, views, { base, samples = [], cssAttrs = ne
   // verification below therefore compares without them (they are not visual)
   const ignoredNames = new Set(ignored.map((x) => x.attr));
   template.ignore = [...ignoredNames];
+  // two placements of the same variants: shared parents (smaller), and merged only (the
+  // inferred regions); buildUi picks the second when the stylesheet depends on direct children
+  const merged = optimizeVariants(template, { share: false });
+  const optimized = optimizeVariants(template);
+  template = optimized.template;
   const continuousSet = new Set();
   const collectContinuous = (n) => {
     if (n.type === 'switch') { n.variants.forEach((x) => collectContinuous(x.node)); return; }
@@ -367,7 +378,7 @@ export function inferTemplate(bundle, views, { base, samples = [], cssAttrs = ne
   const info = {
     numeric: views.map((v) => ({ view: v.name, sites: [...numeric.get(v.name).values()].length })),
     continuousViews: views.map((v) => v.name).filter((name) => continuousSet.has(name)),
-    discrete: switches.map((s) => ({ views: s.views, path: pathKey(s.path), variants: s.variants.length })),
+    discrete: optimized.discrete,
     ignoredAttributes: [...new Set(ignored.map((x) => `${x.attr} (${x.view})`))],
     renders: cache.size,
   };
@@ -394,10 +405,12 @@ export function inferTemplate(bundle, views, { base, samples = [], cssAttrs = ne
     info.verifiedEachValue.push(v.name);
     for (let x = v.range.lo; x <= v.range.hi; x++) extra.push({ ...random(), [v.name]: x });
   }
-  const strip = (n) => n.attrs.filter(([k]) => !ignoredNames.has(k));
+  const strip = (n) => n.attrs.filter(([k]) => !ignoredNames.has(k)).map(([k, v]) => [k, k === 'style' ? normalizeLengthZeros(v) : v]);
   for (const s of [...samples, ...extra]) {
     const want = toXhtml(draw(s), { hooks: { attrs: strip } });
-    const got = instantiate(template, s, { ignore: ignoredNames });
+    const other = instantiate(merged.template, s, { ignore: ignoredNames, canonicalStyles: true });
+    const got = instantiate(template, s, { ignore: ignoredNames, canonicalStyles: true });
+    if (got !== other) throw new Error(`internal: the shared and the merged placements of the UI variants differ for ${JSON.stringify(s)}`);
     if (want !== got) {
       let at = 0;
       while (want[at] === got[at]) at++;
@@ -408,13 +421,13 @@ export function inferTemplate(bundle, views, { base, samples = [], cssAttrs = ne
   }
   info.verifiedStates = samples.length;
   info.verifiedRandomStates = extra.length;
-  return { template, info };
+  return { template, info, merged: { template: merged.template, discrete: merged.discrete } };
 }
 
 // Evaluate a template for concrete view values (JS), the reference the CSS must match.
 // ignore: attribute names left out of the output (ignored, non-visual changes).
-export function instantiate(template, values, { ignore = new Set(template.ignore ?? []) } = {}) {
-  const pick = (sw) => sw.variants.find((x) => Object.entries(x.combo).every(([k, v]) => values[k] === v));
+export function instantiate(template, values, { ignore = new Set(template.ignore ?? []), canonicalStyles = false } = {}) {
+  const pick = (sw) => sw.variants.find((x) => (x.combos ?? [x.combo]).some((combo) => Object.entries(combo).every(([k, v]) => values[k] === v)));
   const fill = (node) => {
     if (node.type === 'switch') { const x = pick(node); return x ? fill(x.node) : null; }
     const copy = { ...node, children: node.children?.map(fill).filter(Boolean) };
@@ -424,13 +437,14 @@ export function instantiate(template, values, { ignore = new Set(template.ignore
         if (b.where === 'text') { const p = tokenize(copy.value); p[b.index] = val; copy.value = p.join(''); }
         else {
           const name = b.where.slice(5);
-          copy.attrs = copy.attrs.map(([k, v]) => { if (k !== name) return [k, v]; const p = tokenize(v); p[b.index] = val; return [k, p.join('')]; });
+          copy.attrs = copy.attrs.map(([k, v]) => { if (k !== name) return [k, v]; const p = k === 'style' ? styleTokens(v) : tokenize(v); p[b.index] = val; return [k, p.join('')]; });
         }
       }
     }
     return copy;
   };
-  return toXhtml(fill(template), { hooks: { attrs: (n) => n.attrs.filter(([k]) => !ignore.has(k)) } });
+  return toXhtml(fill(template), { hooks: { attrs: (n) => n.attrs.filter(([k]) => !ignore.has(k))
+    .map(([k, v]) => [k, canonicalStyles && k === 'style' ? normalizeLengthZeros(v) : v]) } });
 }
 
 // SVG definitions (markers, gradients, clip paths...) referenced by url(#id) or href="#id":
@@ -441,6 +455,7 @@ const DEFS = new Set(['marker', 'lineargradient', 'radialgradient', 'clippath', 
 function ownDefs(node, suffix) {
   const ids = new Map();
   const collect = (n) => {
+    if (n.type === 'root') { n.children.forEach(collect); return; }
     if (n.type !== 'el') return;
     const id = n.attrs.find(([k]) => k === 'id')?.[1];
     if (id && DEFS.has(n.tag.toLowerCase())) ids.set(id, `${id}${suffix}`);
@@ -450,6 +465,7 @@ function ownDefs(node, suffix) {
   if (!ids.size) return { node, ids };
   const ref = (v) => v.replace(/url\(\s*(['"]?)#([^)'"]+)\1\s*\)/g, (m, q, id) => (ids.has(id) ? `url(${q}#${ids.get(id)}${q})` : m));
   const fix = (n) => {
+    if (n.type === 'root') return { ...n, children: n.children.map(fix) };
     if (n.type !== 'el') return n;
     const attrs = n.attrs.map(([k, v]) => {
       if (k === 'id' && ids.has(v) && DEFS.has(n.tag.toLowerCase())) return [k, ids.get(v)];
@@ -479,7 +495,7 @@ export function templateToXhtml(template, viewVar, { lerpVar = null } = {}) {
       return n.attrs.map(([k, v]) => {
         const binds = (n.binds ?? []).filter((b) => b.where === `attr:${k}`);
         if (!binds.length) return [k, v];
-        const p = tokenize(v);
+        const p = k === 'style' ? styleTokens(v) : tokenize(v);
         for (const b of binds) {
           const lv = b.continuous ? lerpVar?.(b.view) : null;
           if (lv) interpolatedSites++;
@@ -507,12 +523,13 @@ export function templateToXhtml(template, viewVar, { lerpVar = null } = {}) {
       const b = Math.max(0, sw.base ?? 0);
       return sw.variants.map((x, i) => {
         const cls = `rr-s${sw.id}-${i}`;
-        const query = Object.entries(x.combo).map(([k, v]) => `style(--${viewVar(k)}: ${v})`).join(' and ');
+        const queries = (x.combos ?? [x.combo]).map((combo) => Object.entries(combo).map(([k, v]) => `style(--${viewVar(k)}: ${v})`).join(' and '));
+        const query = queries.length === 1 ? queries[0] : queries.map((q) => `(${q})`).join(' or ');
         if (i !== b) rules.push(`@container ${query} { .${cls} { display: contents; } .rr-c.rr-s${sw.id}-${b} { display: none; } }`);
         const own = i === b ? { node: x.node, ids: new Map() } : ownDefs(x.node, `-rr${sw.id}-${i}`);
         if (own.ids.size) renamed.push({ cls, ids: [...own.ids] });
         const html = inner(own.node);
-        variantBytes += html.length;
+        variantBytes += Buffer.byteLength(html);
         return `<rr-case class="rr-c ${cls}${i === b ? ' rr-d' : ''}">${html}</rr-case>`;
       }).join('');
     },

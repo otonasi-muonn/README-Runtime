@@ -91,13 +91,13 @@ test('Tailwind 3 projects are compiled with their own Tailwind 3 and config', as
   assert.deepEqual(out.inputs, ['app.css', 'tailwind.config.js']);
 });
 
-test('the UI size comes from the root element, also when the root has variants', async () => {
+test('the UI size comes from the shared root when a child is conditional', async () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rr-ui-'));
   try {
     fs.writeFileSync(path.join(dir, 'r.jsx'), 'export default function R({ on }) { return <div style={{ width: 320, height: 90 }}>{on ? <b>banner</b> : null}<p>body</p></div>; }\n');
     const b = await bundleEntry('r.jsx', { cwd: dir });
     const { template, info } = inferTemplate(b, [{ name: 'on', range: { lo: 0, hi: 1 } }], { base: { on: 0 } });
-    assert.equal(info.discrete[0].path, '0', 'the root element is the variant region');
+    assert.equal(info.discrete[0].path, '0.0', 'only the conditional child is a variant region');
     const { rootSize } = await import('../src/ui/index.js');
     assert.deepEqual(rootSize(template), { width: 320, height: 90 });
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }

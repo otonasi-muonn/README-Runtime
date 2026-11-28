@@ -1,0 +1,15 @@
+{
+  "cards": [{
+    "name": "fidelity",
+    "wasm": "../../../examples/mockcraft/logic.wasm",
+    "export": "step",
+    "init": 1536,
+    "steps": 160,
+    "loops": "infinite",
+    "ui": {
+      "entry": "fidelity.jsx",
+      "css": ["fidelity.css"],
+      "views": { "dx": "view_dx", "on": "view_on", "sel": "view_sel" }
+    }
+  }]
+}
