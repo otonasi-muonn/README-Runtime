@@ -44,7 +44,7 @@
 
 ## 使い方
 
-必要なもの: Node.js 20 以上と、`step(i32) -> i32` を export する `.wasm`（言語は問いません）。
+必要なもの: Node.js 20 以上と、`step(i32) -> i32` を export する `.wasm`（言語は問いません。状態が複数の値からなるときは下の「複数の値を持つ状態」）。
 
 ```sh
 # 1. 設定と、チェック専用の GitHub Actions ワークフローを作る（既存ファイルは上書きしない）
@@ -67,6 +67,36 @@ npx --yes https://github.com/otonasi-muonn/README-Runtime/archive/HEAD.tar.gz in
 ```
 
 既存の React コンポーネントを使うカードは、`analyze` で再利用できる部品を調べ、`init --ui <file>#<Export>` で雛形（`logic.ts` と `demo.tsx`）を作ってから `build` します（手順は [`AGENTS.md`](AGENTS.md)）。
+
+### 複数の値を持つ状態（ビットパッキング不要）
+
+座標・向き・回数のように状態が複数の整数からなるときは、1つの i32 に詰め込まずに、値ごとに名前を付けて渡せます。`"state"` に名前を順に並べ、`"init"` を名前つきのオブジェクトにします（順序は配列で決まるので、JSON のキーを並べ替えるツールを通しても変わりません）。
+
+```json
+{
+  "name": "mockcraft-state",
+  "wasm": "state.wasm",
+  "export": "step",
+  "state": ["x", "y", "right", "down", "hits"],
+  "init": { "x": 0, "y": 0, "right": 1, "down": 1, "hits": 0 },
+  "altInits": [{ "x": 5, "y": 3, "right": 0, "down": 1, "hits": 0 }],
+  "ui": { "entry": "demo.tsx", "views": { "dx": "view_dx", "dy": "view_dy", "on": "view_on", "sel": "view_sel", "hits": "view_hits" } }
+}
+```
+
+モジュールの書き方は2通りです。どちらも各ステップの値は、更新前の状態だけから計算され、まとめて次の状態になります。
+
+- **export したグローバル**（AssemblyScript で自然な書き方）: `"export": "step"` が `step(): void` のとき、`state` の名前は export された可変の i32 グローバルです。`step()` はそれを読み書きし、view と停止判定は `(): i32` で読みます。例: [`examples/mockcraft/state.ts`](examples/mockcraft/state.ts)（[`logic.ts`](examples/mockcraft/logic.ts) と同じ動きを、ビットパッキングなしで書いたもの。設定は [`examples/mockcraft/readme-runtime.json`](examples/mockcraft/readme-runtime.json)、カードは [`mockcraft-state.svg`](examples/mockcraft/readme-runtime/mockcraft-state.svg)）。`state` にないグローバルを `step()` が読み書きするとエラーになります。
+- **値ごとの純関数**（C / Rust / AssemblyScript）: `"export": {"x": "step_x", "y": "step_y"}` のように、値ごとに次の値を返す関数を指定します。どの関数も状態全体を `state` の順の引数で受け取ります（`int step_x(int x, int y)`）。view と停止判定も同じ引数で呼ばれます。共通の計算は CSS の中で1回だけ計算されます。C で複数の関数から使う補助関数は `static inline __attribute__((always_inline))` にしてください（インライン化されないと、clang は構造体をメモリ経由で渡します）。
+
+制約と表示:
+
+- 値は8個まで、それぞれ |x| ≤ 999,999。どれかの値が範囲を出る、どれかの関数がトラップすると、そのステップで止まります。
+- `"halt"`（値で停止）は1つの整数の状態だけで使えます。複数の値では `"haltExport"` を使います。
+- `altInits` は `init` と同じ形のオブジェクトで、URL は値を `_` でつないだ `#x5_3_0_1_0` です（`build --json` の `cards[].embed` に貼る行が入ります）。
+- 表示は UI カードです（view が読む値を表示します）。トレースカードは1つの整数の桁とビットを表示する作りなので、`ui` のない複数の値の状態はエラーになります。
+- 表示部分は、最初の値と view が読む値を、時計が進むたびに全段から選びます（値1つあたり `steps + 1` 項）。`build --json` の `cards[].perf.selectedValues` に選んだ値の数が入り、多すぎると `PERF_WIDE_SELECTION` で警告します。mockcraft の同じカード（160 ステップ）で、1つの整数の gzip 10.9 KB に対して5つの値では 13.6 KB、Chromium のスタイル計算は 16 → 22 ms/秒でした（view が読まない `down` は選びません。[`bench/results/state.json`](bench/results/state.json)）。
+- `build --json` の `cards[].state.binding` に、どの関数をどの引数で呼んだかが入ります（カードを生成したときだけ。生成済みなら `build --force`）。意図どおりか確かめてください。`inspect` と `analyze` も2つの書き方を見分けます。
 
 ### AI エージェントから使う
 
@@ -158,7 +188,8 @@ README Runtime は、信頼できるプロジェクトで使うローカル・CI
 ```
 your code (C / Rust / AssemblyScript ...)  ──build command──▶  .wasm  ──readme-runtime──▶  card.svg  ──<img>──▶  browser CSS computes
                                                                  │
-                                                                 └─ export step(i32) -> i32   (状態を1つ進める関数)
+                                                                 └─ export step(i32) -> i32   (状態を1つ進める関数。
+                                                                    複数の値なら step(): void か値ごとの step_x(x, y, …))
 ```
 
 1. `.wasm` から指定した export 関数を読み、制御フロー（`if` / `block` / `br_if` / `br_table` / `return` / 関数呼び出し）を記号実行して、分岐のない式に変換します。
@@ -172,6 +203,7 @@ your code (C / Rust / AssemblyScript ...)  ──build command──▶  .wasm  
 ## ほかの例
 
 - [Rust の 16 ビット LFSR](examples/lfsr-rust/README.md): 言語を問わないこと（`build.command` を `rustc …` にするだけ）。
+- [mockcraft を複数の値の状態で](examples/mockcraft/state.ts): 先頭のカードと同じ動きを、ビットパッキングせずに export したグローバル5つで書いた例（[カード](examples/mockcraft/readme-runtime/mockcraft-state.svg)。設定は [`examples/mockcraft/readme-runtime.json`](examples/mockcraft/readme-runtime.json) で、`readme-runtime build --config examples/mockcraft/readme-runtime.json` で作ります）。
 - [air-drawing-board](examples/air-drawing/README.md): Canvas アプリの描画処理 `renderStroke()` を、ビルド時に SVG の path として再利用した例と、再利用できなかった部分の記録。
 
 <details>
@@ -202,12 +234,13 @@ your code (C / Rust / AssemblyScript ...)  ──build command──▶  .wasm  
 |---|---|---|
 | `name` | カード名。出力は `readme-runtime/<name>.svg` | 必須 |
 | `wasm` | `.wasm` のパス | 必須 |
-| `init` | 初期状態 x₀ | 必須 |
+| `init` | 初期状態 x₀。複数の値の状態では名前つきのオブジェクト（`{"x": 3, "y": 5}`） | 必須 |
+| `state` | 複数の値の状態の、値の名前（順序つき、8個まで）。step・view・停止判定の引数の順序です（「複数の値を持つ状態」） | なし |
 | `altInits` | URL の `#x<値>` で選べる、ほかの初期値（16個まで）。それぞれ `init` と同じくビルド時に照合します。同じページに同じファイルを2回以上置くときは、`card.svg?x97#x97` のようにクエリも変えてください（WebKit は URL が同じ画像の文書を共有し、フラグメントを切り替えるたびに実行全体を計算し直すため、2枚で 1コア近くになりました） | なし |
-| `export` | 実行する export 関数（`(i32) -> i32`） | `step` |
+| `export` | 実行する export 関数（`(i32) -> i32`）。複数の値の状態では `step(): void`、または値ごとの関数（`{"x": "step_x"}`） | `step` |
 | `steps` | 最大ステップ数（1〜400） | 120 |
-| `halt` | 状態がこの値になったら停止 | なし |
-| `haltExport` | 停止判定に使う export 関数（`(i32) -> i32`、非0で停止）。これも CSS に変換されます | なし |
+| `halt` | 状態がこの値になったら停止（1つの整数の状態のみ） | なし |
+| `haltExport` | 停止判定に使う export 関数（`(i32) -> i32`、非0で停止。複数の値では状態全体を受け取る）。これも CSS に変換されます | なし |
 | `stepMs` | 1ステップのミリ秒 | 150 |
 | `loops` | 再生の回数。`"auto"` はページを開いてから約1分ぶん、`"infinite"` は止まらない。終わると最後の状態で止まる | `"auto"` |
 | `build.command` | `.wasm` を作るコマンド。言語非依存で、シェルでそのまま実行します | なし |
@@ -295,10 +328,11 @@ CSSには桁あふれする整数型がなく、`calc()` は浮動小数点で�
 
 - i32の算術・ビット演算・シフト・比較・`select`（符号なしの除算・剰余・比較を含む）
 - `block` / `if` / `br` / `br_if` / `br_table` / `return`、非importの関数呼び出し（インライン展開）、immutableなglobal
+- 複数の値の状態では、`state` に挙げた export の可変グローバルの読み書き（分岐・呼び出しをまたいでも、値の流れとして変換します）
 
 非対応（命令名とヒントつきのエラーになります）:
 
-- ループ、線形メモリ、i64・浮動小数点、import関数の呼び出し、再帰、mutableなglobal、可変量のrotate
+- ループ、線形メモリ、i64・浮動小数点、import関数の呼び出し、再帰、状態ではないmutableなglobal、可変量のrotate、multi-value（複数の戻り値）
 - ループはREADME Runtime自身が担当するので、`step()` には1ステップ分だけを書いてください。
 
 その他:

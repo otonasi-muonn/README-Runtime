@@ -38,9 +38,23 @@ cannot install that URL: write `npm exec --yes --package=<archive URL> -- readme
    UI uses (list it in `ui.views`). No loops, memory, floats or i64; keep every value within ±999,999.
    A view's range is derived from its code for every state (not only those the run reaches), so a
    view that switches markup must bound itself: `s < 32 ? 0 : 1`, `x % 4`, not `s / 32`.
+   A state of several values needs no bit packing: list the names in order in `"state"` and
+   give `"init"` as an object (`"state": ["x", "y"], "init": {"x": 3, "y": 5}`; the order is the
+   array's, so tools that sort JSON keys cannot change it). Either `"export": "step"` is a
+   `step(): void` that updates exported mutable i32 globals with those names (AssemblyScript:
+   `export let x: i32 = 0;`; views and `haltExport` are `(): i32` reading them), or
+   `"export": {"x": "step_x", "y": "step_y"}` gives one pure function per value, each taking the
+   whole state in `"state"` order (views and `haltExport` too). In C, mark a helper several step
+   functions call `static inline __attribute__((always_inline))`. Up to 8 values, each within
+   ±999,999; `"halt"` (a value) needs one integer; `altInits` are objects like `"init"`. Check
+   `cards[].state.binding` in `build --json` (returned when the card is generated; `--force` to see
+   it again). Such a state is shown by a UI card (`ui`): the trace
+   card shows one integer, so a state of several values without `ui` is an error.
 4. `demo.tsx`: render the project's own components with props computed from the views. Numbers in
    style values or text may be any `a*view + b`; anything else (class names, texts, whether an element
    exists) needs a view with at most 64 values. Give the root element an inline width/height in px.
+   The display selects, on every step, the first state value and the values the views read
+   (`cards[].perf.selectedValues`; `PERF_WIDE_SELECTION` when it gets expensive).
    Build warnings (`cards[].ui.warnings`): `UI_WHOLE_VARIANTS` means the whole UI is copied per view
    value: wrap each part that appears or disappears (e.g. a component that renders null) in its own
    element. `UI_STRUCTURAL_CSS` means child/sibling selectors may style switched elements
