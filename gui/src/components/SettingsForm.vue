@@ -102,7 +102,14 @@ const changed = (k: keyof CardSettings) => !!s.draft && !!savedSettings.value &&
 .label { display: flex; justify-content: space-between; gap: 6px; font-size: 11px; font-weight: 500; color: var(--muted); padding: 0; }
 .label small { color: var(--faint); font-size: 10px; }
 .changed > .label::after { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); position: absolute; left: -9px; top: 7px; }
-.help { display: none; font-size: 11px; color: var(--faint); line-height: 1.45; }
+/* Help shows over the fields below, never between them: if it pushed them down, leaving a field
+   with a click below it would move the target away between mousedown and mouseup. It does not
+   take clicks either. */
+.help {
+  display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 5; pointer-events: none;
+  padding: 6px 8px; font-size: 11px; color: var(--muted); line-height: 1.45;
+  background: var(--panel-2); border: 1px solid var(--border-strong); border-radius: var(--radius); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+}
 .field:focus-within .help { display: block; }
 .invalid input { border-color: var(--danger); }
 .error { font-size: 11px; color: var(--danger); }
