@@ -1,24 +1,24 @@
 {
   "version": 1,
   "tool": "0.1.0",
-  "generator": "911ecd3c2360ffba118a49aff08dc28126f87bc579b26178654ac84c789d083b",
+  "generator": "f7ab6b9fe168d4eb6395f31c6e1e035922c48f198dfb2dc5ab7fc7f3624b65a7",
   "cards": {
     "collatz": {
       "inputs": "5a1e2f80a8418a91d76ca55f53442bf4af1948e61477b5ed9ac9ce0a83c3bff2",
       "wasm": "dd40a4b6513c1fe94042a3e636d706a1cf4400f255b9634abea9ccba907e787a",
       "out": "7f15b4430e14acb1fb655f12c481630830c4b503ba7980df9a6c4dbd204b86fa",
-      "render": "0b4e380a07f8867b0e265d6041f17f3a518917e6fcc12bad5da9c1e6591ebdce"
+      "render": "d5e9a92fc2f2d1e9859e346af257ac4f9fa952c9a38d6cd71c956d494e2b0767"
     },
     "lfsr-rust": {
       "inputs": "b79cf255e75a24be61c4ef512c66b76e880d5e0091c93a85e33c43660017a835",
       "wasm": "bac5ae0dce92bcae0ec8cf01117b79300f39bcb543f7c729f54fcb30bee41a73",
       "out": "8099844ad8ccd175a43afa67fd1d6a9cbceb36606f1422b30cafcfa9cf3c9011",
-      "render": "a6990ee07442a4e98976c3b728a3f3d39f26d348841f5c5fcc6e47f3c78f0661"
+      "render": "1c344060a3d20b4bed4f7963e62b555afee28629671ca15fa2d81d23156f6dcb"
     },
     "mockcraft": {
       "inputs": "52e441ddcb27cd1f387a7661a40e4aba35ba4a2189e8001f1cb794cdcc1c9ac7",
       "wasm": "c257d18c9edd5c3e6477df556e7b5bee0fd043becf55604605894f0d476ac29a",
-      "out": "0771a35843729d7ff2a8b9c4d97d5e876d9cce61068358615e630eabee1b74f1",
+      "out": "c3c7210a27dc60544642a444c51e45ebc2c098bc38a056ee15de8e88bb20ec29",
       "uiInputs": {
         "examples/mockcraft/demo.tsx": "375d39a247e2ae478be8b27e587ee3cecb50e4bd91a24d6e1e9bdb9c56410658",
         "examples/mockcraft/tsconfig.json": "1217a666ab46a6bca330bc74ceb2d6f214ace1ada1c653f1e6fa5fedb9473275",
@@ -30,12 +30,12 @@
         "examples/mockcraft/upstream/src/lib/icons.tsx": "288d28df6b9683782cad221a2c1499dda7dbe8c42aac8a7e225cfc39259219a9",
         "examples/mockcraft/upstream/src/lib/templates.ts": "cced791479232b822d801fa922894a9dca39c2d08693653507f23b96b5f773f4"
       },
-      "render": "7e9a226f2895030d1b233c990e06eb40c1e786055868267971898ffcbd89ed1d"
+      "render": "9798c7c27b34dba14f4ad34cea618eb28c6e34167ba9fc687f38acfd99204c99"
     },
     "air-drawing": {
       "inputs": "9609dc09810869fe5392acd99c27632501e80e3f47056069aaa0eb8d6baa0597",
       "wasm": "850415563cfec0ec881007c9be433d79822963bc0841d8cd9880131d7b337f39",
-      "out": "f40d05ec6cbd014cee422883122eb4ffa5cae204f2a489bec0e0953b33a8f5d5",
+      "out": "c885b78e8dbe495fcb3778008e67e8be15e9eb5e318f6f12fe07b0669655637e",
       "uiInputs": {
         "examples/air-drawing/canvas-svg.ts": "85dfa089218cc2110f95beb915f7718a47f3fe0bf13484c0994f6557cb1a7819",
         "examples/air-drawing/demo.tsx": "a43a4142e7a118f76ac39c94aec105359b479a0f84b964ed7a4df0b294762c65",
@@ -44,7 +44,7 @@
         "examples/air-drawing/upstream/src/render/canvasRenderer.ts": "24d8034b5d53a9ddfbc41a113e7263d9baccaf3079120a0695dc2fac0f47f75a",
         "examples/air-drawing/upstream/src/styles.css": "a05f1cd091c2ee7715fecfbb44b3730d1f924c6c96a0cf9bdf537341cdd43161"
       },
-      "render": "2a493426c70af6b7038b431886d1e6fdd02ea8e84b2754263aa20758129a7fca"
+      "render": "1d5eefb1bbf1498af07a7d949f304fe595d529f57a1db9edf58018b9c422c148"
     }
   }
 }
