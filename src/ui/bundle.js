@@ -37,6 +37,9 @@ globalThis.__rrRender = (props) => renderToStaticMarkup(createElement(Demo, prop
   try {
     result = await esbuild.build({
       stdin: { contents: stub, resolveDir: path.dirname(abs), sourcefile: 'readme-runtime-entry.jsx', loader: 'jsx' },
+      // the metafile's paths are relative to this; the inputs below are relative to cwd (the
+      // config's directory, which need not be the process's: build --config sub/x.json)
+      absWorkingDir: path.resolve(cwd),
       bundle: true,
       write: false,
       format: 'iife',

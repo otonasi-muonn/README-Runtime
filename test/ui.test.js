@@ -272,3 +272,10 @@ test('editing a reused component or stylesheet regenerates the UI card; nothing 
   assert.match(fs.readFileSync(path.join(dir, 'readme-runtime/mc.svg'), 'utf8'), /letter-spacing: 0\.2em/);
   assert.deepEqual(await check(cfg, { log }), []);
 });
+
+test('the inputs of a bundle are relative to its config directory, also when that is not the working directory', async () => {
+  // build --config sub/readme-runtime.json: esbuild reports paths from its working directory,
+  // the lock stores them from the config's; a mix-up recorded no hash for them (no rebuild on edits)
+  const b = await bundleEntry('values.jsx', { cwd: path.join(root, 'test/fixtures/ui') });
+  assert.deepEqual(b.inputs.filter((f) => f !== 'readme-runtime-entry.jsx'), ['values.jsx']);
+});
