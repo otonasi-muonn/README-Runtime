@@ -240,6 +240,30 @@ https://github.com/otonasi-muonn/README-Runtime を開き、カードの UI 部�
 
 <!-- runtime:end -->
 
+## 複数の値を持つ状態（#6、2026-11-28）
+
+状態を K 個の i32 で持つカード（README「複数の値を持つ状態」）が、1つの整数に比べて何を増やすかを測りました。`node bench/state.mjs`（[`bench/state.mjs`](state.mjs)）で、K = 1/2/4/8、N = 40/160/400 ステップの UI カードを作ります。
+
+- `shared` は K 個の step 関数が共通の補助関数を呼ぶもの、`independent` は共通部分のないものです。どちらも view は最初の値だけを読みます。
+- `views` は view が K 個すべての値を読みます。
+- 対照の `copies` は、K 個の数値を表示しますが、すべて最初の値です。
+
+条件: AMD Ryzen 7 8845HS（16 スレッド）、Windows 11、ヘッドレス、1ステップ 150 ms。CPU はブラウザのプロセス全体の CPU 時間（1コア＝100%）で、空ページの値を含みます。各カードを1回、5秒間測りました。CPU の値はばらつきが大きく（同じ条件で 2〜25%）、Chromium のスタイル計算時間のほうが安定しています。結果は [`results/state.json`](results/state.json) と [`results/state-control.json`](results/state-control.json) です。
+
+| 400 ステップ | gzip | Chromium style（ms/秒） | WebKit CPU | WebKit メモリ | 初回描画（Chromium / Firefox / WebKit） |
+|---|---|---|---|---|---|
+| shared、K=1 | 7.4 KB | 19.8 | 13.3 % | 218 MB | 29 / 34 / 58 ms |
+| shared、K=8（最初の値だけ表示） | 8.0 KB | 18.3 | 12.2 % | 231 MB | 37 / 53 / 85 ms |
+| views、K=2 | 10.8 KB | 23.8 | 13.1 % | 263 MB | 29 / 33 / 67 ms |
+| views、K=4 | 16.2 KB | 34.8 | 13.7 % | 271 MB | 27 / 46 / 76 ms |
+| views、K=8 | 26.8 KB | 54.4 | 19.1 % | 351 MB | 50 / 80 / 121 ms |
+| 対照: copies、K=8（8個の数値、選ぶのは1値） | – | 20.1 | 11.5 % | 229 MB | 36 / 52 / 83 ms |
+
+- **段ごとの計算は K にほとんど依存しません。** K=8 でも、最初の値だけを表示するならスタイル計算は K=1 と同じで、gzip は 8% 増えるだけでした。共通の計算は、段ごとに1回だけ計算されます。
+- **増えるのは、表示部分が時計で選ぶ値の数です。** 選ぶ値1つあたり `steps + 1` 項の和を、ステップごとに評価します。表示する数値の数ではありません（対照の copies は K=1 と同じでした）。そのため README Runtime は、view が読む値だけを選びます。`build --json` の `cards[].perf.selectedValues` と `selectionTerms` で数を報告し、1,203 項（3値 × 400 ステップ）を超えると `PERF_WIDE_SELECTION` で警告します。
+- **上限は 8 値にしました。** 8 値すべてを 400 ステップで選んでも、スタイル計算は 1コアの約 5%（Chromium）、WebKit の CPU は約 19% でした。K=8・400 ステップのカードは、3エンジンの実ブラウザで、コンポーネントの直接描画とピクセル単位で一致しました（`test/browser/ui.js`、57/57）。8 を超える K は測っていません。
+- 実例: mockcraft の同じカード（160 ステップ）では、1つの整数で gzip 10.9 KB、Chromium style 16.1 ms/秒、5つの値（選ぶのは4値）で 13.6 KB、22.0 ms/秒でした。
+
 ## 条件
 
 - **同じUI**: mockcraft カード（UIdesign の実コンポーネント、[`examples/mockcraft`](../examples/mockcraft)）。録画は、同じWasmで各状態を計算し、同じReactコンポーネントと同じCSSをヘッドレスChromiumのページに描画してスクリーンショットします（アプリを録画するのと同じ方法、[`record.mjs`](record.mjs)）。UI 部分は同じで、Firefox・WebKit では画素単位で一致します。カードの枠（タイトルと STEP 表示）は簡略化した HTML です。

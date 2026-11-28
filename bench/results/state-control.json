@@ -1,0 +1,184 @@
+{
+ "environment": {
+  "date": "2026-11-28T04:18:56.473Z",
+  "os": "Windows_NT 10.0.26200 x64",
+  "cpu": "AMD Ryzen 7 8845HS w/ Radeon 780M Graphics      (16 threads)",
+  "ramGB": 31.3,
+  "node": "v24.19.0",
+  "ffmpeg": null,
+  "git": "git version 2.49.0.windows.1"
+ },
+ "windowMs": 5000,
+ "cards": {
+  "views-k1-n400": {
+   "file": "views-k1-n400.svg",
+   "K": 1,
+   "N": 400,
+   "generateMs": 1029,
+   "raw": 51261,
+   "gzip": 7433,
+   "brotli": 3964,
+   "registered": 26,
+   "levelDecls": 12,
+   "selectedValues": 1,
+   "selectionTerms": 401,
+   "displayDecls": 5
+  },
+  "views-k8-n400": {
+   "file": "views-k8-n400.svg",
+   "K": 8,
+   "N": 400,
+   "generateMs": 2312,
+   "raw": 306149,
+   "gzip": 26793,
+   "brotli": 9267,
+   "registered": 61,
+   "levelDecls": 26,
+   "selectedValues": 8,
+   "selectionTerms": 3208,
+   "displayDecls": 19
+  },
+  "copies-k1-n400": {
+   "file": "copies-k1-n400.svg",
+   "K": 1,
+   "N": 400,
+   "generateMs": 884,
+   "raw": 51264,
+   "gzip": 7433,
+   "brotli": 3966,
+   "registered": 26,
+   "levelDecls": 12,
+   "selectedValues": 1,
+   "selectionTerms": 401,
+   "displayDecls": 5
+  },
+  "copies-k8-n400": {
+   "file": "copies-k8-n400.svg",
+   "K": 8,
+   "N": 400,
+   "generateMs": 1055,
+   "raw": 58989,
+   "gzip": 8117,
+   "brotli": 4378,
+   "registered": 54,
+   "levelDecls": 26,
+   "selectedValues": 1,
+   "selectionTerms": 401,
+   "displayDecls": 12
+  }
+ },
+ "engines": {
+  "chromium": {
+   "version": "159.0.8154.6",
+   "blank": {
+    "cpuPercent": 1.7,
+    "workingSetMB": 277,
+    "style": {
+     "msPerS": 0
+    }
+   },
+   "cards": {
+    "views-k1-n400": {
+     "firstRenderMs": 29,
+     "cpuPercent": 9.2,
+     "workingSetMB": 318,
+     "style": {
+      "msPerS": 19.3
+     }
+    },
+    "views-k8-n400": {
+     "firstRenderMs": 69,
+     "cpuPercent": 13.3,
+     "workingSetMB": 383,
+     "style": {
+      "msPerS": 58.1
+     }
+    },
+    "copies-k1-n400": {
+     "firstRenderMs": 34,
+     "cpuPercent": 6,
+     "workingSetMB": 385,
+     "style": {
+      "msPerS": 19.3
+     }
+    },
+    "copies-k8-n400": {
+     "firstRenderMs": 36,
+     "cpuPercent": 6,
+     "workingSetMB": 338,
+     "style": {
+      "msPerS": 20.1
+     }
+    }
+   }
+  },
+  "firefox": {
+   "version": "159.0",
+   "blank": {
+    "cpuPercent": 1.7,
+    "workingSetMB": 514,
+    "style": null
+   },
+   "cards": {
+    "views-k1-n400": {
+     "firstRenderMs": 45,
+     "cpuPercent": 8.1,
+     "workingSetMB": 539,
+     "style": null
+    },
+    "views-k8-n400": {
+     "firstRenderMs": 86,
+     "cpuPercent": 10.8,
+     "workingSetMB": 658,
+     "style": null
+    },
+    "copies-k1-n400": {
+     "firstRenderMs": 33,
+     "cpuPercent": 4,
+     "workingSetMB": 679,
+     "style": null
+    },
+    "copies-k8-n400": {
+     "firstRenderMs": 52,
+     "cpuPercent": 12.3,
+     "workingSetMB": 698,
+     "style": null
+    }
+   }
+  },
+  "webkit": {
+   "version": "27.2",
+   "blank": {
+    "cpuPercent": 0,
+    "workingSetMB": 183,
+    "style": null
+   },
+   "cards": {
+    "views-k1-n400": {
+     "firstRenderMs": 66,
+     "cpuPercent": 15,
+     "workingSetMB": 214,
+     "style": null
+    },
+    "views-k8-n400": {
+     "firstRenderMs": 126,
+     "cpuPercent": 19.4,
+     "workingSetMB": 274,
+     "style": null
+    },
+    "copies-k1-n400": {
+     "firstRenderMs": 63,
+     "cpuPercent": 12.3,
+     "workingSetMB": 225,
+     "style": null
+    },
+    "copies-k8-n400": {
+     "firstRenderMs": 83,
+     "cpuPercent": 11.5,
+     "workingSetMB": 229,
+     "style": null
+    }
+   }
+  }
+ }
+}
