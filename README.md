@@ -38,13 +38,13 @@
 | 再生中の閲覧者の CPU（1コア＝100%） | 6〜11%（3エンジン、160 ステップ。40〜320 ステップでは 5〜13%） | WebP 2〜7%、MP4 1〜13% |
 | 再生中のメモリの増加（Chromium） | +46 MB | WebP +115 MB、MP4 +27 MB |
 | 再生が終わった後 | 既定では約1分で最後の状態に止まり、CPU を使わない | ループし続ける |
-| 表せるもの | 整数の状態から計算できる UI（固定小数点、64通りまでの切り替え、一次式の数値） | 画面に映るものすべて（Canvas、写真、Webフォント、実際の操作） |
+| 表せるもの | 最大8個の整数状態・最大2,000ステップから計算できる UI（固定小数点、64通りまでの切り替え、一次式の数値） | 画面に映るものすべて（Canvas、写真、Webフォント、実際の操作） |
 
 再生中の CPU は、時計と状態計算を分けた改善（2026-11-24）で、改善前の 51〜75% から下がりました。それでも録画（特に Chromium の MP4）より多く使います。README Runtime の CPU は改善後のカードの5回の中央値、録画の CPU とメモリは同じセッションで測った各1回の値（README Runtime は同じセッションで 6.8〜9.2%）、Git 履歴は改善前の比較（2026-11-23）の測定です。詳細は [`bench/README.md`](bench/README.md#css-ランタイムの改善2026-11-24) にあります。
 
 ## 使い方
 
-必要なもの: Node.js 20 以上と、`step(i32) -> i32` を export する `.wasm`（言語は問いません。状態が複数の値からなるときは下の「複数の値を持つ状態」）。
+必要なもの: Node.js 20 以上と、`step(i32) -> i32` を export する `.wasm`（言語は問いません。状態は最大8個の整数、ステップ数は最大2,000まで対応。複数変数の書き方は下の「複数の値を持つ状態」）。
 
 ```sh
 # 1. 設定と、チェック専用の GitHub Actions ワークフローを作る（既存ファイルは上書きしない）
@@ -95,7 +95,7 @@ npx --yes https://github.com/otonasi-muonn/README-Runtime/archive/HEAD.tar.gz in
 - `"halt"`（値で停止）は1つの整数の状態だけで使えます。複数の値では `"haltExport"` を使います。
 - `altInits` は `init` と同じ形のオブジェクトで、URL は値を `_` でつないだ `#x5_3_0_1_0` です（`build --json` の `cards[].embed` に貼る行が入ります）。
 - 表示は UI カードです（view が読む値を表示します）。トレースカードは1つの整数の桁とビットを表示する作りなので、`ui` のない複数の値の状態はエラーになります。
-- 表示部分は、最初の値と view が読む値を、時計が進むたびに全段から選びます（値1つあたり `steps + 1` 項）。`build --json` の `cards[].perf.selectedValues` に選んだ値の数が入り、多すぎると `PERF_WIDE_SELECTION` で警告します。mockcraft の同じカード（160 ステップ）で、1つの整数の gzip 10.9 KB に対して5つの値では 13.6 KB、Chromium のスタイル計算は 16 → 22 ms/秒でした（view が読まない `down` は選びません。[`bench/results/state.json`](bench/results/state.json)）。
+- 表示部分は、view が読む値だけ（トレースカードではその1つの値）を、時計が進むたびに選びます（長い実行や複数値の状態では2次元因数分解で評価負荷を抑えます）。`build --json` の `cards[].perf.selectedValues` に選んだ値の数が入り、多すぎると `PERF_WIDE_SELECTION` で警告します。mockcraft の同じカード（160 ステップ）で、1つの整数の gzip 10.9 KB に対して5つの値では 13.6 KB、Chromium のスタイル計算は 16 → 22 ms/秒でした（view が読まない `down` は選びません。[`bench/results/state.json`](bench/results/state.json)）。
 - `build --json` の `cards[].state.binding` に、どの関数をどの引数で呼んだかが入ります（カードを生成したときだけ。生成済みなら `build --force`）。意図どおりか確かめてください。`inspect` と `analyze` も2つの書き方を見分けます。
 
 ### AI エージェントから使う
@@ -166,6 +166,16 @@ GitHub の README に `<img>` で埋め込むと、プロジェクトのロジ�
 ```
 
 </details>
+
+### ローカル GUI（設定の調整とプレビュー）
+
+カードの設定（`steps`・`stepMs`・`hold`・`loops`・`init`・`altInits`・タイトル）をブラウザ上で調整し、実際の `generate()` によるライブプレビュー・保存済みカードとの比較・`check` の確認ができるローカル用 GUI を [`gui/`](gui/README.md) に同梱しています（README Runtime 本体の依存やコードには影響しません）。
+
+```sh
+cd gui && npm install && npm run dev   # http://127.0.0.1:5175/（ループバックのみ）
+```
+
+現在は単一整数状態のカード設定（最大2,000ステップ）に対応しています。詳細は [`gui/README.md`](gui/README.md) を参照してください。
 
 ## 閲覧者の負担
 
@@ -293,7 +303,7 @@ readme-runtime init --ui <file.tsx>[#Export] [--name demo] [--css a.css,b.css]
 readme-runtime init [--wasm <file.wasm>] [--export <name>] [--init <n>]
 readme-runtime build [names...] [--force]
 readme-runtime check
-readme-runtime render <file.wasm> --init <n> [-o card.svg] [--export step] [--steps 120] [--halt <n>] [--halt-export <name>] [--loops auto|infinite|<n>] [--title <text>] [--step-ms 150] [--hold 12] [--bits 20]
+  readme-runtime render <file.wasm> --init <n> [-o card.svg] [--export step] [--steps 120] [--halt <n>] [--halt-export <name>] [--loops auto|infinite|<n>] [--title <text>] [--step-ms 150] [--hold 12] [--bits 20]
 readme-runtime inspect <file.wasm>
 ```
 
@@ -321,7 +331,7 @@ CSSには桁あふれする整数型がなく、`calc()` は浮動小数点で�
 保証のしかた:
 
 - **ビルド時**: 本物のWasmの実行結果と、生成したCSSを4つの演算モデル（理想・Chromium・Firefox・WebKit）で評価した結果を全ステップ比較します。表示部分が時計で選ぶ値（表示するステップ、状態、停止の表示）も、時刻を変えて比較します。範囲を超える値が出るとエラーで止まり、カードは生成しません（例: 初期値77671は14ステップ目で1,327,102になるため拒否。`(x * 65536) % 32749` のように途中で2²⁴を超える式も拒否）。`altInits` の初期値も同じように照合します。
-- **閲覧時**: すべての状態（|x| ≤ 999,999）について区間解析を行い、範囲を超えうる値には「範囲ガード」をCSSに埋め込みます。SVGの初期値を書き換えた場合でも、表示は **本物のWasmと同じ値か、`OUT OF RANGE` で停止するかのどちらか** になるように設計しています（i32の桁あふれに依存するコードも、桁あふれが起きる入力では停止します）。この性質は、命令パターンごとに境界値を含む入力と、21プログラムの実ブラウザ検証で確認していますが、形式的な証明ではありません。
+- **閲覧時**: すべての状態（|x| ≤ 999,999）について区間解析を行い、範囲を超えうる値には「範囲ガード」をCSSに埋め込みます。SVGの初期値を書き換えた場合でも、表示は **本物のWasmと同じ値か、`OUT OF RANGE` で停止するかのどちらか** になるように設計しています（i32の桁あふれに依存するコードも、桁あふれが起きる入力では停止します）。この性質は、命令パターンごとに境界値を含む入力と、22プログラムの実ブラウザ検証で確認していますが、形式的な証明ではありません。
 - ガードは保守的です。CSSは条件分岐の**両方の腕**を計算するため、使われない側の腕で範囲を超える値が出るプログラム（例: `x < 4000 ? x*x % 10007 : x / 3`）は、ビルド時に拒否されます。
 
 対応する命令:
@@ -339,7 +349,7 @@ CSSには桁あふれする整数型がなく、`calc()` は浮動小数点で�
 
 - 0除算などのトラップは、本物のWasmと同じステップで検出し、カードに `TRAP` / `STOPPED` と表示します。
 - 実行は、ビルド時に `steps` ステップぶんの CSS 計算鎖として展開されます（400ステップまでは1段1ステップ、401〜2,000ステップでは1要素内に複数ステップを展開して `<g>` の入れ子を320段以内に維持します）。途中の状態値はSVGに保存されず、すべて表示時にCSSが計算します。
-- ステップ数は最大2,000です。初回表示時に全ステップを計算するため、ステップ数に比例して初回描画時間とファイルサイズが増えます（`mockcraft-state` の5変数UIカードで 160ステップ gzip 13.6 KB / 初回 42〜61 ms、1,600ステップ 55.4 KB / 初回 102〜218 ms、2,000ステップ 66.9 KB / 初回 118〜258 ms）。
+- ステップ数は最大2,000です。初回表示時に全ステップを計算するため、ステップ数に比例して初回描画時間とファイルサイズが増えます（`mockcraft-state` の5変数UIカードで 160ステップ gzip 13.3 KB / 初回 42〜61 ms、1,600ステップ 54.1 KB / 初回 102〜218 ms、2,000ステップ 65.3 KB / 初回 118〜258 ms。[`bench/results/unroll.json`](bench/results/unroll.json)）。
 - **有限再生・周期的再生・無制限遷移の境界**: `<img>` 内の CSS アニメーションはアニメーション時刻 `t` の純粋関数であり、前フレームの計算結果を次フレームへ書き戻す記憶素子を持ちません（同一要素上のカスタムプロパティ循環は CSS Variables 仕様により無効化され、継承は親→子の一方向です）。そのため、一般の非周期な `step()` を空間展開なしに無制限ステップ継続することは CSS の計算モデル上できません。`"loops": "infinite"` は既定では `0..steps` の有限区間の繰り返し再生（`finite-replay`）ですが、`step(x_steps) == x_0` となる周期 `P = steps + 1` の軌道を `"hold": 0` で回すと、時刻 `0` への折り返しがそのまま次の状態遷移と一致し、切れ目のない周期的継続実行（`periodic`）になります。`build --json` の `cards[].execution` に実行方式（`finite` / `finite-replay` / `halt` / `periodic`）と検出された周期 `cycle` を返します。
 
 動作確認したブラウザ: Chrome 157 / Edge 157（Windows）、Playwright 1.65 の Chromium・Firefox・WebKit。実機のSafari（macOS/iOS）では未確認です。
@@ -384,6 +394,7 @@ node bin/readme-runtime.js check
 - 約100の命令パターンについて、境界値を含むサンプル入力（2²³〜2²⁴の窓、49や65521の倍数を含む）と4つの演算モデルで「本物のWasmと一致するか、範囲フラグが立つか」を確認します（[`test/compiler.test.js`](test/compiler.test.js)）。
 - 出力の決定性、範囲エラー、トラップ、停止判定、時計の各時刻で表示部分が選ぶ値（書き換えた初期値を含む）、`altInits` を確認します（[`test/pipeline.test.js`](test/pipeline.test.js)）。
 - 2回の敵対的レビューで見つかった不具合の再現ケースを回帰テストにしています（[`test/soundness.test.js`](test/soundness.test.js)）。
+- 複数の値を持つ状態（globals ABI / functions ABI、最大8変数）と、400ステップ超の1要素内複数ステップ展開・2次元因数分解選択・実行モード判定を確認します（[`test/state.test.js`](test/state.test.js)、[`test/steps.test.js`](test/steps.test.js)）。
 - キャッシュ・差分ビルド・`check` の挙動を確認します（[`test/project.test.js`](test/project.test.js)）。
 - 既存UIのカード: 上流ファイルのハッシュ、束縛の推定（条件付きで現れる要素を含む）、非一次式の拒否、Tailwind 3 / 4、描画の決定性、部品やCSSの変更による再生成、時計が唯一のアニメーションであることを確認します（[`test/ui.test.js`](test/ui.test.js)）。
 - CLI: `--json` の形式、エラーコード、`analyze` の判定、`init --ui` からビルドまで、CI ワークフローのコミット固定を確認します（[`test/cli.test.js`](test/cli.test.js)）。再生回数と負荷の報告・警告は [`test/perf.test.js`](test/perf.test.js) です。
@@ -391,12 +402,12 @@ node bin/readme-runtime.js check
 ブラウザ検証（[`test/browser/run.js`](test/browser/run.js)）の条件:
 
 - SVGを `image/svg+xml` と、GitHubと同じCSP（`default-src 'none'; style-src 'unsafe-inline'; sandbox`）で配信し、JavaScriptを無効にしたページの `<img>` で表示します。
-- 値はスクリーンショットのピクセル（32bitレジスタのLED、トレースの全列、状態ドットの色）だけから読み取ります。
-- 対象は21プログラムです。C（Collatz、90分岐のif連鎖、符号なし剰余、49や65521での除算、Fibonacci LFSR、Rule 30）、Rust（ガロアLFSR）、命令を直接組んだWasm（LCG、xorshift、桁あふれ依存、2乗の剰余、popcount、float32が溢れるハッシュ、0除算トラップなど）を含みます。
+- 値はスクリーンショットのピクセル（32bitレジスタのLED、トレースの列、状態ドットの色）だけから読み取ります（`steps > 400` で1要素に複数ステップを展開したカードでは、トレースは段ごとの代表列となるため32bitレジスタのLEDと状態ドットで照合します）。
+- 対象は22プログラム（600ステップ途中停止や1,600ステップ実行を含む）です。C（Collatz、90分岐のif連鎖、符号なし剰余、49や65521での除算、Fibonacci LFSR、Rule 30）、Rust（ガロアLFSR）、2変数の状態機械、命令を直接組んだWasm（LCG、xorshift、桁あふれ依存、2乗の剰余、popcount、float32が溢れるハッシュ、0除算トラップなど）を含みます。
 - 各プログラムについて、**生成済みSVGの初期値だけを書き換えた値**（生成器はその値を知りません）でも、表示が本物のWasmの軌道と一致するか、範囲外になるステップで `OUT OF RANGE` になることを確認します。URL のフラグメント（`#x97`）で選んだ初期値も同じように確認します。
 - 時計を固定した決定的な検証、実際のアニメーション（時間とともにステップが進み、どの瞬間も正しい）、`prefers-reduced-motion` の3種類を行います。
 
-既存UIのカード（[`test/browser/ui.js`](test/browser/ui.js)）: mockcraft と air-drawing で、生成時の初期値と書き換えた初期値の両方について、時計を固定した場合とアニメーションを一時停止した場合を、直接描画した画像とピクセル単位で比べます。
+既存UIのカード（[`test/browser/ui.js`](test/browser/ui.js)）: `mockcraft`・`air-drawing`・`mockcraft-state`（5変数）で、生成時の初期値と書き換えた初期値の両方について、サンプル時刻で時計を固定した場合とアニメーションを一時停止した場合を、同じ状態のコンポーネント直接描画とピクセル単位で比べます（Firefox・WebKit は差分 0 px、Chromium は CSS カウンタ前後のテキスト字送り差として 150 px 以内を許容。2,000ステップまでの最終状態照合は [`bench/unroll.mjs`](bench/unroll.mjs)）。
 
 </details>
 
