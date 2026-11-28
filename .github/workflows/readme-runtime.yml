@@ -49,6 +49,7 @@ jobs:
           node test/browser/ui.js --browsers chromium,firefox,webkit
           node test/browser/ui.js --card air-drawing --browsers chromium,firefox,webkit
           node test/browser/ui.js --config examples/mockcraft/readme-runtime.json --card mockcraft-state --browsers chromium,firefox,webkit
+          node test/browser/ui.js --config test/fixtures/ui/fidelity.json --card fidelity --browsers chromium,firefox,webkit
       - name: Keep screenshots of failures
         if: failure()
         uses: actions/upload-artifact@v7

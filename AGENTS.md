@@ -61,9 +61,14 @@ cannot install that URL: write `npm exec --yes --package=<archive URL> -- readme
    (`UI_INTERPOLATE_DISCRETE_ONLY` warns when a listed view has no continuous style bindings).
    The display selects, on every step, the state values the views read (`cards[].perf.selectedValues`,
    plus `nextSelectedValues` when interpolated; `PERF_WIDE_SELECTION` when it gets expensive).
-   Build warnings (`cards[].ui.warnings`): `UI_WHOLE_VARIANTS` means the whole UI is copied per view
-   value: wrap each part that appears or disappears (e.g. a component that renders null) in its own
-   element. `UI_STRUCTURAL_CSS` means child/sibling selectors may style switched elements
+   Build warnings (`cards[].ui.warnings`): `UI_WHOLE_VARIANTS` means the variants could not be
+   narrowed below the root (its own attributes differ, or a shared part refers to an id defined in
+   a changing one), so the whole UI is copied per variant: keep the root stable. Elsewhere only the
+   changing children are variants (a shared parent and common children stay outside; never inside
+   textarea/select/option/tables/SVG, and not at all when the stylesheet selects on direct
+   children/siblings around them, uses :has() or url(#id), or the markup has a <style>:
+   `ui.sharedParents` says whether and why); `ui.discrete[]` gives `variants` and
+   `combinations`, `ui.elements` / `markupBytes` / `cssBytes` the size. `UI_STRUCTURAL_CSS` means child/sibling selectors may style switched elements
    differently than in the app: look at the card. Each value of a wide view is checked against
    the component (`ui.verifiedEachValue`; `ui.sampledViews` were too wide), but combinations of
    wide views are only sampled: a condition on two of them at once can slip through.

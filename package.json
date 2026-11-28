@@ -13,7 +13,7 @@
   "scripts": {
     "test": "node --test \"test/**/*.test.js\"",
     "test:browser": "node test/browser/run.js",
-    "test:browser:ui": "node test/browser/ui.js && node test/browser/ui.js --card air-drawing && node test/browser/ui.js --config examples/mockcraft/readme-runtime.json --card mockcraft-state",
+    "test:browser:ui": "node test/browser/ui.js && node test/browser/ui.js --card air-drawing && node test/browser/ui.js --config examples/mockcraft/readme-runtime.json --card mockcraft-state && node test/browser/ui.js --config test/fixtures/ui/fidelity.json --card fidelity",
     "bench": "node bench/pipeline.mjs && node bench/playback.mjs && node bench/loop.mjs && node bench/offscreen.mjs && node bench/nesting.mjs && node bench/githistory.mjs && node bench/github.mjs && node bench/report.mjs"
   },
   "devDependencies": {
