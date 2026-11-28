@@ -13,7 +13,8 @@ import cached from '../mocks/cli/build-cached.json';
 import forced from '../mocks/cli/build-force.json';
 import checkOk from '../mocks/cli/check-ok.json';
 import checkFail from '../mocks/cli/check-fail.json';
-import { toConfigCard } from './fields';
+import { API_VERSION, FEATURES, PERF_SOURCES } from './capabilities';
+import { FALLBACK_SETTINGS, toConfigCard } from './fields';
 import type {
   BuildCardResult, CardConfig, CardSettings, CheckOutput, CliError, PerfReport, PerfWarning,
   PreviewResponse, ProjectConfig, ProjectInfo, RunEnd, RuntimeApi, SaveResponse,
@@ -148,6 +149,7 @@ export function createMockApi(): RuntimeApi {
       return {
         mode: 'mock',
         toolVersion: TOOL_VERSION,
+        capabilities: { apiVersion: API_VERSION, settings: FALLBACK_SETTINGS, features: FEATURES, perf: PERF_SOURCES },
         cards: [...saved.values()].map((c) => ({
           name: c.name,
           kind: c.ui ? 'ui' : 'trace',

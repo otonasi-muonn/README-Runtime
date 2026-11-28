@@ -2,14 +2,13 @@
 // Saved settings and their last build, next to the last successful preview. The draft is not
 // compared: a comparison is only meaningful between two results that exist.
 import { computed } from 'vue';
-import { settingsFromConfig } from '../api/fields';
 import { END_LABELS, labelFor } from '../api/labels';
 import type { BuildCardResult, CardSettings, Loops, PerfReport } from '../api/types';
 import { useSessionContext } from '../composables/useSession';
 import PerfTimeline from './PerfTimeline.vue';
 
 const s = useSessionContext();
-const saved = computed(() => (s.card ? { settings: settingsFromConfig(s.card.config), card: s.card.lastBuild } : null));
+const saved = computed(() => (s.card ? { settings: s.settingsOf(s.card.config), card: s.card.lastBuild } : null));
 const preview = computed(() => (s.preview?.source === 'preview' ? { settings: s.preview.settings, card: s.preview.card } : null));
 
 const loopsText = (l: Loops | number | 'infinite') => (l === 'auto' ? '自動' : l === 'infinite' ? '無限' : `${l} 回`);

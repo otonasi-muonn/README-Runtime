@@ -4,6 +4,8 @@
 // The mock is loaded only when it is used: it imports readme-runtime.json and the SVGs as
 // modules, and in live mode a save rewrites those files; were they part of the module graph,
 // the dev server would hot-reload the screen and drop its state on every save.
+import { API_VERSION, FEATURES, PERF_SOURCES } from './capabilities';
+import { FALLBACK_SETTINGS } from './fields';
 import { createLiveApi } from './live';
 import type { ProjectInfo, RuntimeApi } from './types';
 
@@ -20,7 +22,15 @@ export const api: RuntimeApi = {
     }
     try {
       impl = live;
-      return await live.getProject();
+      const p = await live.getProject();
+      // an API without capabilities, or a newer one, still works with what this GUI knows
+      if (!p.capabilities) {
+        return { ...p, capabilities: { apiVersion: 0, settings: FALLBACK_SETTINGS, features: FEATURES, perf: PERF_SOURCES }, notice: '接続先が設定の範囲を返さないため、GUI 側の表で確認しています。' };
+      }
+      if (p.capabilities.apiVersion > API_VERSION) {
+        return { ...p, notice: `接続先の API（v${p.capabilities.apiVersion}）は、この GUI（v${API_VERSION}）より新しい版です。知らない機能は表示しません。` };
+      }
+      return p;
     } catch (e) {
       impl = await loadMock();
       const p = await impl.getProject();

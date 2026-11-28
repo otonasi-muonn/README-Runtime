@@ -6,8 +6,8 @@
 // a response that is not for the latest request is dropped, and a new request aborts the old one.
 import { computed, inject, reactive, ref, type InjectionKey } from 'vue';
 import { api } from '../api/client';
-import { sameSettings, settingsFromConfig, validate } from '../api/fields';
-import type { BuildCardResult, CardSettings, CardSummary, CheckOutput, CliError, PerfWarning, ProjectInfo } from '../api/types';
+import { FALLBACK_SETTINGS, intFields, sameSettings, settingsFromConfig, validate } from '../api/fields';
+import type { BuildCardResult, CardConfig, CardSettings, CardSummary, CheckOutput, CliError, PerfWarning, ProjectInfo } from '../api/types';
 
 export interface PreviewState {
   settings: CardSettings;
@@ -39,12 +39,19 @@ export function useSession() {
   const seq: Record<string, number> = {};
   const controllers: Record<string, AbortController> = {};
 
+  // what the runtime accepts: ranges, defaults, features (the GUI's table when none is reported)
+  const capabilities = computed(() => project.value?.capabilities ?? null);
+  const limits = computed(() => capabilities.value?.settings.limits ?? FALLBACK_SETTINGS.limits);
+  const defaults = computed(() => capabilities.value?.settings.defaults ?? FALLBACK_SETTINGS.defaults);
+  const fields = computed(() => intFields(limits.value));
+  const settingsOf = (c: CardConfig) => settingsFromConfig(c, defaults.value);
+
   const card = computed<CardSummary | null>(() => project.value?.cards.find((c) => c.name === selected.value) ?? null);
-  const saved = computed(() => (card.value ? settingsFromConfig(card.value.config) : null));
+  const saved = computed(() => (card.value ? settingsOf(card.value.config) : null));
   const draft = computed(() => (selected.value ? drafts[selected.value] : null));
   const preview = computed(() => (selected.value ? previews[selected.value] : null));
   const attempt = computed(() => (selected.value ? attempts[selected.value] : null));
-  const errors = computed(() => (draft.value ? validate(draft.value) : {}));
+  const errors = computed(() => (draft.value ? validate(draft.value, limits.value) : {}));
   const valid = computed(() => Object.keys(errors.value).length === 0);
   const previewIsCurrent = computed(() => sameSettings(draft.value, preview.value?.settings));
   const unsaved = computed(() => !sameSettings(draft.value, saved.value));
@@ -53,7 +60,7 @@ export function useSession() {
   const canSave = computed(() => valid.value && unsaved.value && previewIsCurrent.value && preview.value?.source === 'preview' && !busy.value);
 
   function initCard(c: CardSummary) {
-    const s = settingsFromConfig(c.config);
+    const s = settingsOf(c.config);
     drafts[c.name] = clone(s);
     previews[c.name] = { settings: s, svgUrl: c.svgUrl, svgAltInits: [...(c.config.altInits ?? [])], generation: 0, card: c.lastBuild, reflectsSettings: true, source: 'saved' };
     replays[c.name] = 0;
@@ -135,7 +142,7 @@ export function useSession() {
 
   // reactive() unwraps the refs, so components read session.draft rather than session.draft.value
   return reactive({
-    project, loadError, selected, drafts, card, saved, draft, preview, attempt, errors, valid, previewIsCurrent, unsaved, busy, canSave,
+    project, loadError, selected, drafts, capabilities, limits, defaults, fields, settingsOf, card, saved, draft, preview, attempt, errors, valid, previewIsCurrent, unsaved, busy, canSave,
     replays, checkState, load, runPreview, save, runCheck, applyFix, resetDraft, replay,
   });
 }

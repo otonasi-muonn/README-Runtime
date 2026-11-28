@@ -3,12 +3,16 @@ import { computed } from 'vue';
 import { END_LABELS, FIX_LABELS, labelFor } from '../api/labels';
 import PerfBars from './PerfBars.vue';
 import PerfTimeline from './PerfTimeline.vue';
+import type { PerfReport } from '../api/types';
 import { useSessionContext } from '../composables/useSession';
 
 const s = useSessionContext();
 const result = computed(() => s.preview?.card ?? null);
 const kb = (n: number) => `${(n / 1024).toFixed(1)} KB`;
 const fixText = (fix: Record<string, unknown>) => Object.entries(fix).map(([k, v]) => FIX_LABELS[k]?.(v) ?? `${k}: ${JSON.stringify(v)}`).join('、');
+// where each figure comes from, as the connected runtime reports it (none is measured in a browser)
+const tag = (k: keyof PerfReport) => ({ settings: '設定から', file: 'ファイルから' })[s.capabilities?.perf.sources[k] ?? 'settings'] ?? '';
+const notMeasured = computed(() => (s.capabilities?.perf.notMeasured ?? ['閲覧者の CPU 使用率', 'メモリ']).join('・'));
 const fromFile = computed(() => s.preview?.source === 'preview' && !s.preview.reflectsSettings);
 const source = computed(() => (s.preview?.source === 'saved' ? '保存済みの SVG' : `プレビュー #${s.preview?.generation}`));
 </script>
@@ -48,15 +52,15 @@ const source = computed(() => (s.preview?.source === 'saved' ? '保存済みの 
       <h3 class="section-title">閲覧者への負荷の目安</h3>
       <PerfBars :perf="result.perf" />
       <dl class="perf">
-        <div><dt>状態の更新頻度</dt><dd>{{ result.perf.updatesPerSecond }} 回/秒</dd><p>1ステップの時間から計算した値です。画面の描画 FPS ではありません。</p></div>
-        <div><dt>1周の長さ</dt><dd>{{ result.perf.loopSeconds }} 秒</dd><p>保持の時間を含みます。</p></div>
-        <div><dt>再生回数</dt><dd>{{ result.perf.loops === 'infinite' ? '止まらない' : `${result.perf.loops} 回` }}</dd></div>
-        <div><dt>再生が続く時間</dt><dd>{{ result.perf.activeSeconds === null ? '表示中ずっと' : `約 ${result.perf.activeSeconds} 秒` }}</dd><p>ページを開いてから数えます。止まった後は CPU を使いません。</p></div>
-        <div><dt>表示部分の要素数</dt><dd>{{ result.perf.displayElements }}</dd><p>毎ステップ描き直す量の目安です。<template v-if="fromFile">モック: 保存済みの SVG の値。</template></p></div>
-        <div><dt>@container ルール数</dt><dd>{{ result.perf.containerRules }}</dd><p>切り替える部分の数です。毎ステップ評価されます。</p></div>
-        <div><dt>ファイルサイズ</dt><dd>{{ kb(result.perf.bytes) }}<small>gzip {{ kb(result.perf.gzipBytes) }}</small></dd><p v-if="fromFile">モック: 保存済みの SVG の値。</p></div>
+        <div><dt>状態の更新頻度<span v-if="tag('updatesPerSecond')" class="tag">{{ tag('updatesPerSecond') }}</span></dt><dd>{{ result.perf.updatesPerSecond }} 回/秒</dd><p>1ステップの時間から計算した値です。画面の描画 FPS ではありません。</p></div>
+        <div><dt>1周の長さ<span v-if="tag('loopSeconds')" class="tag">{{ tag('loopSeconds') }}</span></dt><dd>{{ result.perf.loopSeconds }} 秒</dd><p>保持の時間を含みます。</p></div>
+        <div><dt>再生回数<span v-if="tag('loops')" class="tag">{{ tag('loops') }}</span></dt><dd>{{ result.perf.loops === 'infinite' ? '止まらない' : `${result.perf.loops} 回` }}</dd></div>
+        <div><dt>再生が続く時間<span v-if="tag('activeSeconds')" class="tag">{{ tag('activeSeconds') }}</span></dt><dd>{{ result.perf.activeSeconds === null ? '表示中ずっと' : `約 ${result.perf.activeSeconds} 秒` }}</dd><p>ページを開いてから数えます。止まった後は CPU を使いません。</p></div>
+        <div><dt>表示部分の要素数<span v-if="tag('displayElements')" class="tag">{{ tag('displayElements') }}</span></dt><dd>{{ result.perf.displayElements }}</dd><p>毎ステップ描き直す量の目安です。<template v-if="fromFile">モック: 保存済みの SVG の値。</template></p></div>
+        <div><dt>@container ルール数<span v-if="tag('containerRules')" class="tag">{{ tag('containerRules') }}</span></dt><dd>{{ result.perf.containerRules }}</dd><p>切り替える部分の数です。毎ステップ評価されます。</p></div>
+        <div><dt>ファイルサイズ<span v-if="tag('bytes')" class="tag">{{ tag('bytes') }}</span></dt><dd>{{ kb(result.perf.bytes) }}<small>gzip {{ kb(result.perf.gzipBytes) }}</small></dd><p v-if="fromFile">モック: 保存済みの SVG の値。</p></div>
       </dl>
-      <p class="cpu">閲覧者の CPU 使用率とメモリは、この画面では計測していません。手元の1台での実測は <code>bench/README.md</code> にあります。</p>
+      <p class="cpu">{{ notMeasured }}は、この画面でも API でも計測していません。手元の1台での実測は <code>bench/README.md</code> にあります。</p>
     </template>
   </section>
 </template>
@@ -87,6 +91,7 @@ const source = computed(() => (s.preview?.source === 'saved' ? '保存済みの 
 .perf > div { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 7px 10px; }
 .perf > div + div { border-top: 1px solid var(--border); }
 .perf dt { color: var(--muted); font-size: 12px; }
+.perf .tag { margin-left: 6px; font-size: 10px; color: var(--faint); border: 1px solid var(--border); border-radius: 3px; padding: 0 4px; }
 .perf dd { margin: 0; font-family: var(--mono); font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; }
 .perf dd small { display: block; color: var(--faint); font-size: 10px; }
 .perf p { grid-column: 1 / -1; margin: 0; font-size: 11px; color: var(--faint); }

@@ -9,7 +9,7 @@ const s = useSessionContext();
 // The Markdown is for the saved card: that is the file README.md will point at.
 const out = computed(() => s.card?.lastBuild?.out ?? s.card?.config.out ?? (s.card ? `readme-runtime/${s.card.name}.svg` : ''));
 const embed = computed(() => s.card?.lastBuild?.embed ?? (out.value ? [`![${s.card!.name}](${out.value})`] : []));
-const pending = computed(() => (s.card && s.draft && s.unsaved ? JSON.stringify(toConfigCard(s.card.config, s.draft), null, 2) : ''));
+const pending = computed(() => (s.card && s.draft && s.unsaved ? JSON.stringify(toConfigCard(s.card.config, s.draft, s.defaults), null, 2) : ''));
 
 const copied = ref<string | null>(null);
 async function copy(text: string, key: string) {

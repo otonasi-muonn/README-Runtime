@@ -49,13 +49,20 @@ npm run dev          # http://127.0.0.1:5175/ （ループバックのみで待�
 
 | | 内容 |
 |---|---|
-| `GET /api/project` | カードの一覧と設定、保存済みの SVG の `perf`・警告・`embed`（作り直さずに、今のファイルから計算） |
+| `GET /api/project` | カードの一覧と設定、保存済みの SVG の `perf`・警告・`embed`（作り直さずに、今のファイルから計算）、能力情報（下） |
 | `GET /api/svg/<name>` | 保存済みの SVG |
 | `POST /api/preview` `{ name, settings }` | 生成して `/api/preview/<n>.svg` を返す（直近24件だけ保持） |
 | `POST /api/save` `{ name, settings }` | 設定を書いて `build` |
 | `POST /api/check` | `check` |
 
 結果とエラーの形は、CLI の `--json`（schemaVersion 1）と同じです。型は `src/api/types.ts` にあります。
+
+**能力情報（`capabilities`）:** GUI はこれを見て入力欄とチェックを作ります。
+
+- `apiVersion`: 接続 API の版（今は 1）。GUI より新しい版なら、その旨を表示して、知っている範囲で動きます。能力情報を返さない接続先では、GUI 側の表（`src/api/fields.ts`）を使い、その旨を表示します。
+- `settings`: 編集できる設定の範囲と既定値。本体が公開している値（`DEFAULTS`・`MAX_ALT_INITS`・`MAX_STEPS`・`STORED_LIMIT`）から作ります。`stepMs`・`hold`・ループ回数の範囲は本体が公開していないので、`src/generate.js` の検査と同じ値をサーバーに書いています。
+- `features`: 機能と、この版で使えるかどうか。今は、デザイン設定（#1）・補間（#4）・複数状態（#6）・寸法（#11）・バインディング（#12）を「使えない」として理由と一緒に返し、GUI は「今後の機能」として無効の状態で表示します。新しい機能は、使えるようになった版でここに足します。
+- `perf`: `perf` の各値が、設定から計算したものか、ファイルから計算したものか。どれもブラウザでの実測ではありません。計測していないもの（CPU・メモリ・フレームレート）の一覧もここにあります。
 
 守っていること（#3）:
 
@@ -80,6 +87,7 @@ npm run dev          # http://127.0.0.1:5175/ （ループバックのみで待�
 server/runtimeApi.ts  接続 API（Vite の開発サーバーに /api として組み込む。vite.config.ts）
 src/
   api/types.ts        CLI の出力の型（schemaVersion 1）と、接続 API の型（RuntimeApi）
+  api/capabilities.ts 機能の一覧と perf の出どころ（API とモックで共通）、API の版
   api/client.ts       LIVE か MOCK かを決める唯一の場所
   api/live.ts         接続 API を呼ぶ実装
   api/mock.ts         モックの実装（使うときだけ読み込む）
@@ -94,7 +102,6 @@ src/
 ## 残っていること
 
 - 保存済みのカードの「実行」（どこで止まるか）は、LIVE では表示しません。作り直さないと分からないためです。
-- 範囲・既定値・使えるかどうかは、まだ GUI 側の表（`fields.ts`）です。接続 API から返す形にすれば、未対応の機能を無効にして説明できます。
 - CLI の出力について、気づいた点が2つあります。
   1. `RANGE_STATE` などのエラーに、どのカードで起きたかが入っていません（`details: {}`）。
   2. `build` は最初のエラーで止まり、ほかのカードの結果を返しません。

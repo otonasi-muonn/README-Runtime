@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { sameSettings, settingsFromConfig } from '../api/fields';
+import { sameSettings } from '../api/fields';
 import { useSessionContext } from '../composables/useSession';
 
 const s = useSessionContext();
 const edited = (name: string) => {
   const c = s.project?.cards.find((x) => x.name === name);
-  return !!c && !sameSettings(s.drafts[name], settingsFromConfig(c.config));
+  return !!c && !sameSettings(s.drafts[name], s.settingsOf(c.config));
 };
 </script>
 

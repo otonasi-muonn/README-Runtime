@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { INT_FIELDS, LOOP_COUNT, MAX_ALT_INITS, parseIntList, settingsFromConfig } from '../api/fields';
+import { parseIntList } from '../api/fields';
 import { useSessionContext } from '../composables/useSession';
 import type { CardSettings } from '../api/types';
 
@@ -30,7 +30,9 @@ const loopCount = computed({
 
 const c = computed(() => s.card?.config);
 // a field that differs from the saved settings gets a marker
-const savedSettings = computed(() => (c.value ? settingsFromConfig(c.value) : null));
+const savedSettings = computed(() => (c.value ? s.settingsOf(c.value) : null));
+// features this runtime does not have yet: shown disabled, with the reason it reports
+const unavailable = computed(() => (s.capabilities?.features ?? []).filter((x) => !x.available));
 const changed = (k: keyof CardSettings) => !!s.draft && !!savedSettings.value && JSON.stringify(s.draft[k]) !== JSON.stringify(savedSettings.value[k]);
 </script>
 
@@ -46,7 +48,7 @@ const changed = (k: keyof CardSettings) => !!s.draft && !!savedSettings.value &&
     </div>
 
     <div class="group">
-      <label v-for="f in INT_FIELDS" :key="f.key" class="field" :class="{ invalid: s.errors[f.key], changed: changed(f.key) }">
+      <label v-for="f in s.fields" :key="f.key" class="field" :class="{ invalid: s.errors[f.key], changed: changed(f.key) }">
         <span class="label">{{ f.label }}<small v-if="f.unit">{{ f.unit }}</small></span>
         <input v-model.number="s.draft[f.key]" type="number" :min="f.min" :max="f.max" step="1" />
         <span v-if="s.errors[f.key]" class="error">{{ s.errors[f.key] }}</span>
@@ -56,7 +58,7 @@ const changed = (k: keyof CardSettings) => !!s.draft && !!savedSettings.value &&
 
     <div class="group">
       <label class="field" :class="{ invalid: s.errors.altInits, changed: changed('altInits') }">
-        <span class="label">ほかの初期値<small>{{ MAX_ALT_INITS }}個まで</small></span>
+        <span class="label">ほかの初期値<small>{{ s.limits.altInits.maxItems }}個まで</small></span>
         <input v-model="altText" type="text" placeholder="例: 97, 871" @input="onAltInput" />
         <span v-if="s.errors.altInits" class="error">{{ s.errors.altInits }}</span>
         <span class="help">README で <code>card.svg?x97#x97</code> と書くと、同じ SVG がこの値から計算します。</span>
@@ -69,10 +71,20 @@ const changed = (k: keyof CardSettings) => !!s.draft && !!savedSettings.value &&
           <label :class="{ on: loopMode === 'infinite' }"><input v-model="loopMode" type="radio" value="infinite" />無限</label>
           <label :class="{ on: loopMode === 'count' }"><input v-model="loopMode" type="radio" value="count" />回数</label>
         </div>
-        <input v-if="loopMode === 'count'" v-model.number="loopCount" class="count" type="number" :min="LOOP_COUNT.min" :max="LOOP_COUNT.max" aria-label="ループ回数" />
+        <input v-if="loopMode === 'count'" v-model.number="loopCount" class="count" type="number" :min="s.limits.loops.count.min" :max="s.limits.loops.count.max" aria-label="ループ回数" />
         <span v-if="s.errors.loops" class="error">{{ s.errors.loops }}</span>
         <span class="help">自動は約1分で止まり、その後は CPU を使いません。ページの最初に見えるカードは無限が向いています。</span>
       </fieldset>
+    </div>
+
+    <div v-if="unavailable.length" class="group upcoming">
+      <p class="label">今後の機能（このバージョンでは使えません）</p>
+      <ul>
+        <li v-for="x in unavailable" :key="x.key" aria-disabled="true">
+          <span class="name">{{ x.label }}</span>
+          <span class="why">{{ x.reason }}<template v-if="x.issue">（#{{ x.issue }}）</template></span>
+        </li>
+      </ul>
     </div>
 
     <details class="readonly">
@@ -120,6 +132,11 @@ const changed = (k: keyof CardSettings) => !!s.draft && !!savedSettings.value &&
 .seg input { position: absolute; opacity: 0; pointer-events: none; }
 .seg label:focus-within { box-shadow: inset 0 0 0 2px var(--accent); }
 .count { margin-top: 2px; }
+.upcoming { padding-top: 12px; }
+.upcoming ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.upcoming li { display: flex; flex-direction: column; padding: 6px 8px; border: 1px dashed var(--border); border-radius: var(--radius); opacity: 0.7; cursor: not-allowed; }
+.upcoming .name { font-size: 12px; color: var(--muted); }
+.upcoming .why { font-size: 11px; color: var(--faint); }
 .readonly { margin: 12px; font-size: 11px; color: var(--muted); }
 .readonly summary { cursor: pointer; }
 .readonly dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 10px; margin: 8px 0 0; }

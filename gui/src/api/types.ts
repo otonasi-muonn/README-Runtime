@@ -141,10 +141,43 @@ export interface CardSummary {
   lastBuild: BuildCardResult | null;
 }
 
+export interface IntRange {
+  min: number;
+  max: number;
+}
+
+/** What the connected runtime accepts and offers. The GUI builds its form and checks from it. */
+export interface Capabilities {
+  /** The connection API's version. A GUI that knows a lower version says so instead of guessing. */
+  apiVersion: number;
+  settings: {
+    limits: {
+      init: IntRange;
+      steps: IntRange;
+      stepMs: IntRange;
+      hold: IntRange;
+      altInits: IntRange & { maxItems: number };
+      loops: { count: IntRange };
+    };
+    defaults: { steps: number; stepMs: number; hold: number; loops: Loops; altInits: number[] };
+    /** "runtime": read from the runtime's exported constants (and its option checks); "gui": the GUI's own table. */
+    source: 'runtime' | 'gui';
+  };
+  /** Features of the runtime and whether this version has them; unavailable ones are shown disabled with the reason. */
+  features: { key: string; label: string; available: boolean; issue?: number; reason?: string }[];
+  perf: {
+    /** Where each perf figure comes from: the settings, or the generated file. None is measured in a browser. */
+    sources: Record<keyof PerfReport, 'settings' | 'file'>;
+    /** What no part of the GUI or API measures. */
+    notMeasured: string[];
+  };
+}
+
 export interface ProjectInfo {
   /** "mock": data from the files below and captured CLI output; nothing is generated or written. */
   mode: 'mock' | 'live';
   toolVersion: string;
+  capabilities: Capabilities;
   /** Why the GUI is not in the mode it asked for (e.g. the runtime could not be loaded). */
   notice?: string;
   cards: CardSummary[];

@@ -12,12 +12,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import { API_VERSION, FEATURES, PERF_SOURCES } from '../src/api/capabilities.ts';
 import { toConfigCard } from '../src/api/fields.ts';
-import type { BuildCardResult, CardConfig, CardSettings, CliError, ProjectConfig } from '../src/api/types.ts';
+import type { BuildCardResult, Capabilities, CardConfig, CardSettings, CliError, ProjectConfig } from '../src/api/types.ts';
 
 type Next = (err?: unknown) => void;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Runtime = { generate: any; project: any; errors: any; perf: any; version: any };
+type Runtime = { generate: any; project: any; errors: any; perf: any; version: any; css: any; machine: any };
 
 const MAX_BODY = 64 * 1024;
 const MAX_PREVIEWS = 24;
@@ -34,8 +35,8 @@ export function createRuntimeApi({ root }: ApiOptions) {
   // the runtime is loaded on first use, from the repository itself (not bundled into the config)
   const load = () => (runtime ??= (async () => {
     const at = (p: string) => import(/* @vite-ignore */ pathToFileURL(path.join(root, 'src', p)).href);
-    const [generate, project, errors, perf, version] = await Promise.all([at('generate.js'), at('project.js'), at('errors.js'), at('perf.js'), at('version.js')]);
-    return { generate, project, errors, perf, version };
+    const [generate, project, errors, perf, version, css, machine] = await Promise.all([at('generate.js'), at('project.js'), at('errors.js'), at('perf.js'), at('version.js'), at('compiler/css.js'), at('runtime/machine.js')]);
+    return { generate, project, errors, perf, version, css, machine };
   })().catch((e) => { runtime = null; throw e; }));
 
   // Generation is CPU-bound; one at a time keeps the machine responsive and the order clear.
@@ -87,12 +88,39 @@ export function createRuntimeApi({ root }: ApiOptions) {
     return { rt, card, options: { ...card.options, title: s.title, init: s.init, altInits: s.altInits, steps: s.steps, stepMs: s.stepMs, hold: s.hold, loops: s.loops } };
   }
 
+  /**
+   * Ranges and defaults from the runtime's exported constants. stepMs, hold and the loop count are
+   * not exported: their bounds are the ones src/generate.js checks (16-10000, 0-1000, 1-1000).
+   */
+  function capabilities(rt: Runtime): Capabilities {
+    const state = rt.css.STORED_LIMIT as number;
+    const d = rt.generate.DEFAULTS;
+    return {
+      apiVersion: API_VERSION,
+      settings: {
+        limits: {
+          init: { min: -state, max: state },
+          steps: { min: 1, max: rt.machine.MAX_STEPS as number },
+          stepMs: { min: 16, max: 10000 },
+          hold: { min: 0, max: 1000 },
+          altInits: { min: -state, max: state, maxItems: rt.generate.MAX_ALT_INITS as number },
+          loops: { count: { min: 1, max: 1000 } },
+        },
+        defaults: { steps: d.steps, stepMs: d.stepMs, hold: d.hold, loops: d.loops, altInits: [...d.altInits] },
+        source: 'runtime',
+      },
+      features: FEATURES,
+      perf: PERF_SOURCES,
+    };
+  }
+
   async function project() {
     const rt = await load();
     const raw = readConfig();
     const cfg = rt.project.loadConfig(configPath);
     return {
       mode: 'live' as const,
+      capabilities: capabilities(rt),
       toolVersion: rt.version.TOOL_VERSION as string,
       cards: raw.cards.map((c) => {
         const out = outOf(c);
@@ -146,7 +174,7 @@ export function createRuntimeApi({ root }: ApiOptions) {
       const raw = JSON.parse(before) as ProjectConfig;
       const i = raw.cards.findIndex((c) => c.name === name);
       if (i < 0) throw coded('CONFIG_INVALID', `no card named "${name}"`);
-      raw.cards[i] = toConfigCard(raw.cards[i], s);
+      raw.cards[i] = toConfigCard(raw.cards[i], s, capabilities(rt).settings.defaults);
       const text = formatConfig(raw);
       if (text !== before) writeAtomic(configPath, text);
       try {
