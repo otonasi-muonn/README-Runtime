@@ -27,7 +27,7 @@ export const MAX_IR_NODES = 20000;
 function hint(ins) {
   const n = ins.name;
   if (n === 'loop') return 'loops are not supported inside the step function; README Runtime itself iterates step() once per frame, so write one step without a loop';
-  if (/load|store|memory\./.test(n)) return 'linear memory is not available; pass the state as an i32 argument and return the new state (and compile with -O2 so locals stay in registers)';
+  if (/load|store|memory\./.test(n)) return 'linear memory is not available; pass the state as i32 arguments and return the new state (several values: one step function per value, or in AssemblyScript exported globals; see "state" in README), and compile with -O2 so locals stay in registers';
   if (n.startsWith('i64') || n.includes('_i64') || n.endsWith('i64')) return 'only i32 arithmetic is supported; use 32-bit int types';
   if (n.startsWith('f32') || n.startsWith('f64') || /_f32|_f64/.test(n)) return 'floating point is not supported; use integer arithmetic';
   if (n === 'call_indirect') return 'indirect calls (function pointers) are not supported';
@@ -35,7 +35,17 @@ function hint(ins) {
   return 'this instruction has no CSS equivalent in README Runtime yet';
 }
 
-export function liftFunction(mod, funcIndex, { ir = new IR() } = {}) {
+// Name of a global for messages: its export name, if it has one.
+export function globalName(mod, index) {
+  const e = mod.exports.find((x) => x.kind === 'global' && x.index === index);
+  return e ? `"${e.name}"` : `#${index} (not exported)`;
+}
+
+// stateGlobals: Map(global index -> IR input index). Those mutable globals are the state of a
+// `step(): void` (or what a view reads): global.get reads the current symbolic value, and with
+// `writable` global.set replaces it. Their values are carried through blocks, branches and
+// inlined calls like locals, and `globals` returns them at the function's end (in input order).
+export function liftFunction(mod, funcIndex, { ir = new IR(), stateGlobals = null, writable = false } = {}) {
   const type = functionType(mod, funcIndex);
   for (const t of [...type.params, ...type.results]) {
     if (t !== 'i32') {
@@ -44,11 +54,13 @@ export function liftFunction(mod, funcIndex, { ir = new IR() } = {}) {
   }
   const inputs = type.params.map((_, i) => ir.input(i));
   const traps = [];
-  const results = liftCall(ir, mod, funcIndex, inputs, ir.const(1), traps, [], 0);
-  return { ir, inputs, results, traps };
+  const G = stateGlobals ? { slot: new Map([...stateGlobals.keys()].map((g, j) => [g, j])), writable } : null;
+  const globalsIn = stateGlobals ? [...stateGlobals.values()].map((i) => ir.input(i)) : [];
+  const { results, globals } = liftCall(ir, mod, funcIndex, inputs, ir.const(1), traps, [], 0, G, globalsIn);
+  return { ir, inputs, results, traps, globals };
 }
 
-function liftCall(ir, mod, funcIndex, args, entryGuard, traps, callStack, depth) {
+function liftCall(ir, mod, funcIndex, args, entryGuard, traps, callStack, depth, G = null, globalsIn = []) {
   const fname = functionName(mod, funcIndex);
   const f = mod.funcs[funcIndex];
   if (!f) throw new UnsupportedError(`call to unknown function index ${funcIndex}`);
@@ -69,9 +81,9 @@ function liftCall(ir, mod, funcIndex, args, entryGuard, traps, callStack, depth)
   }
   const stack = callStack.concat([funcIndex]);
 
-  const fail = (ins, msg) => {
+  const fail = (ins, msg, why = hint(ins)) => {
     const where = `${fname} at byte offset ${ins.offset}`;
-    throw new UnsupportedError(`${msg ?? `unsupported instruction '${ins.name}'`} in ${where}: ${hint(ins)}`, { instruction: ins.name, offset: ins.offset, function: fname });
+    throw new UnsupportedError(`${msg ?? `unsupported instruction '${ins.name}'`} in ${where}: ${why}`, { instruction: ins.name, offset: ins.offset, function: fname });
   };
 
   const blockArity = (ins) => {
@@ -99,7 +111,7 @@ function liftCall(ir, mod, funcIndex, args, entryGuard, traps, callStack, depth)
   };
 
   const check = () => {
-    if (ir.nodes.length > MAX_IR_NODES) throw new UnsupportedError(`${fname} is too large to translate (more than ${MAX_IR_NODES} expression nodes)`);
+    if (ir.nodes.length > MAX_IR_NODES) throw new UnsupportedError(`${fname} is too large to translate: the step, halt and view functions together need more than ${MAX_IR_NODES} expression nodes`);
   };
 
   const exitTo = (ins, label, st) => {
@@ -107,7 +119,7 @@ function liftCall(ir, mod, funcIndex, args, entryGuard, traps, callStack, depth)
     if (!frame) fail(ins, `branch to invalid label ${label}`);
     if (frame.kind === 'loop') fail({ ...ins, name: 'loop' }, 'branch back to a loop header');
     if (st.stack.length < frame.arity) fail(ins, 'stack underflow at branch');
-    frame.exits.push({ guard: st.guard, locals: st.locals.slice(), values: st.stack.slice(st.stack.length - frame.arity) });
+    frame.exits.push({ guard: st.guard, locals: st.locals.slice(), globals: st.globals.slice(), values: st.stack.slice(st.stack.length - frame.arity) });
   };
 
   const mergeValues = (entries, pick) => {
@@ -126,17 +138,18 @@ function liftCall(ir, mod, funcIndex, args, entryGuard, traps, callStack, depth)
       if (ft.stack.length !== frame.height + frame.arity) {
         throw new UnsupportedError(`stack height mismatch at block end in ${fname}`);
       }
-      entries.push({ guard: ft.guard, locals: ft.locals, values: ft.stack.slice(ft.stack.length - frame.arity) });
+      entries.push({ guard: ft.guard, locals: ft.locals, globals: ft.globals, values: ft.stack.slice(ft.stack.length - frame.arity) });
     }
     entries.push(...frame.exits);
     if (!entries.length) return null;
     const locals = entries[0].locals.map((_, j) => mergeValues(entries, (e) => e.locals[j]));
+    const globals = entries[0].globals.map((_, j) => mergeValues(entries, (e) => e.globals[j]));
     const values = [];
     for (let j = 0; j < frame.arity; j++) values.push(mergeValues(entries, (e) => e.values[j]));
     let guard = entries[0].guard;
     for (let i = 1; i < entries.length; i++) guard = ir.op('lor', guard, entries[i].guard);
     check();
-    return { guard, locals, stack: baseStack.concat(values) };
+    return { guard, locals, globals, stack: baseStack.concat(values) };
   };
 
   const run = (pc, st) => {
@@ -186,12 +199,23 @@ function liftCall(ir, mod, funcIndex, args, entryGuard, traps, callStack, depth)
           pc++; break;
         }
         case 0x23: {
+          if (G?.slot.has(ins.global)) { push(st.globals[G.slot.get(ins.global)]); pc++; break; }
           const g = mod.globals[ins.global];
           if (!g) fail(ins, `invalid global index ${ins.global}`);
           if (g.imported) fail(ins, 'reads an imported global');
-          if (g.mutable) fail(ins, 'reads a mutable global (for example the C stack pointer: compile with -O2 and avoid arrays/addresses)');
+          if (g.mutable && G) fail(ins, `reads global ${globalName(mod, ins.global)}`, 'it is not part of the state: export it and list it in "init" (the state is exactly the globals named there)');
+          if (g.mutable) fail(ins, 'reads a mutable global (for example the C stack pointer: compile with -O2, avoid arrays/addresses, and mark a helper that returns a struct `static inline __attribute__((always_inline))`, in Rust `#[inline(always)]`)');
           if (g.type !== 'i32' || g.init.kind !== 'i32') fail(ins, `reads a non-i32 global`);
           push(ir.const(g.init.value)); pc++; break;
+        }
+        case 0x24: {
+          if (G?.slot.has(ins.global)) {
+            if (!G.writable) fail(ins, `writes the state global ${globalName(mod, ins.global)}`, 'view functions and halt predicates must be pure: only step() may change the state');
+            st.globals[G.slot.get(ins.global)] = pop(); pc++; break;
+          }
+          if (G?.writable) fail(ins, `writes global ${globalName(mod, ins.global)}`, 'it is not part of the state: export it and list it in "init" (the state is exactly the globals named there)');
+          fail(ins);
+          break;
         }
         case 0x1a: pop(); pc++; break; // drop
         case 0x1b: case 0x1c: { // select
@@ -204,7 +228,7 @@ function liftCall(ir, mod, funcIndex, args, entryGuard, traps, callStack, depth)
           const frame = { kind: 'block', arity, exits: [], height: st.stack.length };
           frames.push(frame);
           const base = st.stack.slice();
-          const r = run(pc + 1, { guard: st.guard, locals: st.locals.slice(), stack: st.stack.slice() });
+          const r = run(pc + 1, { guard: st.guard, locals: st.locals.slice(), globals: st.globals.slice(), stack: st.stack.slice() });
           frames.pop();
           if (body[r.pc].op !== 0x0b) fail(body[r.pc], "unexpected 'else' in block");
           st = join(frame, [r.st], base);
@@ -219,14 +243,14 @@ function liftCall(ir, mod, funcIndex, args, entryGuard, traps, callStack, depth)
           frames.push(frame);
           const thenGuard = ir.and(st.guard, cond);
           const elseGuard = ir.and(st.guard, ir.not(cond));
-          const r1 = run(pc + 1, { guard: thenGuard, locals: st.locals.slice(), stack: st.stack.slice() });
+          const r1 = run(pc + 1, { guard: thenGuard, locals: st.locals.slice(), globals: st.globals.slice(), stack: st.stack.slice() });
           let elseState, endPc;
           if (body[r1.pc].op === 0x05) {
-            const r2 = run(r1.pc + 1, { guard: elseGuard, locals: st.locals.slice(), stack: st.stack.slice() });
+            const r2 = run(r1.pc + 1, { guard: elseGuard, locals: st.locals.slice(), globals: st.globals.slice(), stack: st.stack.slice() });
             elseState = r2.st; endPc = r2.pc;
           } else {
             if (arity) fail(ins, "'if' with a result but no 'else'");
-            elseState = { guard: elseGuard, locals: st.locals.slice(), stack: st.stack.slice() };
+            elseState = { guard: elseGuard, locals: st.locals.slice(), globals: st.globals.slice(), stack: st.stack.slice() };
             endPc = r1.pc;
           }
           frames.pop();
@@ -237,8 +261,8 @@ function liftCall(ir, mod, funcIndex, args, entryGuard, traps, callStack, depth)
         case 0x0c: exitTo(ins, ins.label, st); st = null; pc++; break; // br
         case 0x0d: { // br_if
           const c = ir.bool(pop());
-          exitTo(ins, ins.label, { guard: ir.and(st.guard, c), locals: st.locals, stack: st.stack });
-          st = { guard: ir.and(st.guard, ir.not(c)), locals: st.locals, stack: st.stack };
+          exitTo(ins, ins.label, { guard: ir.and(st.guard, c), locals: st.locals, globals: st.globals, stack: st.stack });
+          st = { guard: ir.and(st.guard, ir.not(c)), locals: st.locals, globals: st.globals, stack: st.stack };
           pc++; check(); break;
         }
         case 0x0e: { // br_table
@@ -246,10 +270,10 @@ function liftCall(ir, mod, funcIndex, args, entryGuard, traps, callStack, depth)
           let rest = st.guard;
           ins.labels.forEach((label, j) => {
             const hit = ir.op('eq', idx, ir.const(j));
-            exitTo(ins, label, { guard: ir.and(rest, hit), locals: st.locals, stack: st.stack });
+            exitTo(ins, label, { guard: ir.and(rest, hit), locals: st.locals, globals: st.globals, stack: st.stack });
             rest = ir.and(rest, ir.not(hit));
           });
-          exitTo(ins, ins.defaultLabel, { guard: rest, locals: st.locals, stack: st.stack });
+          exitTo(ins, ins.defaultLabel, { guard: rest, locals: st.locals, globals: st.globals, stack: st.stack });
           st = null; pc++; check(); break;
         }
         case 0x0f: exitTo(ins, frames.length - 1, st); st = null; pc++; break; // return
@@ -259,8 +283,9 @@ function liftCall(ir, mod, funcIndex, args, entryGuard, traps, callStack, depth)
           if (!ct) fail(ins, `call to invalid function ${ins.func}`);
           const cargs = [];
           for (let i = 0; i < ct.params.length; i++) cargs.unshift(pop());
-          const res = liftCall(ir, mod, ins.func, cargs, st.guard, traps, stack, depth + 1);
-          for (const r of res) push(r);
+          const res = liftCall(ir, mod, ins.func, cargs, st.guard, traps, stack, depth + 1, G, st.globals);
+          st.globals = res.globals;
+          for (const r of res.results) push(r);
           pc++; break;
         }
         default: fail(ins);
@@ -268,12 +293,12 @@ function liftCall(ir, mod, funcIndex, args, entryGuard, traps, callStack, depth)
     }
   };
 
-  const final = run(0, { guard: entryGuard, locals, stack: [] });
+  const final = run(0, { guard: entryGuard, locals, globals: globalsIn.slice(), stack: [] });
   if (body[final.pc].op !== 0x0b || final.pc !== body.length - 1) throw new UnsupportedError(`malformed function body in ${fname}`);
   const out = join(frames[0], [final.st], []);
   if (!out) {
-    // Every path traps: the function can never return.
-    return type.results.map(() => ir.const(0));
+    // Every path traps: the function can never return (the values only need to be well formed).
+    return { results: type.results.map(() => ir.const(0)), globals: globalsIn };
   }
-  return out.stack;
+  return { results: out.stack, globals: out.globals };
 }

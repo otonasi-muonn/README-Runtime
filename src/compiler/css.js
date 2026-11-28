@@ -445,9 +445,10 @@ export function translate(roots, inputAst, { tempPrefix = 'rr-t', inputRange = n
     if (!temp.has(n.id)) continue;
     defs.push({ name: temp.get(n.id), ast: resolveNode(n), node: n });
   }
-  // Roots that are leaves (const/input) still need a definition.
+  // Roots that are leaves (const/input) still need a definition; a root whose node another
+  // root already defines (two values of a state with the same next value) reads that one.
   for (const r of roots) {
-    if (!defs.some((d) => d.name === r.name)) defs.push({ name: r.name, ast: resolveNode(r.node), node: r.node });
+    if (!defs.some((d) => d.name === r.name)) defs.push({ name: r.name, ast: temp.has(r.node.id) ? V(temp.get(r.node.id)) : resolveNode(r.node), node: r.node });
   }
   const temps = defs.filter((d) => !roots.some((r) => r.name === d.name)).map((d) => d.name);
 
