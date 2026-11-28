@@ -26,7 +26,7 @@ import url from 'node:url';
 import { chromium, firefox, webkit } from 'playwright';
 import { generate } from '../../src/generate.js';
 import { referenceTrace } from '../../src/runtime/reference.js';
-import { simulateMachine, stateAt, rootStyle, altInitId, buildMachine } from '../../src/runtime/machine.js';
+import { simulateMachine, stateAt, flagAt, rootStyle, altInitId, buildMachine } from '../../src/runtime/machine.js';
 import { compileStep } from '../../src/compiler/program.js';
 import { verifyRun } from '../../src/verify.js';
 import { renderCard } from '../../src/render/card.js';
@@ -47,21 +47,21 @@ const STEPS = 120;
 // What the card must show at clock t for initial value `init` (an array for a named state: the
 // card shows its first value).
 async function expectation(p, gen, init, t) {
-  const tr = await referenceTrace(p.wasm, { program: gen.program, haltExport: p.haltExport ?? null, haltValue: p.haltValue ?? null, init, steps: STEPS });
+  const cardSteps = gen.machine.steps;
+  const tr = await referenceTrace(p.wasm, { program: gen.program, haltExport: p.haltExport ?? null, haltValue: p.haltValue ?? null, init, steps: cardSteps });
   const m = gen.machine;
   const sims = Object.fromEntries(Object.entries(MODELS).map(([k, model]) => [k, simulateMachine(m, { model, init }).levels]));
   const lv = sims.exact;
-  const par = (k) => (k === 0 ? 'b' : k % 2 ? 'a' : 'b');
   // first level where the CSS raises its error flag (range guard or trap)
-  let flagAt = null;
-  for (let k = 0; k <= STEPS; k++) {
-    if (lv[k].get(`re${par(k)}`) === 1) { flagAt = k; break; }
+  let flagAtStep = null;
+  for (let k = 0; k <= cardSteps; k++) {
+    if (flagAt(m, lv, k, 'e') === 1) { flagAtStep = k; break; }
   }
   const haltAt = tr.end.kind === 'halt' ? tr.end.at : null;
   const trapAt = tr.end.kind === 'trap' ? tr.end.at : null;
-  const candidates = [STEPS, haltAt, trapAt, flagAt].filter((x) => x !== null);
+  const candidates = [cardSteps, haltAt, trapAt, flagAtStep].filter((x) => x !== null);
   const endAt = Math.min(...candidates);
-  const kind = flagAt === endAt ? 'error' : haltAt === endAt ? 'halt' : 'end';
+  const kind = flagAtStep === endAt ? 'error' : haltAt === endAt ? 'halt' : 'end';
   // Soundness at the model level: before the flag, every model equals Wasm exactly.
   const lastGood = kind === 'error' ? endAt - 1 : endAt;
   for (const [name, levels] of Object.entries(sims)) {
@@ -78,12 +78,14 @@ async function expectation(p, gen, init, t) {
 // top cell marks the column instead of showing a truncated number.
 const shownAs = (v, bits) => (v >= 2 ** bits || v < -(2 ** bits) ? `overflow:${((v % 2 ** bits) + 2 ** bits) % 2 ** bits}` : v);
 
-function compare(dec, e, bits = 20) {
+function compare(dec, e, bits = 20, stride = 1) {
   const problems = [];
   if (dec.broken) return [`image did not render (screenshot ${dec.size.join('x')})`];
   const errorShown = e.kind === 'error' && e.shown === e.endAt;
-  for (let k = 0; k <= e.lastGood; k++) if (dec.cols[k] !== shownAs(e.values[k], bits)) problems.push(`col ${k}: ${dec.cols[k]} != ${shownAs(e.values[k], bits)}`);
-  for (let k = e.lastGood + 1; k < dec.cols.length; k++) if (dec.cols[k] !== null) problems.push(`col ${k}: ${dec.cols[k]} should be empty`);
+  if (stride === 1) {
+    for (let k = 0; k <= e.lastGood; k++) if (dec.cols[k] !== shownAs(e.values[k], bits)) problems.push(`col ${k}: ${dec.cols[k]} != ${shownAs(e.values[k], bits)}`);
+    for (let k = e.lastGood + 1; k < dec.cols.length; k++) if (dec.cols[k] !== null) problems.push(`col ${k}: ${dec.cols[k]} should be empty`);
+  }
   const want = errorShown ? 'error' : e.shown < e.endAt ? 'running' : e.kind === 'halt' ? 'halted' : 'end';
   if (dec.status !== want) problems.push(`status ${dec.status}, expected ${want}`);
   if (!errorShown && dec.led !== e.values[e.shown]) problems.push(`register ${dec.led} != ${e.values[e.shown]}`);
@@ -132,6 +134,17 @@ for (const name of programNames) {
     for (const [x, t, fragment] of [[97, alt.machine.T, 'x97'], [871, 99, 'x871'], [27, alt.machine.T, 'x5']]) {
       cards.set(`${name}--frag-${fragment}-t${t}`, { svg: pin(alt.svg, t), p, gen: alt, init: x, t, fragment });
     }
+    // multi-step unrolling + 2D factored selection beyond 400 steps: mid-block halt and mid-block range stop
+    const col600 = await generate(p.wasm, { export: p.export, init: 27, steps: 600, haltValue: 1, title: name, wasmName: `${name}.wasm` });
+    const col600Attr = `style="${rootStyle(col600.machine)}"`;
+    cards.set('collatz--n600-halt', { svg: pin(col600.svg, col600.machine.T), p, gen: col600, init: 27, t: col600.machine.T });
+    cards.set('collatz--n600-range', { svg: pin(col600.svg.replace(col600Attr, 'style="--rxb:77671"'), col600.machine.T), p, gen: col600, init: 77671, t: col600.machine.T });
+  }
+  if (name === 'lfsr-rust') {
+    // 1600 steps (stride 5, 320 levels) and 1003 steps (stride 4, tail block .T) checked at intermediate and final steps
+    const lfsr1600 = await generate(p.wasm, { export: p.export, init: 1, steps: 1600, bits: 16, title: name, wasmName: `${name}.wasm` });
+    cards.set('lfsr-rust--n1600-end', { svg: pin(lfsr1600.svg, lfsr1600.machine.T), p, gen: lfsr1600, init: 1, t: lfsr1600.machine.T });
+    cards.set('lfsr-rust--n1600-t1003', { svg: pin(lfsr1600.svg, 1003), p, gen: lfsr1600, init: 1, t: 1003 });
   }
 }
 
@@ -201,8 +214,8 @@ for (const b of browsers) {
         if (scheme === 'light' && !['collatz--gen', 'collatz--x97', 'collatz--x97-t40', 'lfsr-rust--gen', 'sext20--x600000'].includes(name)) continue;
         const shot = await shoot(page, name);
         const e = await expectation(c.p, c.gen, c.init, c.t);
-        const dec = decodeCard(shot, { steps: STEPS, bits: c.p.bits ?? 20 });
-        const problems = compare(dec, e, c.p.bits ?? 20);
+        const dec = decodeCard(shot, { steps: c.gen.machine.steps, bits: c.p.bits ?? 20 });
+        const problems = compare(dec, e, c.p.bits ?? 20, c.gen.machine.stride);
         if (problems.length) fs.writeFileSync(path.join(outDir, `${b}-${scheme}-${name}.png`), shot);
         const summary = `x0=${c.init} t=${c.t} -> ${e.kind}@${e.endAt} shows ${dec.status}${e.kind === 'error' ? '' : ` ${dec.led}`}`;
         record(b, `${name} [${scheme}]`, !problems.length, problems.length ? `${summary} :: ${problems.slice(0, 3).join('; ')}` : summary);

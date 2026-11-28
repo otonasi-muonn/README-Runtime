@@ -1,7 +1,7 @@
 {
   "version": 1,
   "tool": "0.1.0",
-  "generator": "7cb70637b36b6799b3900845db5c92245578a998897b854f98075c7af874c9c3",
+  "generator": "76767ba41b82fbfe27acef6e0233451a9472c73ff54fc7a7d55c5ac68003274d",
   "cards": {
     "mockcraft-state": {
       "inputs": "555553d33a60a2da35c75bf37d75c21b762f5c294be7ec2342719cc1ddb147ea",
@@ -18,7 +18,7 @@
         "upstream/src/lib/icons.tsx": "288d28df6b9683782cad221a2c1499dda7dbe8c42aac8a7e225cfc39259219a9",
         "upstream/src/lib/templates.ts": "cced791479232b822d801fa922894a9dca39c2d08693653507f23b96b5f773f4"
       },
-      "render": "31cb496d3f2ff1364155e3e81ccd4e708a463bd8e13e4f0e3e62a14ccf768afc"
+      "render": "07ec6b94efa1cbe1c752ff87394fa1fa812a0c0fd6944ac9e9980d47b01613c4"
     }
   }
 }

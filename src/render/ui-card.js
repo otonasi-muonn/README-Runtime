@@ -1,6 +1,6 @@
 // SVG card whose body is the project's own UI (static markup + CSS bindings), driven by
 // the CSS machine. The machine is the same as for trace cards; only the display differs.
-import { altInitAnchors, altInitCss, altInitId, clockAnimation, declarations, levelStyle, rootStyle } from '../runtime/machine.js';
+import { altInitAnchors, altInitCss, altInitId, clockAnimation, declarations, levelClass, levelStyle, rootStyle } from '../runtime/machine.js';
 import { fitText, textWidth } from './text.js';
 import { toCss, V, absV } from '../compiler/css.js';
 
@@ -33,6 +33,7 @@ export function renderUiCard(machine, meta, ui) {
   css += `@keyframes rrclk{from{--rt:0}to{--rt:${machine.T}}}\n`;
   css += `@media (prefers-reduced-motion:reduce){.C{animation:none;--rt:${machine.T}}.rr-ui *,.rr-ui *::before,.rr-ui *::after{animation:none!important;transition:none!important}}\n`;
   css += `.A{\n${declarations(machine.level.A, ' ')}\n}\n.B{\n${declarations(machine.level.B, ' ')}\n}\n`;
+  if (machine.level.T) css += `.T{\n${declarations(machine.level.T, ' ')}\n}\n`;
   // display: view values for the shown state, the step counter, the health of the run
   css += `.D{\n${declarations([...machine.select, ...machine.display], ' ')}\n --rok: calc(1 - min(1, max(round(down, ${F} / 2), var(--rvf))));\n}\n`;
   css += `${ui.bindingCss}`;
@@ -50,7 +51,8 @@ svg{--rr-bg:#0d1117;--rr-line:#30363d;--rr-fg:#e6edf3;--rr-mut:#7d8590;--rr-acc:
 .st-halt{opacity:calc(mod(${F}, 2) * var(--rok))}
 .st-err{opacity:calc(1 - var(--rok))}
 `;
-  for (let d = 0; d < 3; d++) {
+  const stepDigits = steps >= 1000 ? String(steps).length : 3;
+  for (let d = 0; d < stepDigits; d++) {
     css += `.s${d} use{transform:translateY(calc(mod(round(down, var(--rsx) / ${10 ** d}), 10) * -18px))}\n`;
     if (d) css += `.s${d}{opacity:clamp(0, var(--rsx) - ${10 ** d - 1}, 1)}\n`;
   }
@@ -66,9 +68,10 @@ svg{--rr-bg:#0d1117;--rr-line:#30363d;--rr-fg:#e6edf3;--rr-mut:#7d8590;--rr-acc:
   disp += `<div class="rr-ui" style="position:relative;width:${ui.width}px;height:${ui.height}px">${ui.markup}</div></div>`;
   disp += '</foreignObject>';
   disp += `<text x="24" y="${sy + 14}" class="rr-l">STEP</text>`;
-  for (let d = 0; d < 3; d++) disp += `<g class="rr-sd s${d}" transform="translate(${64 + (2 - d) * 9} ${sy})" clip-path="url(#rrcs)"><use href="#rrds"/></g>`;
-  disp += `<text x="96" y="${sy + 14}" class="rr-m" font-size="13">/ ${steps}</text>`;
-  const stx = 150;
+  for (let d = 0; d < stepDigits; d++) disp += `<g class="rr-sd s${d}" transform="translate(${64 + (stepDigits - 1 - d) * 9} ${sy})" clip-path="url(#rrcs)"><use href="#rrds"/></g>`;
+  const slashX = stepDigits > 3 ? 64 + stepDigits * 9 + 5 : 96;
+  disp += `<text x="${slashX}" y="${sy + 14}" class="rr-m" font-size="13">/ ${steps}</text>`;
+  const stx = stepDigits > 3 ? 168 : 150;
   const dot = (cls, color, label, pulse) => `<g class="${cls}">${pulse ? `<circle class="rr-pulse" cx="${stx}" cy="${sy + 9}" r="7" style="fill:${color};fill-opacity:.35"/>` : ''}<circle cx="${stx}" cy="${sy + 9}" r="4" style="fill:${color}"/><text x="${stx + 10}" y="${sy + 14}" class="rr-l" style="fill:${color}">${label}</text></g>`;
   disp += dot('st-run', 'var(--rr-acc)', 'RUNNING', true) + dot('st-end', 'var(--rr-mut)', 'END') + dot('st-halt', 'var(--rr-blue)', 'HALTED') + dot('st-err', 'var(--rr-red)', 'OUT OF RANGE');
   const room = Math.floor((W - 24 - 270) / 6.7);
@@ -92,13 +95,14 @@ svg{--rr-bg:#0d1117;--rr-line:#30363d;--rr-fg:#e6edf3;--rr-mut:#7d8590;--rr-acc:
 
   let levels = `${altInitAnchors(meta.altInits)}<g class="R" style="${rootStyle(machine)}">`;
   let close = '</g>';
-  for (let k = 1; k <= steps; k++) { levels += `<g class="${k % 2 === 1 ? 'A' : 'B'}" style="${levelStyle(k, machine)}">`; close += '</g>'; }
+  for (let b = 1; b <= machine.blocks; b++) { levels += `<g class="${levelClass(b, machine)}" style="${levelStyle(b, machine)}">`; close += '</g>'; }
   levels += disp + close;
 
+  const stepNote = machine.stride > 1 ? `${machine.stride} steps per nested g element (${steps} steps across ${machine.blocks} levels)` : 'one step per nested g element';
   const header = `<!-- README Runtime ${meta.toolVersion} - generated card, wasm sha256:${meta.wasmSha256.slice(0, 16)}.
      The UI below is the project's own component markup (rendered once, statically) whose
      view-dependent parts are CSS bindings. The view values are computed by CSS from the live
-     state, which the rules .A and .B advance one step per nested g element. The only input is
+     state, which the rules .A and .B advance ${stepNote}. The only input is
      the custom property ${machine.initProps.join(', ')} in the style attribute of g.R.${meta.altInits?.length ? ` The URL fragments ${meta.altInits.map((x) => `#${altInitId(x)}`).join(' ')}
      start the same run from those values instead.` : ''} Regenerate with: readme-runtime build -->`;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="rrt rrd">

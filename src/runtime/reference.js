@@ -46,8 +46,8 @@ export function stateAbi(ex, { abi = 'single', stateNames = null, exportName = '
 // x0, step(x0), step(step(x0)), ... until `steps`, a halt, a trap, or a value outside the
 // CSS-exact range. `states` holds each state as an array of its values; `values` is the same
 // trace for the original ABI (one plain signed i32 per step), or `states` for a named state.
-// `init`: a number (original ABI) or an array of the state values in order.
-// `program`: { abi, stateNames, exportName } from compileStep (default: step(i32) -> i32).
+// `cycle` is `{ start, period }` when the run (or one lookahead step at `steps`) revisits an
+// earlier valid state `states[start]`, or `null` otherwise.
 export async function referenceTrace(wasmBytes, { exportName = 'step', haltExport = null, haltValue = null, init, steps, rangeLimit, program = null }) {
   const ex = await instantiate(wasmBytes);
   const abi = stateAbi(ex, program ?? { exportName });
@@ -55,10 +55,13 @@ export async function referenceTrace(wasmBytes, { exportName = 'step', haltExpor
   const x0 = (Array.isArray(init) ? init : [init]).map((v) => v | 0);
   const states = [x0];
   let end = { kind: 'steps', at: steps };
+  let cycle = null;
+  const firstSeen = new Map();
   const outOfRange = (x) => rangeLimit !== undefined && x.some((v) => Math.abs(v) > rangeLimit);
   if (outOfRange(x0)) end = { kind: 'range', at: 0 };
   else if (isHalt(x0)) end = { kind: 'halt', at: 0 };
   else {
+    firstSeen.set(x0.join(','), 0);
     for (let k = 1; k <= steps; k++) {
       let x;
       try {
@@ -69,9 +72,30 @@ export async function referenceTrace(wasmBytes, { exportName = 'step', haltExpor
       }
       states.push(x);
       if (outOfRange(x)) { end = { kind: 'range', at: k }; break; }
+      const key = x.join(',');
+      if (cycle === null) {
+        if (firstSeen.has(key)) cycle = { start: firstSeen.get(key), period: k - firstSeen.get(key) };
+        else firstSeen.set(key, k);
+      }
       if (isHalt(x)) { end = { kind: 'halt', at: k }; break; }
+    }
+    // Look ahead one step when the run did not stop early: a card configured with steps = P - 1
+    // and hold = 0 wraps seamlessly from states[steps] back to states[0] on an infinite clock.
+    if (end.kind === 'steps' && cycle === null) {
+      try {
+        const next = abi.step(states[steps]);
+        if (!outOfRange(next)) {
+          const key = next.join(',');
+          if (firstSeen.has(key)) {
+            const start = firstSeen.get(key);
+            cycle = { start, period: steps + 1 - start };
+          }
+        }
+      } catch (e) {
+        if (!(e instanceof WebAssembly.RuntimeError)) throw e;
+      }
     }
   }
   const named = program?.stateNames != null;
-  return { values: named ? states : states.map((x) => x[0]), states, end };
+  return { values: named ? states : states.map((x) => x[0]), states, end, cycle };
 }

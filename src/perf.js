@@ -32,6 +32,8 @@ export function perfReport(o, svg) {
   const containerRules = (svg.match(/@container/g) ?? []).length;
   const selectionTerms = (svg.match(/var\(--rS\d/g) ?? []).length;
   const selectedValues = Math.round(selectionTerms / (o.steps + 1));
+  const levels = (svg.match(/<g class="[ABT]"/g) ?? []).length;
+  const stepsPerLevel = levels ? Math.ceil(o.steps / levels) : 1;
   const loopSeconds = loopMs(o) / 1000;
   const loops = resolveLoops(o);
   const report = {
@@ -40,7 +42,7 @@ export function perfReport(o, svg) {
     // how long the card keeps updating while visible; null: as long as it is shown
     loops,
     activeSeconds: loops === 'infinite' ? null : Number((loopSeconds * loops).toFixed(1)),
-    steps: o.steps, displayElements, containerRules, selectedValues, selectionTerms,
+    steps: o.steps, levels, stepsPerLevel, displayElements, containerRules, selectedValues, selectionTerms,
     bytes: Buffer.byteLength(svg), gzipBytes: zlib.gzipSync(svg, { level: 9 }).length,
   };
   const warnings = [];

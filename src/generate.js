@@ -81,7 +81,7 @@ export function altInitEmbeds(o) {
 export async function generate(wasmBytes, opts) {
   const o = { ...DEFAULTS, ...opts };
   const st = stateOptions(o);
-  if (!isInt(o.steps, 1, MAX_STEPS)) throw new OptionError(`"steps" must be an integer between 1 and ${MAX_STEPS} (WebKit stops resolving styles beyond ~510 nested elements)`);
+  if (!isInt(o.steps, 1, MAX_STEPS)) throw new OptionError(`"steps" must be an integer between 1 and ${MAX_STEPS} (each step is unrolled in CSS and evaluated on first render)`);
   if (!isInt(o.stepMs, 16, 10000)) throw new OptionError('"stepMs" must be an integer between 16 and 10000');
   if (!isInt(o.hold, 0, 1000)) throw new OptionError('"hold" must be an integer between 0 and 1000');
   if (o.loops !== 'auto' && o.loops !== 'infinite' && !isInt(o.loops, 1, 1000)) throw new OptionError('"loops" must be "auto" (play for about a minute), "infinite" or an integer between 1 and 1000: how many times the run plays before the card stays on its last step');
@@ -111,7 +111,7 @@ export async function generate(wasmBytes, opts) {
   const machine = buildMachine(program, { init: st.init, steps: o.steps, hold: o.hold, haltValue: o.haltValue ?? null });
   // Browsers silently drop calc() trees nested too deeply; the translation splits
   // expressions, and this makes sure nothing slipped through.
-  for (const d of [...machine.root, ...machine.level.A, ...machine.level.B, ...machine.select, ...machine.display]) {
+  for (const d of [...machine.root, ...machine.level.A, ...machine.level.B, ...(machine.level.T ?? []), ...machine.select, ...machine.display]) {
     const depth = textDepth(toCss(d.ast));
     if (depth > MAX_DECL_DEPTH) throw new Error(`internal: --${d.name} is nested ${depth} levels deep (limit ${MAX_DECL_DEPTH})`);
   }
@@ -167,5 +167,23 @@ export async function generate(wasmBytes, opts) {
       ? `${o.export}() reads and writes the exported globals ${args}; views and halt read them (or take (${args}))`
       : `${st.names.map((n, i) => `${n} = ${steps[i] ?? steps[0]}(${args})`).join('; ')}, all from the state before the step; views and halt are called as f(${args})`,
   };
-  return { svg, verification, machine, program, state, ui: ui?.info ?? null, uiInputs: ui?.inputs ?? [], perf: perfReport(o, svg) };
+  // How the unrolled CSS machine executes and plays this trajectory:
+  //   - "periodic": loops === "infinite", hold === 0, and step(x_steps) === x_0 (wrapping to t=0
+  //     continues x_t = step^t(init) seamlessly without reset for this init)
+  //   - "halt": reaches a terminal halt state within `steps`
+  //   - "finite-replay": replays the finite 0..endAt window from `init`
+  //   - "finite": plays 0..endAt once and rests on the final state
+  const loops = meta.loops;
+  const end = verification.trace.end;
+  const cycle = verification.trace.cycle ?? null;
+  const seamlessCycle = end.kind === 'steps' && cycle?.start === 0 && (o.steps + 1) % cycle.period === 0 && o.hold === 0 && loops === 'infinite';
+  const execution = {
+    mode: seamlessCycle ? 'periodic' : end.kind === 'halt' ? 'halt' : (loops === 'infinite' || loops > 1) ? 'finite-replay' : 'finite',
+    steps: o.steps,
+    levels: machine.blocks,
+    stepsPerLevel: machine.stride,
+    selection: machine.selectionMode,
+    cycle,
+  };
+  return { svg, verification, machine, program, state, execution, ui: ui?.info ?? null, uiInputs: ui?.inputs ?? [], perf: perfReport(o, svg) };
 }

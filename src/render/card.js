@@ -2,7 +2,7 @@
 // Everything that depends on the program's values is driven by CSS custom properties that
 // the browser computes at view time; the markup only holds layout.
 import { N, V, toCss, signBit, absV, STORED_LIMIT } from '../compiler/css.js';
-import { altInitAnchors, altInitCss, altInitId, clockAnimation, declarations, levelStyle, rootStyle } from '../runtime/machine.js';
+import { altInitAnchors, altInitCss, altInitId, clockAnimation, declarations, levelClass, levelStyle, rootStyle } from '../runtime/machine.js';
 import { fitText, textWidth } from './text.js';
 
 export const TEMPLATE_VERSION = 1;
@@ -62,6 +62,7 @@ export function renderCard(machine, meta, opts = {}) {
   css += `@media (prefers-reduced-motion:reduce){.C{animation:none;--rt:${machine.T}}}\n`;
   css += `.A{\n${declarations(machine.level.A, ' ')}\n}\n`;
   css += `.B{\n${declarations(machine.level.B, ' ')}\n}\n`;
+  if (machine.level.T) css += `.T{\n${declarations(machine.level.T, ' ')}\n}\n`;
 
   // ---------------------------------------------------------------- theme
   css += `
@@ -74,8 +75,16 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
 .big text{font-size:44px;font-weight:600}.sm text{font-size:15px;font-weight:600}
 .live{fill:var(--acc)}
 `;
-  // trace columns
-  css += `.col{transform:translateX(calc(var(--rk) * ${r4(cw)}px))}\n`;
+  // trace columns: when stride === 1, each step k sits at k * cw (width cw); when stride > 1,
+  // root sits at 0 (width cw), full blocks cover [rk - stride + 1, rk + 1] * cw, and an optional
+  // tail block .T covers [rk - tailSteps + 1, rk + 1] * cw, partitioning [0, tr.w] with no overlap.
+  if (machine.stride === 1) {
+    css += `.col{transform:translateX(calc(var(--rk) * ${r4(cw)}px))}\n`;
+  } else {
+    css += `.R>.col{transform:translateX(0)}\n`;
+    css += `.A>.col,.B>.col{transform:translateX(calc((var(--rk) - ${machine.stride - 1}) * ${r4(cw)}px))}\n`;
+    if (machine.tailSteps > 0) css += `.T>.col{transform:translateX(calc((var(--rk) - ${machine.tailSteps - 1}) * ${r4(cw)}px))}\n`;
+  }
   for (let b = 0; b < bits; b++) {
     const hue = Math.round(150 - (b / Math.max(1, bits - 1)) * 150 + 360) % 360;
     css += `.j${b}{fill:hsl(${hue} 70% 55%);opacity:calc(${toCss(cellBit(b))} * var(--ra))}\n`;
@@ -97,7 +106,8 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
   css += `.num{opacity:calc(1 - min(1, round(down, var(--${out.f}) / 2)))}\n`;
   const ok = `(1 - min(1, round(down, var(--${out.f}) / 2)))`;
   for (let j = 0; j < 32; j++) css += `.L${j}{opacity:calc(.18 + .82 * ${toCss(cellBit(j, out.c))} * ${ok})}\n`;
-  for (let d = 0; d < 3; d++) {
+  const stepDigits = steps >= 1000 ? String(steps).length : 3;
+  for (let d = 0; d < stepDigits; d++) {
     css += `.s${d} use{transform:translateY(calc(${toCss(digitOf('rsx', d))} * -20px))}\n`;
     css += `.q${d} use{transform:translateY(calc(${toCss(digitOf(out.q, d))} * -20px))}\n`;
     if (d > 0) {
@@ -128,17 +138,36 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
   defs += `<clipPath id="cs"><rect width="11" height="20"/></clipPath>`;
   defs += digitStrip('db', L.digits.w, L.digits.h, 'big');
   defs += digitStrip('ds', 11, 20, 'sm');
-  let col = '<g id="col">';
-  for (let b = 0; b < bits; b++) {
-    const y = tr.y + (bits - b) * rh; // row 0 (top) is the sign row
-    col += `<rect class="j${b}" x="${tr.x}" y="${r4(y)}" width="${r4(Math.max(0.8, cw - (cw > 3 ? 1 : 0)))}" height="${r4(rh - 1)}"/>`;
+  const makeCol = (id, spanSteps) => {
+    const spanPx = r4(cw) * spanSteps;
+    const w = r4(Math.min(spanPx, Math.max(0.8, spanPx - (spanPx > 3 ? 1 : 0))));
+    let g = `<g id="${id}">`;
+    for (let b = 0; b < bits; b++) {
+      const y = tr.y + (bits - b) * rh; // row 0 (top) is the sign row
+      g += `<rect class="j${b}" x="${tr.x}" y="${r4(y)}" width="${w}" height="${r4(rh - 1)}"/>`;
+    }
+    g += `<rect class="js" x="${tr.x}" y="${tr.y}" width="${w}" height="${r4(rh - 1)}"/>`;
+    // a value the rows cannot show (only possible when bits < 20) is marked, never truncated silently
+    g += `<rect class="jo" x="${tr.x}" y="${tr.y}" width="${w}" height="${r4(rh - 1)}"/>`;
+    g += `<rect class="jm" x="${tr.x}" y="${tr.y + tr.h + 1}" width="${w}" height="3"/>`;
+    return `${g}</g>`;
+  };
+  if (machine.stride === 1) {
+    const colW = r4(Math.max(0.8, cw - (cw > 3 ? 1 : 0)));
+    let col = '<g id="col">';
+    for (let b = 0; b < bits; b++) {
+      const y = tr.y + (bits - b) * rh; // row 0 (top) is the sign row
+      col += `<rect class="j${b}" x="${tr.x}" y="${r4(y)}" width="${colW}" height="${r4(rh - 1)}"/>`;
+    }
+    col += `<rect class="js" x="${tr.x}" y="${tr.y}" width="${colW}" height="${r4(rh - 1)}"/>`;
+    // a value the rows cannot show (only possible when bits < 20) is marked, never truncated silently
+    col += `<rect class="jo" x="${tr.x}" y="${tr.y}" width="${colW}" height="${r4(rh - 1)}"/>`;
+    col += `<rect class="jm" x="${tr.x}" y="${tr.y + tr.h + 1}" width="${colW}" height="3"/>`;
+    col += '</g>';
+    defs += col;
+  } else {
+    defs += makeCol('col0', 1) + makeCol('col', machine.stride) + (machine.tailSteps > 0 ? makeCol('colt', machine.tailSteps) : '');
   }
-  col += `<rect class="js" x="${tr.x}" y="${tr.y}" width="${r4(Math.max(0.8, cw - (cw > 3 ? 1 : 0)))}" height="${r4(rh - 1)}"/>`;
-  // a value the rows cannot show (only possible when bits < 20) is marked, never truncated silently
-  col += `<rect class="jo" x="${tr.x}" y="${tr.y}" width="${r4(Math.max(0.8, cw - (cw > 3 ? 1 : 0)))}" height="${r4(rh - 1)}"/>`;
-  col += `<rect class="jm" x="${tr.x}" y="${tr.y + tr.h + 1}" width="${r4(Math.max(0.8, cw - (cw > 3 ? 1 : 0)))}" height="3"/>`;
-  col += '</g>';
-  defs += col;
   defs += `<clipPath id="tmc"><rect x="${tr.x}" y="${tr.y - 1}" width="${tr.w + 1}" height="${tr.h + 5}"/></clipPath>`;
 
   // ---------------------------------------------------------------- static chrome
@@ -154,7 +183,10 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
   body += `<circle class="live pulse" cx="${W - 132}" cy="25" r="4"/><text x="${W - 122}" y="29" class="lbl" font-size="11">LIVE · CSS RUNTIME</text>`;
   body += `<line x1="0" y1="44" x2="${W}" y2="44" stroke="var(--line)"/>`;
   body += `<text x="40" y="70" class="lbl">STATE</text>`;
-  body += `<text x="${tr.x}" y="70" class="lbl">TRACE · ONE COLUMN PER step() CALL · BITS OF THE STATE</text>`;
+  const traceLabel = machine.stride > 1
+    ? `TRACE · EVERY ${machine.stride} STEPS · BITS OF THE STATE`
+    : 'TRACE · ONE COLUMN PER step() CALL · BITS OF THE STATE';
+  body += `<text x="${tr.x}" y="70" class="lbl">${traceLabel}</text>`;
   body += `<rect class="pn" x="${tr.x - 6}" y="${tr.y - 6}" width="${tr.w + 12}" height="${tr.h + 12}" rx="6"/>`;
   body += `<text x="${tr.x}" y="${tr.y + tr.h + 22}" class="mono mut" font-size="11">0</text>`;
   body += `<text x="${tr.x + tr.w}" y="${tr.y + tr.h + 22}" class="mono mut" font-size="11" text-anchor="end">${steps}</text>`;
@@ -182,12 +214,15 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
   disp += `<text x="40" y="${L.leds.y + 26}" class="mono mut" font-size="10">i32 register · bit 31 … 0</text>`;
   // step counter
   const sy = L.step.y;
+  const sxBase = stepDigits > 3 ? 80 : 84;
+  const slashX = stepDigits > 3 ? 125 : 122;
+  const qxBase = stepDigits > 3 ? 135 : 136;
   disp += `<text x="40" y="${sy + 15}" class="lbl">STEP</text>`;
-  for (let d = 0; d < 3; d++) disp += `<g class="dg sm s${d}" transform="translate(${84 + (2 - d) * 10} ${sy})" clip-path="url(#cs)"><use href="#ds"/></g>`;
-  disp += `<text x="122" y="${sy + 15}" class="mono mut" font-size="15">/</text>`;
+  for (let d = 0; d < stepDigits; d++) disp += `<g class="dg sm s${d}" transform="translate(${sxBase + (stepDigits - 1 - d) * 10} ${sy})" clip-path="url(#cs)"><use href="#ds"/></g>`;
+  disp += `<text x="${slashX}" y="${sy + 15}" class="mono mut" font-size="15">/</text>`;
   disp += `<g class="tot-q">`;
-  for (let d = 0; d < 3; d++) disp += `<g class="dg sm q${d}" transform="translate(${136 + (2 - d) * 10} ${sy})" clip-path="url(#cs)"><use href="#ds"/></g>`;
-  disp += `</g><text class="tot-n mono mut" x="136" y="${sy + 15}" font-size="15">${steps}</text>`;
+  for (let d = 0; d < stepDigits; d++) disp += `<g class="dg sm q${d}" transform="translate(${qxBase + (stepDigits - 1 - d) * 10} ${sy})" clip-path="url(#cs)"><use href="#ds"/></g>`;
+  disp += `</g><text class="tot-n mono mut" x="${qxBase}" y="${sy + 15}" font-size="15">${steps}</text>`;
   // status
   const stx = 190;
   disp += `<g class="st-run"><circle class="pulse" cx="${stx}" cy="${sy + 10}" r="7" style="fill:var(--acc);fill-opacity:.35"/><circle cx="${stx}" cy="${sy + 10}" r="4" style="fill:var(--acc)"/><text x="${stx + 10}" y="${sy + 15}" class="lbl" style="fill:var(--acc)">RUNNING</text></g>`;
@@ -206,20 +241,25 @@ text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
   x0 += `<text x="${196}" y="${sy + 45}" class="mut" font-size="11">← the only input</text></g>`;
 
   // ---------------------------------------------------------------- nested levels
-  let levels = `${altInitAnchors(meta.altInits)}<g class="R" style="${rootStyle(machine)}"><use href="#col" class="col"/>${x0}`;
+  const rootCol = machine.stride === 1 ? '#col' : '#col0';
+  let levels = `${altInitAnchors(meta.altInits)}<g class="R" style="${rootStyle(machine)}"><use href="${rootCol}" class="col"/>${x0}`;
   let close = '</g>';
-  for (let k = 1; k <= steps; k++) {
-    levels += `\n<g class="${k % 2 === 1 ? 'A' : 'B'}" style="${levelStyle(k, machine)}"><use href="#col" class="col"/>`;
+  for (let b = 1; b <= machine.blocks; b++) {
+    const cls = levelClass(b, machine);
+    const colHref = cls === 'T' ? '#colt' : '#col';
+    levels += `\n<g class="${cls}" style="${levelStyle(b, machine)}"><use href="${colHref}" class="col"/>`;
     close += '</g>';
   }
   levels += disp + close;
 
   // XML comments may not contain a double hyphen, so no user-provided text goes in here
   // (file and export names appear in <title>/<desc>/<text>, escaped).
+  const unrollNote = machine.stride > 1
+    ? `${machine.stride} steps per nested g element (the run is unrolled\n     into ${steps} steps across ${machine.blocks} levels when the card is built; no value is stored)`
+    : `once per nested g element (the run is unrolled\n     into ${steps} levels when the card is built; no value is stored)`;
   const header = `<!-- README Runtime ${meta.toolVersion} - generated card, wasm sha256:${meta.wasmSha256.slice(0, 16)}.
      Every number on this card is computed by CSS when it is displayed: the rules .A and .B are the
-     exported step function compiled to CSS math, applied once per nested g element (the run is unrolled
-     into ${steps} levels when the card is built; no value is stored). The only input is the custom
+     exported step function compiled to CSS math, applied ${unrollNote}. The only input is the custom
      property ${machine.initProps.join(', ')} in the style attribute of g.R: change it and the browser recomputes the run;
      a value that CSS cannot compute exactly shows OUT OF RANGE.${meta.altInits?.length ? ` The URL fragments ${meta.altInits.map((x) => `#${altInitId(x)}`).join(' ')}
      start the same run from those values instead.` : ''} Regenerate with: readme-runtime build -->`;

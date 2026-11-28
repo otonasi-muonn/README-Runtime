@@ -1,24 +1,36 @@
 // The CSS "machine": how the compiled step() is chained across nested SVG levels.
 //
-// Level k (k >= 1) is a <g> nested inside level k-1. CSS custom properties cannot refer to
-// themselves, so carried values alternate between two names by depth parity: a level of
-// class A reads the *_b values its parent computed and writes *_a, class B does the
-// opposite. Every value is a registered <integer> property, so the browser evaluates each
-// level to a plain number before the next level reads it.
+// Block b (b >= 1) is a <g> nested inside block b-1. CSS custom properties cannot refer to
+// themselves on the same element, so:
+//   1. Across nested <g> blocks, carried values alternate between *_a and *_b by block parity.
+//   2. Inside one <g> block, up to `stride` steps are unrolled sequentially through distinct
+//      non-inherited registered <integer> properties (--r0x -> --r1x -> ... -> --rxa/b),
+//      keeping DOM nesting at <= MAX_LEVELS (320) even at MAX_STEPS (2000) so WebKit (~512
+//      DOM tree-depth limit) and Chromium (~1024 recursion limit) never fail.
+// Every step's state is also exported under --rS<k> on the <g> that computes it, and the
+// innermost display selects the shown step by the clock (with 2D power-of-two factored
+// indicators on long or multi-value runs).
 
 import { compileStep } from '../compiler/program.js';
-import { MODELS, N, V, absV, add, clamp, evalAst, fn, max, min, mul, storeInteger, sub, toCss, translate, STORED_LIMIT } from '../compiler/css.js';
+import {
+  MODELS, N, V, absV, add, clamp, div, evalAst, fn, max, min, mod, mul,
+  round, storeInteger, sub, toCss, translate, STORED_LIMIT,
+} from '../compiler/css.js';
 import { topoOrder } from '../compiler/ir.js';
 import { analyzeRanges } from '../compiler/range.js';
 
-export const MAX_STEPS = 400; // WebKit stops resolving styles beyond ~510 nested levels (measured)
+export const MAX_STEPS = 2000;
+export const MAX_LEVELS = 320; // leaves ~190 DOM levels inside <foreignObject> below WebKit's ~512 cap
+export const FACTORED_THRESHOLD = 800; // selection terms above which 2D factored selection is used
+
+export const defaultStride = (steps) => (steps <= 400 ? 1 : Math.ceil(steps / MAX_LEVELS));
 
 const P = { A: 'a', B: 'b' };
 const other = (p) => (p === 'A' ? 'B' : 'A');
 
-// Carried per-level values (each exists as --r<x>a and --r<x>b).
+// Carried inter-block values (each exists as --r<x>a and --r<x>b).
 //   x state | k depth | h halted | e error | f flags of the step where the run stopped
-//   q halt step | z last step of the run (levels after a halt or an error are not run)
+//   q halt step | z last step of the run (steps after a halt or an error are not run)
 // None of them depends on the clock: the chain is computed once, when the card is first
 // styled, and the clock only drives the display (see `select`), so a tick restyles the
 // display and nothing above it.
@@ -27,97 +39,153 @@ const n = (name, parity) => `r${name}${P[parity]}`;
 // A state of several values (compiler/program.js) carries value i >= 1 as --ry<i>a / --ry<i>b;
 // value 0 is the x above, so a one-value state gives the same card as the original ABI.
 const xName = (i, parity) => (i === 0 ? n('x', parity) : `ry${i}${P[parity]}`);
-const levelParity = (k) => (k % 2 === 1 ? 'A' : 'B'); // the root (k = 0) is parity B
-// Each level also exports its state under a name of its own (an unregistered property set in
-// the level's style attribute), which the display selects by the clock.
+const blockParity = (b) => (b % 2 === 1 ? 'A' : 'B'); // the root (b = 0) is parity B
+const subStateName = (s, count, i, p) => (s === count - 1 ? xName(i, p) : i === 0 ? `r${s}x` : `r${s}y${i}`);
+const subCarryName = (s, count, c, p) => (s === count - 1 ? n(c, p) : `r${s}${c}`);
+const subPrefix = (s) => (s === 0 ? '' : `${s}`);
+
+// Each step exports its state under a name of its own (an unregistered property set in its
+// block's style attribute), which the display selects by the clock.
 export const exportProp = (k, i = 0) => (i === 0 ? `rS${k}` : `rS${k}y${i}`);
-export const levelStyle = (k, machine = null) => (machine?.shown ?? [0])
-  .map((i) => (i === 0 ? `--${exportProp(k)}:var(--rx)` : `--${exportProp(k, i)}:var(--${xName(i, levelParity(k))})`)).join(';');
+
+export const levelClass = (b, machine = null) => (
+  machine?.tailSteps > 0 && b === machine.blocks ? 'T' : blockParity(b)
+);
+
+export function levelStyle(b, machine = null) {
+  if (!machine || machine.stride === 1) {
+    return (machine?.shown ?? [0])
+      .map((i) => (i === 0 ? `--${exportProp(b)}:var(--rx)` : `--${exportProp(b, i)}:var(--${xName(i, blockParity(b))})`))
+      .join(';');
+  }
+  const p = blockParity(b);
+  const count = machine.tailSteps > 0 && b === machine.blocks ? machine.tailSteps : machine.stride;
+  const base = (b - 1) * machine.stride;
+  const parts = [];
+  for (let s = 0; s < count; s++) {
+    const k = base + s + 1;
+    for (const i of machine.shown) {
+      const src = s === count - 1 ? (i === 0 ? 'rx' : xName(i, p)) : subStateName(s, count, i, p);
+      parts.push(`--${exportProp(k, i)}:var(--${src})`);
+    }
+  }
+  return parts.join(';');
+}
+
 // The style attribute of the root (g.R): the initial state, the card's only input.
 export const rootStyle = (machine) => machine.initProps.map((p, i) => `--${p}:${machine.initValues[i]}`).join(';');
 
-export function buildMachine(program, { init, steps, hold = 0, haltValue = null }) {
+export function buildMachine(program, { init, steps, hold = 0, haltValue = null, stride = defaultStride(steps) }) {
   const K = program.state?.length ?? 1;
   const initValues = Array.isArray(init) ? init : [init];
   if (initValues.length !== K || !initValues.every(Number.isInteger)) throw new RangeError(K === 1 ? 'init must be an integer' : `init must be ${K} integers`);
   if (!Number.isInteger(steps) || steps < 1 || steps > MAX_STEPS) throw new RangeError(`steps must be an integer between 1 and ${MAX_STEPS}`);
+  if (!Number.isInteger(stride) || stride < 1) throw new RangeError('stride must be a positive integer');
   if (K > 1 && haltValue !== null) throw new RangeError('a halt value needs a state of one value; use a halt predicate (haltExport)');
+
+  const blockStride = Math.min(stride, steps);
+  const fullBlocks = Math.floor(steps / blockStride);
+  const tailSteps = steps % blockStride;
+  const blocks = fullBlocks + (tailSteps > 0 ? 1 : 0);
+
   const T = steps + hold;
   const props = new Map(); // name -> inherits
   for (const c of CARRIED) for (const p of ['A', 'B']) props.set(n(c, p), true);
   for (let i = 1; i < K; i++) for (const p of ['A', 'B']) props.set(xName(i, p), true);
   for (const u of ['rx', 'rk', 'ra', 'rt']) props.set(u, true);
   const nexts = program.state ? program.state.map((s) => s.node) : [program.step];
-  // The values the display selects by the clock (a sum over every level, evaluated on every
-  // step): those the view functions read, or without views the one value a trace card shows.
+  // The values the display selects by the clock: those the view functions read, or [0] for trace cards.
   const shown = program.views?.length
     ? [...new Set(topoOrder(program.views.map((v) => v.node)).filter((x) => x.op === 'input').map((x) => x.index))].sort((a, b) => a - b)
     : [0];
 
-  const level = { A: [], B: [] };
   const usesTrap = program.trap !== null;
   const haltKind = program.halt ? 'export' : haltValue !== null ? 'value' : 'none';
-  // Every state the machine accepts lies in [-STORED_LIMIT, STORED_LIMIT] (larger states
-  // raise the range flag), so this is the input domain for the guard analysis.
   const domain = { lo: -STORED_LIMIT, hi: STORED_LIMIT };
   const stateGuard = (x) => clamp(N(0), sub(absV(x), N(STORED_LIMIT)), N(1));
   const haltValueFlag = (x) => sub(N(1), clamp(N(0), absV(sub(x, N(haltValue))), N(1)));
   const guardCount = { step: 0, halt: 0 };
 
-  for (const p of ['A', 'B']) {
+  function compileBlock(count, p) {
     const q = other(p);
-    const out = level[p];
-    // step(): new state (+ shared temporaries) from the parent's state. All values of the state
-    // are translated together, so what their step functions compute in common is computed once.
-    const roots = nexts.map((node, i) => ({ node, name: xName(i, p) }));
-    if (usesTrap) roots.push({ node: program.trap, name: 'rtr' });
-    const st = translate(roots, (i) => V(xName(i, q)), { tempPrefix: 'rv', inputRange: domain, checkedRoots: new Set(roots.map((r) => r.name)) });
-    out.push(...st.defs);
-    for (const t of st.temps) props.set(t, false);
-    if (usesTrap) props.set('rtr', false);
-    guardCount.step = st.guards.length;
-    const xNew = V(n('x', p));
-    const xNews = nexts.map((_, i) => V(xName(i, p)));
-    out.push({ name: n('k', p), ast: add(V(n('k', q)), N(1)) });
-    out.push({ name: 'rlv', ast: sub(N(1), max(V(n('h', q)), V(n('e', q)))) });
-    // halt predicate on the new state
-    let hz;
-    let haltGuards = [];
-    if (haltKind === 'export') {
-      const hs = translate([{ node: program.halt, name: 'rhz' }], (i) => xNews[i], { tempPrefix: 'rw', inputRange: domain, checkedRoots: new Set(['rhz']) });
-      out.push(...hs.defs);
-      for (const t of hs.temps) props.set(t, false);
-      haltGuards = hs.guards;
-      guardCount.halt = hs.guards.length;
-      hz = V('rhz');
-    } else if (haltKind === 'value') {
-      out.push({ name: 'rhz', ast: haltValueFlag(xNew) });
-      hz = V('rhz');
-    } else hz = N(0);
-    if (haltKind !== 'none') props.set('rhz', false);
-    // range flag: the new state, and every value inside step()/halt() that could be inexact
-    // Each guard is its own registered property: an inf/NaN in one guard (float32 overflow
-    // downstream of a value that already left the range) then becomes 0 only there, instead
-    // of turning the whole max() into NaN -> 0 and silencing the guard that did fire.
-    out.push(...guardProps([...st.guards, ...haltGuards], props));
-    const flags = [...xNews.map(stateGuard), ...[...st.guards, ...haltGuards].map((_, i) => V(guardName(i)))];
-    out.push({ name: 'rrg', ast: flags.length === 1 ? flags[0] : fn('max', ...flags) });
-    const err = usesTrap ? max(V('rtr'), V('rrg')) : V('rrg');
-    const live = V('rlv');
-    out.push({ name: n('e', p), ast: max(V(n('e', q)), mul(live, err)) });
-    out.push({ name: n('h', p), ast: max(V(n('h', q)), mul(live, hz)) });
-    // flags of this step: halted + 2*out-of-range + 4*trap. Only the step where the run stops
-    // has any, and later levels are not live, so the sum is the flags of that step.
-    const stepFlags = add(add(hz, mul(N(2), V('rrg'))), usesTrap ? mul(N(4), V('rtr')) : N(0));
-    out.push({ name: n('f', p), ast: add(V(n('f', q)), mul(live, stepFlags)) });
-    out.push({ name: n('q', p), ast: add(V(n('q', q)), mul(mul(live, hz), V(n('k', p)))) });
-    out.push({ name: n('z', p), ast: add(V(n('z', q)), live) });
-    // trace column of this step (shown once the clock reaches it): run, and the value is valid
-    out.push({ name: 'rx', ast: xNew }, { name: 'rk', ast: V(n('k', p)) }, { name: 'ra', ast: mul(live, sub(N(1), err)) });
-    props.set('rlv', false); props.set('rrg', false);
+    const out = [];
+    const slices = [];
+    for (let s = 0; s < count; s++) {
+      const start = out.length;
+      const pfx = subPrefix(s);
+      const inX = (i) => V(s === 0 ? xName(i, q) : subStateName(s - 1, count, i, p));
+      const inC = (c) => V(s === 0 ? n(c, q) : subCarryName(s - 1, count, c, p));
+      const outX = (i) => subStateName(s, count, i, p);
+      const outC = (c) => subCarryName(s, count, c, p);
+
+      // step(): new state (+ shared temporaries) from the previous sub-step's state.
+      const roots = nexts.map((node, i) => ({ node, name: outX(i) }));
+      const trName = `r${pfx}tr`;
+      if (usesTrap) roots.push({ node: program.trap, name: trName });
+      const st = translate(roots, inX, { tempPrefix: `r${pfx}v`, inputRange: domain, checkedRoots: new Set(roots.map((r) => r.name)) });
+      out.push(...st.defs);
+      for (const t of st.temps) props.set(t, false);
+      if (usesTrap) props.set(trName, false);
+      if (s < count - 1) {
+        for (let i = 0; i < K; i++) props.set(outX(i), false);
+        for (const c of ['k', 'h', 'e', 'f', 'q', 'z']) props.set(outC(c), false);
+      }
+      guardCount.step = st.guards.length;
+
+      const xNew = V(outX(0));
+      const xNews = nexts.map((_, i) => V(outX(i)));
+      const kName = outC('k');
+      const lvName = `r${pfx}lv`;
+      out.push({ name: kName, ast: add(inC('k'), N(1)) });
+      out.push({ name: lvName, ast: sub(N(1), max(inC('h'), inC('e'))) });
+
+      // halt predicate on the new state
+      let hz;
+      let haltGuards = [];
+      const hzName = `r${pfx}hz`;
+      if (haltKind === 'export') {
+        const hs = translate([{ node: program.halt, name: hzName }], (i) => xNews[i], { tempPrefix: `r${pfx}w`, inputRange: domain, checkedRoots: new Set([hzName]) });
+        out.push(...hs.defs);
+        for (const t of hs.temps) props.set(t, false);
+        haltGuards = hs.guards;
+        guardCount.halt = hs.guards.length;
+        hz = V(hzName);
+      } else if (haltKind === 'value') {
+        out.push({ name: hzName, ast: haltValueFlag(xNew) });
+        hz = V(hzName);
+      } else hz = N(0);
+      if (haltKind !== 'none') props.set(hzName, false);
+
+      // range flag: each guard is its own registered property so NaN/Inf in one guard cannot silence another
+      out.push(...guardProps([...st.guards, ...haltGuards], props, pfx));
+      const flags = [...xNews.map(stateGuard), ...[...st.guards, ...haltGuards].map((_, i) => V(guardName(i, pfx)))];
+      const rgName = `r${pfx}rg`;
+      out.push({ name: rgName, ast: flags.length === 1 ? flags[0] : fn('max', ...flags) });
+      const err = usesTrap ? max(V(trName), V(rgName)) : V(rgName);
+      const live = V(lvName);
+      out.push({ name: outC('e'), ast: max(inC('e'), mul(live, err)) });
+      out.push({ name: outC('h'), ast: max(inC('h'), mul(live, hz)) });
+      const stepFlags = add(add(hz, mul(N(2), V(rgName))), usesTrap ? mul(N(4), V(trName)) : N(0));
+      out.push({ name: outC('f'), ast: add(inC('f'), mul(live, stepFlags)) });
+      out.push({ name: outC('q'), ast: add(inC('q'), mul(mul(live, hz), V(kName))) });
+      out.push({ name: outC('z'), ast: add(inC('z'), live) });
+      if (s === count - 1) {
+        out.push({ name: 'rx', ast: xNew }, { name: 'rk', ast: V(kName) }, { name: 'ra', ast: mul(live, sub(N(1), err)) });
+      }
+      props.set(lvName, false);
+      props.set(rgName, false);
+      slices.push({ start, end: out.length });
+    }
+    return { defs: out, slices };
   }
 
-  // Root = level 0, parity B (so level 1 is class A).
+  const blockA = compileBlock(blockStride, 'A');
+  const blockB = compileBlock(blockStride, 'B');
+  const blockT = tailSteps > 0 ? compileBlock(tailSteps, blockParity(blocks)) : null;
+  const level = { A: blockA.defs, B: blockB.defs, T: blockT ? blockT.defs : null };
+  const blockSlices = { A: blockA.slices, B: blockB.slices, ...(blockT ? { T: blockT.slices } : {}) };
+
+  // Root = step 0, parity B (so block 1 is class A).
   const root = [];
   const X0 = V(n('x', 'B'));
   const X0s = nexts.map((_, i) => V(xName(i, 'B')));
@@ -134,8 +202,8 @@ export function buildMachine(program, { init, steps, hold = 0, haltValue = null 
     root.push({ name: 'rhz', ast: haltValueFlag(X0) });
     hz0 = V('rhz');
   }
-  root.push(...guardProps(haltGuards0, props));
-  const flags0 = [...X0s.map(stateGuard), ...haltGuards0.map((_, i) => V(guardName(i)))];
+  root.push(...guardProps(haltGuards0, props, ''));
+  const flags0 = [...X0s.map(stateGuard), ...haltGuards0.map((_, i) => V(guardName(i, '')))];
   root.push({ name: 'rrg', ast: flags0.length === 1 ? flags0[0] : fn('max', ...flags0) });
   root.push({ name: n('h', 'B'), ast: hz0 });
   root.push({ name: n('e', 'B'), ast: V('rrg') });
@@ -143,34 +211,62 @@ export function buildMachine(program, { init, steps, hold = 0, haltValue = null 
   root.push({ name: n('q', 'B'), ast: N(0) });
   root.push({ name: n('z', 'B'), ast: N(0) });
   root.push({ name: 'rx', ast: X0 }, { name: 'rk', ast: N(0) }, { name: 'ra', ast: sub(N(1), V('rrg')) });
-  // the root exports its state like the levels do, from its rule (its style attribute is the input)
   for (const i of shown) root.push({ name: exportProp(0, i), ast: i === 0 ? V('rx') : X0s[i], unregistered: true });
 
-  const innermost = steps % 2 === 1 ? 'A' : 'B';
-  // The clock: the display (innermost) shows step min(t, z) of the run. Its state is picked
-  // from the exports of all levels, a sum in which exactly one term is non-zero.
+  const innermost = blockParity(blocks);
+  // The clock: the display (innermost) shows step min(t, z) of the run.
   const S = V('rsx');
   const Z = V(n('z', innermost));
-  const isStep = (k) => (k === 0 ? max(N(0), sub(N(1), S)) : max(N(0), min(sub(N(k + 1), S), sub(S, N(k - 1)))));
-  const pick = (i) => {
-    let shown = mul(V(exportProp(0, i)), isStep(0));
-    for (let k = 1; k <= steps; k++) shown = add(shown, mul(V(exportProp(k, i)), isStep(k)));
-    return shown;
-  };
-  // shownNames[i]: the property holding value i of the shown state (null: not selected)
   const shownNames = nexts.map((_, i) => (!shown.includes(i) ? null : i === 0 ? 'rcs' : `rcy${i}`));
-  const select = [
-    { name: 'rsx', ast: min(V('rt'), Z) },
-    ...shown.map((i) => ({ name: shownNames[i], ast: pick(i) })),
-    // the flags of the step the run stopped at, once that step is shown
-    { name: 'rfs', ast: mul(V(n('f', innermost)), clamp(N(0), add(sub(S, Z), N(1)), N(1))) },
-  ];
-  for (const s of select) props.set(s.name, true);
-  // names readable by the display at the innermost level
+  const selectionMode = steps > 400 || shown.length * (steps + 1) > FACTORED_THRESHOLD ? 'factored' : 'flat';
+  const select = [{ name: 'rsx', ast: min(V('rt'), Z), inherits: true }];
+
+  if (selectionMode === 'flat') {
+    const isStep = (k) => (k === 0 ? max(N(0), sub(N(1), S)) : max(N(0), min(sub(N(k + 1), S), sub(S, N(k - 1)))));
+    const pick = (i) => {
+      let acc = mul(V(exportProp(0, i)), isStep(0));
+      for (let k = 1; k <= steps; k++) acc = add(acc, mul(V(exportProp(k, i)), isStep(k)));
+      return acc;
+    };
+    for (const i of shown) select.push({ name: shownNames[i], ast: pick(i), inherits: true });
+  } else {
+    // 2D factored selection with a power-of-two block size B (32 or 64), so 1/B is exact in
+    // WebKit's a * (1/b) division, Firefox float32, and Chromium double. Indicator expressions
+    // are shared across all blocks and all selected state values, and every calc() sum stays <= 64 terms.
+    const B = steps >= 1536 ? 64 : 32;
+    const Q = Math.ceil((steps + 1) / B);
+    const isAt = (expr, m, hi) => (hi === 0 ? N(1)
+      : m === 0 ? max(N(0), sub(N(1), expr))
+        : m === hi ? max(N(0), sub(expr, N(m - 1)))
+          : max(N(0), min(sub(N(m + 1), expr), sub(expr, N(m - 1)))));
+    select.push(
+      { name: 'rsq', ast: round('down', div(S, N(B))), inherits: false },
+      { name: 'rsr', ast: mod(S, N(B)), inherits: false },
+    );
+    for (let m = 0; m < B; m++) select.push({ name: `rsri${m}`, ast: isAt(V('rsr'), m, B - 1), inherits: false });
+    for (let qIdx = 0; qIdx < Q; qIdx++) select.push({ name: `rsqi${qIdx}`, ast: isAt(V('rsq'), qIdx, Q - 1), inherits: false });
+    for (const i of shown) {
+      const parts = [];
+      for (let qIdx = 0; qIdx < Q; qIdx++) {
+        const lo = qIdx * B;
+        const hi = Math.min(steps, lo + B - 1);
+        let acc = mul(V(exportProp(lo, i)), V('rsri0'));
+        for (let k = lo + 1; k <= hi; k++) acc = add(acc, mul(V(exportProp(k, i)), V(`rsri${k - lo}`)));
+        const bName = `rsb${i}_${qIdx}`;
+        select.push({ name: bName, ast: mul(acc, V(`rsqi${qIdx}`)), inherits: false });
+        parts.push(V(bName));
+      }
+      let sum = parts[0];
+      for (let j = 1; j < parts.length; j++) sum = add(sum, parts[j]);
+      select.push({ name: shownNames[i], ast: sum, inherits: true });
+    }
+  }
+  select.push({ name: 'rfs', ast: mul(V(n('f', innermost)), clamp(N(0), add(sub(S, Z), N(1)), N(1))), inherits: true });
+  for (const s of select) props.set(s.name, s.inherits ?? true);
+
   const out = { c: 'rcs', cs: shownNames, s: 'rsx', f: 'rfs', q: n('q', innermost), h: n('h', innermost), e: n('e', innermost) };
 
-  // View functions run once, on the shown state, where the display lives. Their values are
-  // inherited registered properties, so the reused UI markup below can read them.
+  // View functions run once, on the shown state, where the display lives.
   const display = [];
   const viewProps = {};
   const viewRanges = {};
@@ -191,26 +287,51 @@ export function buildMachine(program, { init, steps, hold = 0, haltValue = null 
     display.push({ name: 'rvf', ast: tv.guards.length ? fn('max', ...tv.guards.map((_, i) => V(`rvg${i}`))) : N(0) });
     props.set('rvf', true);
   }
+
+  // Per-step metadata so simulateMachine / verifyRun / tests can inspect any step 0..steps uniformly.
+  const stepMeta = [{
+    block: 0,
+    sub: 0,
+    stateProps: nexts.map((_, i) => xName(i, 'B')),
+    carryProps: Object.fromEntries(CARRIED.map((c) => [c, n(c, 'B')])),
+    rgProp: 'rrg',
+  }];
+  for (let b = 1; b <= blocks; b++) {
+    const cls = tailSteps > 0 && b === blocks ? 'T' : blockParity(b);
+    const p = blockParity(b);
+    const count = tailSteps > 0 && b === blocks ? tailSteps : blockStride;
+    for (let s = 0; s < count; s++) {
+      stepMeta.push({
+        block: b,
+        sub: s,
+        cls,
+        slice: blockSlices[cls][s],
+        stateProps: nexts.map((_, i) => subStateName(s, count, i, p)),
+        carryProps: Object.fromEntries(CARRIED.map((c) => [c, subCarryName(s, count, c, p)])),
+        rgProp: `r${subPrefix(s)}rg`,
+      });
+    }
+  }
+
   return {
-    props, root, level, steps, T, hold, init, haltKind, haltValue, guardCount,
+    props, root, level, blockSlices, stepMeta,
+    steps, stride: blockStride, blocks, fullBlocks, tailSteps, selectionMode,
+    T, hold, init, haltKind, haltValue, guardCount,
     out, select, display, viewProps, viewRanges,
     K, initValues, shown,
     initProp: n('x', 'B'),
     initProps: nexts.map((_, i) => xName(i, 'B')),
-    // the properties holding the state at a level of each parity
     stateProps: { A: nexts.map((_, i) => xName(i, 'A')), B: nexts.map((_, i) => xName(i, 'B')) },
   };
 }
 
-// The state at level k of a simulated run (see simulateMachine), as an array of its values.
-export const stateAt = (machine, levels, k) => machine.stateProps[levelParity(k)].map((p) => levels[k].get(p));
+// Per-step values from a simulated run (see simulateMachine).
+export const stateAt = (machine, levels, k) => machine.stepMeta[k].stateProps.map((p) => levels[k].get(p));
+export const flagAt = (machine, levels, k, f) => levels[k].get(machine.stepMeta[k].carryProps[f]);
+export const rangeFlagAt = (machine, levels, k) => levels[k].get(machine.stepMeta[k].rgProp);
 
 export const viewProp = (name) => `rview_${name}`;
 
-// Other initial values, chosen by the image's URL fragment (img src="card.svg#x97"): an empty
-// anchor per value before the root level, and a rule that overrides the root's style
-// attribute while that anchor is the :target. The browser runs the same CSS from there.
-// An initial state of several values is an array; its fragment joins them with _ (#x7_-1).
 export const altInitId = (x) => `x${Array.isArray(x) ? x.join('_') : x}`;
 export const altInitAnchors = (altInits = []) => altInits.map((x) => `<g id="${altInitId(x)}"/>`).join('');
 export const altInitCss = (machine, altInits = []) => altInits.map((x) => {
@@ -218,14 +339,10 @@ export const altInitCss = (machine, altInits = []) => altInits.map((x) => {
   return `#${altInitId(x)}:target~.R{${machine.initProps.map((p, i) => `--${p}:${v[i]}!important`).join(';')}}\n`;
 }).join('');
 
-// The clock: --rt counts 0..T, one step per stepMs; after `loops` runs (unless "infinite")
-// it stays on T, the last step, and the card stops updating.
 export function clockAnimation(machine, { stepMs, loops = 'infinite' }) {
   return `rrclk ${(machine.T + 1) * stepMs}ms steps(${machine.T + 1},jump-none) ${loops === 'infinite' ? 'infinite' : `${loops} forwards`}`;
 }
 
-// Evaluate the display definitions (view functions) for one shown state under a model.
-// `shown`: the state, an array of its values (or a number for a one-value state).
 export function evalDisplay(machine, shown, model = MODELS.exact) {
   const xs = Array.isArray(shown) ? shown : [shown];
   const env = new Map(machine.shown.map((i) => [machine.out.cs[i], model.store(xs[i])]));
@@ -233,28 +350,35 @@ export function evalDisplay(machine, shown, model = MODELS.exact) {
   return env;
 }
 
-const guardName = (i) => `rg${i}`;
+const guardName = (i, pfx = '') => `r${pfx}g${i}`;
 
-function guardProps(guards, props) {
+function guardProps(guards, props, pfx = '') {
   return guards.map((g, i) => {
-    props.set(guardName(i), false);
-    return { name: guardName(i), ast: g };
+    const name = guardName(i, pfx);
+    props.set(name, false);
+    return { name, ast: g };
   });
 }
 
-// CSS declarations for one list of definitions.
 export function declarations(defs, indent = '') {
   return defs.map((d) => `${indent}--${d.name}: ${toCss(d.ast)};`).join('\n');
 }
 
-// Evaluate the machine exactly as the cascade would, under a browser arithmetic model.
-// Returns per-level stored values.
+// Evaluate the machine exactly as the CSS cascade would, under a browser arithmetic model.
+// Non-inherited registered properties (inherits: false) stay inside the element that defines
+// them and do not leak to child <g> blocks or .D. Returns one entry per step 0..steps.
 export function simulateMachine(machine, { t = machine.T, model = MODELS.exact, init = machine.init } = {}) {
   const levels = [];
   const stats = { maxInline: 0, maxStored: 0, levels: [] };
-  let parent = new Map([['rt', t]]);
-  const run = (defs, overrides) => {
-    const own = new Map();
+  // Unregistered --rS<k> exports are inherited down to .D and never read by .A/.B/.T; keeping
+  // them in one accumulator avoids copying O(steps) keys at every block.
+  const exported = new Map();
+  const inheritedProps = (map) => {
+    const next = new Map();
+    for (const [k, v] of map) if (machine.props.has(k) ? machine.props.get(k) !== false : false) next.set(k, v);
+    return next;
+  };
+  const evalSlice = (defs, parent, own, overrides) => {
     const env = (name) => (own.has(name) ? own.get(name) : parent.get(name));
     const ls = { maxInline: 0 };
     for (const d of defs) {
@@ -262,29 +386,61 @@ export function simulateMachine(machine, { t = machine.T, model = MODELS.exact, 
       if (overrides && overrides.has(d.name)) v = model.store(overrides.get(d.name));
       else v = storeInteger(evalAst(d.ast, env, model, ls), model);
       const m = Math.abs(v);
-      if (m > stats.maxStored && /^r[xv]/.test(d.name)) stats.maxStored = m;
+      if (m > stats.maxStored && /^r(?:\d+)?[xyv]/.test(d.name)) stats.maxStored = m;
+      if (d.unregistered) exported.set(d.name, v);
       own.set(d.name, v);
     }
     stats.levels.push(ls);
     if (ls.maxInline > stats.maxInline) stats.maxInline = ls.maxInline;
-    const merged = new Map(parent);
-    for (const [k, v] of own) merged.set(k, v);
-    return merged;
   };
+
   const inits = Array.isArray(init) ? init : [init];
-  parent = run(machine.root, new Map(machine.initProps.map((p, i) => [p, inits[i]])));
-  levels.push(parent);
-  for (let k = 1; k <= machine.steps; k++) {
-    parent = run(machine.level[k % 2 === 1 ? 'A' : 'B']);
-    // the level's style attribute: an unregistered copy of its (already stored) state
-    for (const i of machine.shown) parent.set(exportProp(k, i), i === 0 ? parent.get('rx') : parent.get(machine.stateProps[levelParity(k)][i]));
-    levels.push(parent);
+  const rootParent = new Map([['rt', t]]);
+  const rootOwn = new Map();
+  evalSlice(machine.root, rootParent, rootOwn, new Map(machine.initProps.map((p, i) => [p, inits[i]])));
+  let currentBlock = new Map([...rootParent, ...rootOwn]);
+  levels.push(currentBlock);
+
+  for (let b = 1; b <= machine.blocks; b++) {
+    const parent = inheritedProps(currentBlock);
+    const cls = levelClass(b, machine);
+    const defs = machine.level[cls];
+    const slices = machine.blockSlices[cls];
+    const own = new Map();
+    for (let s = 0; s < slices.length; s++) {
+      evalSlice(defs.slice(slices[s].start, slices[s].end), parent, own, null);
+    }
+    const p = blockParity(b);
+    const count = slices.length;
+    const base = (b - 1) * machine.stride;
+    for (let s = 0; s < count; s++) {
+      const k = base + s + 1;
+      for (const i of machine.shown) {
+        const src = s === count - 1 ? (i === 0 ? 'rx' : xName(i, p)) : subStateName(s, count, i, p);
+        exported.set(exportProp(k, i), own.get(src));
+      }
+    }
+    currentBlock = new Map([...parent, ...own]);
+    for (let s = 0; s < count; s++) levels.push(currentBlock);
   }
-  // the display: the clock and what it selects, merged into the innermost level
-  const shown = run(machine.select);
-  levels[machine.steps] = shown;
-  stats.levels.pop();
-  return { levels, stats };
+
+  const dispBase = new Map([...inheritedProps(currentBlock), ...exported]);
+  const dispOwn = evalSelectDefs(machine, dispBase, t, model);
+  levels[machine.steps] = new Map([...currentBlock, ...exported, ...dispOwn]);
+  return { levels, stats, dispBase };
+}
+
+function evalSelectDefs(machine, dispBase, t, model) {
+  const own = new Map();
+  const env = (name) => (name === 'rt' ? t : own.has(name) ? own.get(name) : dispBase.get(name));
+  for (const d of machine.select) own.set(d.name, storeInteger(evalAst(d.ast, env, model), model));
+  return own;
+}
+
+// Re-evaluate only the clock-driven display selection (.D) for another clock value `t` on an
+// already-simulated chain (the chain itself never depends on `rt`).
+export function simulateSelect(machine, dispBase, t, model = MODELS.exact) {
+  return evalSelectDefs(machine, dispBase, t, model);
 }
 
 export { compileStep };

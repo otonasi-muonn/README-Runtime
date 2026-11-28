@@ -4,7 +4,7 @@
 //   3. generated CSS under browser models    -> validates the CSS translation and its range
 import { evalExact } from './compiler/ir.js';
 import { MODELS, STORED_LIMIT } from './compiler/css.js';
-import { simulateMachine, evalDisplay, viewProp, stateAt } from './runtime/machine.js';
+import { simulateMachine, simulateSelect, evalDisplay, viewProp, stateAt, flagAt, rangeFlagAt } from './runtime/machine.js';
 import { referenceTrace, instantiate, stateAbi } from './runtime/reference.js';
 
 export class VerifyError extends Error {
@@ -16,8 +16,6 @@ export class VerifyError extends Error {
 
 // Firefox computes calc() in float32: integers are exact only up to 2^24.
 const INLINE_EXACT = 2 ** 24;
-
-const flagAt = (levels, k, f) => levels[k].get(`r${f}${k === 0 ? 'b' : k % 2 === 1 ? 'a' : 'b'}`);
 
 const same = (a, b) => a.length === b.length && a.every((v, i) => v === b[i]);
 
@@ -62,12 +60,16 @@ export async function verifyRun(wasmBytes, program, machine, { init = machine.in
     }
   }
 
-  // 3. CSS under each browser model, full chain
+  // 3. CSS under each browser model, full chain (every unrolled step and block boundary)
   const models = {};
   const endAt = Math.min(end.at, machine.steps);
   const call = (k) => (k === 0 ? `the initial value ${show(states[0])}` : `step(${show(states[k - 1])})`);
+  const sampleTimes = new Set(
+    [0, 1, machine.stride - 1, machine.stride, machine.stride + 1, 31, 32, 33, 63, 64, 65, Math.floor(endAt / 2), endAt, machine.T]
+      .filter((t) => t >= 0 && t <= machine.T),
+  );
   for (const [name, model] of Object.entries(MODELS)) {
-    const { levels, stats } = simulateMachine(machine, { model, init });
+    const { levels, stats, dispBase } = simulateMachine(machine, { model, init });
     for (let k = 0; k <= lastValid; k++) {
       if (name === 'exact' && stats.levels[k].maxInline > INLINE_EXACT) {
         throw new VerifyError(
@@ -75,7 +77,7 @@ export async function verifyRun(wasmBytes, program, machine, { init = machine.in
           `beyond 2^24 = 16,777,216: Firefox evaluates calc() in float32, so this cannot be computed exactly in every browser. ` +
           `Keep intermediate values (for example products before a modulo) below 2^23.`, 'RANGE_INTERMEDIATE');
       }
-      if (levels[k].get('rrg') !== 0) {
+      if (rangeFlagAt(machine, levels, k) !== 0) {
         throw new VerifyError(
           `step ${k}: a value computed by ${call(k)} can leave the range that CSS represents exactly in every browser ` +
           `(stored values |v| <= ${STORED_LIMIT.toLocaleString("en-US")}; intermediate values |v| < 2^24, or < 2^23 for operands of a division); the card would stop here with OUT OF RANGE. ` +
@@ -93,25 +95,20 @@ export async function verifyRun(wasmBytes, program, machine, { init = machine.in
       }
     }
     // flags at the end of the run
-    if (end.kind === 'halt' && flagAt(levels, endAt, 'h') !== 1) throw new VerifyError(`${name}: halt not detected at step ${endAt}`, 'INTERNAL');
-    if (end.kind === 'trap' && flagAt(levels, endAt, 'e') !== 1) throw new VerifyError(`${name}: trap not detected at step ${endAt}`, 'INTERNAL');
-    if (end.kind !== 'trap' && flagAt(levels, endAt, 'e') !== 0) throw new VerifyError(`${name}: unexpected error flag at step ${endAt}`, 'INTERNAL');
+    if (end.kind === 'halt' && flagAt(machine, levels, endAt, 'h') !== 1) throw new VerifyError(`${name}: halt not detected at step ${endAt}`, 'INTERNAL');
+    if (end.kind === 'trap' && flagAt(machine, levels, endAt, 'e') !== 1) throw new VerifyError(`${name}: trap not detected at step ${endAt}`, 'INTERNAL');
+    if (end.kind !== 'trap' && flagAt(machine, levels, endAt, 'e') !== 0) throw new VerifyError(`${name}: unexpected error flag at step ${endAt}`, 'INTERNAL');
     // the clock-driven selection shown by the display
     const out = machine.out;
-    for (const t of new Set([0, 1, Math.floor(endAt / 2), endAt, machine.T])) {
-      const sim = simulateMachine(machine, { model, t, init });
-      const inner = sim.levels[machine.steps];
+    for (const t of sampleTimes) {
+      const inner = simulateSelect(machine, dispBase, t, model);
       const shownStep = Math.min(t, endAt);
       const want = end.kind === 'trap' && shownStep === endAt ? null : states[shownStep];
       if (inner.get(out.s) !== shownStep) throw new VerifyError(`${name}: at t=${t} the display shows step ${inner.get(out.s)}, expected ${shownStep}`, 'INTERNAL');
-      // the values the display selects (the first one and those the views read)
       for (const i of machine.shown) {
         const got = inner.get(out.cs[i]);
         if (want !== null && got !== want[i]) throw new VerifyError(`${name}: at t=${t} the display shows ${got} for value ${program.stateNames?.[i] ?? i} of ${show(want)}`, 'INTERNAL');
       }
-      // the status it shows: halted + 2*out-of-range + 4*trap, only on the step where the run
-      // stops (a trap may also raise the conservative range flag, and the halt predicate of its
-      // meaningless value)
       const flags = inner.get(out.f);
       const stopped = shownStep === endAt && end.kind !== 'steps';
       const flagsOk = !stopped ? flags === 0 : end.kind === 'halt' ? flags === 1 : end.kind === 'trap' ? (flags & 4) === 4 : false;
@@ -125,6 +122,7 @@ export async function verifyRun(wasmBytes, program, machine, { init = machine.in
   if (program.views?.length) {
     const abi = stateAbi(await instantiate(wasmBytes), program);
     const seen = new Set();
+    const seenViews = new Set();
     for (const x of states.slice(0, lastValid + 1)) {
       const key = x.join(',');
       if (seen.has(key)) continue;
@@ -140,7 +138,8 @@ export async function verifyRun(wasmBytes, program, machine, { init = machine.in
           if (got !== want[v.name]) throw new VerifyError(`state ${show(x)}: view "${v.name}" (${v.export}) is ${want[v.name]} in WebAssembly but ${got} in the generated CSS under the ${name} model`, 'VIEW_MISMATCH');
         }
       }
-      viewSamples.push(want);
+      const vKey = JSON.stringify(want);
+      if (!seenViews.has(vKey)) { seenViews.add(vKey); viewSamples.push(want); }
     }
   }
   return { trace, models, endAt, lastValid, viewSamples };

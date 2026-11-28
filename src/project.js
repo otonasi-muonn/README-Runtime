@@ -296,7 +296,7 @@ export async function build(configPath, { only = [], force = false, log = consol
     // what to paste into README.md: the card, and each other initial value under its own URL
     // (WebKit shares the document of images with the same URL and would switch it per paint)
     const embed = [`![${card.name}](${card.out})`, ...altInitEmbeds(card.options).map((a) => `![${card.name} from ${a.label}](${card.out}?${a.id}#${a.id})`)];
-    results.push({ name: card.name, build: buildState, card: cardState, out: card.out, summary, reason, ...(lastGen ? { steps: lastGen.verification.endAt, end: lastGen.verification.trace.end, ui: lastGen.ui, ...(lastGen.state ? { state: lastGen.state } : {}) } : {}), perf: perf.report, ...(perf.warnings.length ? { warnings: perf.warnings } : {}), embed });
+    results.push({ name: card.name, build: buildState, card: cardState, out: card.out, summary, reason, ...(lastGen ? { steps: lastGen.verification.endAt, end: lastGen.verification.trace.end, execution: lastGen.execution, ui: lastGen.ui, ...(lastGen.state ? { state: lastGen.state } : {}) } : {}), perf: perf.report, ...(perf.warnings.length ? { warnings: perf.warnings } : {}), embed });
     log(`${card.name}: wasm ${buildState === 'none' ? 'prebuilt' : buildState === 'cached' ? 'up to date (sources unchanged)' : 'rebuilt'} · card ${cardState === 'cached' ? 'up to date' : cardState === 'unchanged' ? 'regenerated (identical)' : `written ${card.out}`}${summary ? ` · ${summary}` : ''}`);
     for (const w of perf.warnings) log(`${card.name}: warning ${w.code}: ${w.message} (fix: ${JSON.stringify(w.fix)} in ${CONFIG_FILE})`);
   }
