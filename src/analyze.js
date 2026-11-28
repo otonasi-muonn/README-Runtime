@@ -6,7 +6,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { spawnSync } from 'node:child_process';
 import { parseModule } from './wasm/reader.js';
-import { listExports, compileStep } from './compiler/program.js';
+import { listExports, probeStep } from './compiler/program.js';
 import { describeError, CodedError } from './errors.js';
 import { CONFIG_FILE } from './project.js';
 
@@ -169,7 +169,11 @@ export async function analyzeProject(dir, { render = true, maxComponents = 40 } 
       const bytes = fs.readFileSync(path.join(root, f));
       const exports = listExports(parseModule(bytes)).map((x) => {
         const sig = `${x.name}(${x.params.join(', ')}) -> ${x.results.join(', ') || 'void'}`;
-        try { compileStep(bytes, { exportName: x.name }); return { name: x.name, signature: sig, supported: true }; } catch (e) { const d = describeError(e); return { name: x.name, signature: sig, supported: false, error: { code: d.code, message: d.message } }; }
+        const p = probeStep(bytes, x.name);
+        const abi = { abi: p.abi, ...(p.state ? { state: p.state } : {}), ...(p.values ? { values: p.values } : {}) };
+        if (p.supported) return { name: x.name, signature: sig, supported: true, ...abi };
+        const d = describeError(p.error);
+        return { name: x.name, signature: sig, supported: false, ...(p.abi ? abi : {}), error: { code: d.code, message: d.message } };
       });
       report.wasm.push({ file: f, exports });
     } catch (e) {
@@ -197,7 +201,9 @@ export async function analyzeProject(dir, { render = true, maxComponents = 40 } 
   const initUi = (c, x) => `readme-runtime init --ui ${c.file}${x.name === 'default' ? '' : `#${x.name}`} --name demo --json`;
   const pick = renders.find((c) => !c.uses.includes('hooks')) ?? renders[0];
   const withProps = report.components.find((c) => /^(needs props|renders nothing)/.test(c.reusable));
-  const wasmPick = report.wasm.find((w) => w.exports?.some((x) => x.supported));
+  // init --wasm scaffolds a card of one integer; a state of several values is written by hand
+  const wasmPick = report.wasm.find((w) => w.exports?.some((x) => x.supported && x.abi === 'single'));
+  const statePick = report.wasm.map((w) => ({ w, x: w.exports?.find((x) => x.supported && x.abi !== 'single') })).find((p) => p.x);
   const warned = (code) => report.warnings.some((w) => w.code === code);
   if (pick) {
     report.nextSteps.push(initUi(pick, pick.exports.find((x) => x.markupBytes > 0)), 'edit the generated logic.ts (state + view_* functions) and demo.tsx (map views to props)');
@@ -211,6 +217,12 @@ export async function analyzeProject(dir, { render = true, maxComponents = 40 } 
     return report;
   } else if (wasmPick) {
     report.nextSteps.push(`readme-runtime init --wasm ${wasmPick.file} --json`);
+  } else if (statePick) {
+    const { w, x } = statePick;
+    // a state of several values is shown by a UI card: a demo component and the views it reads
+    report.nextSteps.push(x.abi === 'globals'
+      ? `add a card to readme-runtime.json: ${JSON.stringify({ name: 'demo', wasm: w.file, export: x.name, state: x.state, init: Object.fromEntries(x.state.map((n) => [n, 0])), steps: 120, ui: { entry: 'demo.jsx', views: { v: 'view_v' } } })} (set "init" to the initial state; write demo.jsx, a component whose props are the views, and the view exports it reads, e.g. view_v(): i32)`
+      : `${w.file} has step functions of a state of ${x.values} values: add a card to readme-runtime.json with "state" (the value names, in the order of the parameters), "export" (each name -> its step function, e.g. "${x.name}"), "init" (each name -> its initial value) and "ui" (a demo component and the view exports it reads, each taking the state like the step functions)`);
   } else {
     report.nextSteps.push('nothing to reuse here: no React component renders and no .wasm has an (i32) -> i32 export. A card needs one of them (README: "Use it in your project")');
     return report;

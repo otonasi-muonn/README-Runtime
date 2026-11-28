@@ -6,7 +6,7 @@ import path from 'node:path';
 import { generate, DEFAULTS } from '../src/generate.js';
 import { build, check, CONFIG_FILE, ConfigError } from '../src/project.js';
 import { parseModule } from '../src/wasm/reader.js';
-import { listExports, compileStep } from '../src/compiler/program.js';
+import { listExports, probeStep } from '../src/compiler/program.js';
 import { TOOL_VERSION } from '../src/version.js';
 import { MAX_STEPS } from '../src/runtime/machine.js';
 import { initProject, initUiCard } from '../src/init.js';
@@ -158,15 +158,13 @@ async function run(cmd, pos, flags, log) {
       const bytes = fs.readFileSync(file);
       const exports = listExports(parseModule(bytes)).map((f) => {
         const signature = `${f.name}(${f.params.join(', ')}) -> ${f.results.join(', ') || 'void'}`;
-        try {
-          compileStep(bytes, { exportName: f.name });
-          return { name: f.name, signature, supported: true };
-        } catch (e) {
-          return { name: f.name, signature, supported: false, error: describeError(e) };
-        }
+        const p = probeStep(bytes, f.name);
+        return { name: f.name, signature, supported: p.supported, abi: p.abi, ...(p.state ? { state: p.state } : {}), ...(p.values ? { values: p.values } : {}), ...(p.supported ? {} : { error: describeError(p.error) }) };
       });
       if (!exports.length) log('no exported functions');
-      for (const x of exports) log(`${x.signature.padEnd(32)} ${x.supported ? 'OK: can run in CSS as a step function' : `no: ${x.error.message}`}`);
+      const ok = (x) => (x.abi === 'globals' ? `OK: step(): void over the exported globals ${x.state.join(', ')} (a state of several values: "state": ${JSON.stringify(x.state)})`
+        : x.abi === 'functions' ? `OK: the step function of one value of a state of ${x.values} values (one such export per value, see "state")` : 'OK: can run in CSS as a step function');
+      for (const x of exports) log(`${x.signature.padEnd(32)} ${x.supported ? ok(x) : `no: ${x.error.message}`}`);
       return { ok: true, file, exports };
     }
     default:
