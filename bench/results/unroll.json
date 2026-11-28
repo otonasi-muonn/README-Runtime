@@ -1,0 +1,313 @@
+{
+ "environment": {
+  "date": "2026-11-28T05:44:05.526Z",
+  "os": "Windows_NT 10.0.26200 x64",
+  "cpu": "AMD Ryzen 7 8845HS w/ Radeon 780M Graphics      (16 threads)",
+  "ramGB": 31.3,
+  "node": "v24.19.0",
+  "ffmpeg": null,
+  "git": "git version 2.49.0.windows.1"
+ },
+ "windowMs": 4000,
+ "cards": {
+  "mockcraft-state-n160": {
+   "steps": 160,
+   "levels": 160,
+   "stepsPerLevel": 1,
+   "selection": "flat",
+   "generateMs": 1097,
+   "raw": 103522,
+   "gzip": 13586,
+   "brotli": 8154,
+   "registered": 48,
+   "levelDecls": 21,
+   "selectDecls": 6,
+   "selectedValues": 4,
+   "selectionTerms": 644
+  },
+  "mockcraft-state-n400": {
+   "steps": 400,
+   "levels": 400,
+   "stepsPerLevel": 1,
+   "selection": "factored",
+   "generateMs": 1536,
+   "raw": 151469,
+   "gzip": 20635,
+   "brotli": 10270,
+   "registered": 147,
+   "levelDecls": 21,
+   "selectDecls": 105,
+   "selectedValues": 4,
+   "selectionTerms": 1604
+  },
+  "mockcraft-state-n800": {
+   "steps": 800,
+   "levels": 267,
+   "stepsPerLevel": 3,
+   "selection": "factored",
+   "generateMs": 4412,
+   "raw": 253869,
+   "gzip": 31841,
+   "brotli": 13470,
+   "registered": 248,
+   "levelDecls": 57,
+   "selectDecls": 170,
+   "selectedValues": 4,
+   "selectionTerms": 3204
+  },
+  "mockcraft-state-n1200": {
+   "steps": 1200,
+   "levels": 300,
+   "stepsPerLevel": 4,
+   "selection": "factored",
+   "generateMs": 7204,
+   "raw": 350595,
+   "gzip": 44194,
+   "brotli": 16759,
+   "registered": 326,
+   "levelDecls": 75,
+   "selectDecls": 230,
+   "selectedValues": 4,
+   "selectionTerms": 4804
+  },
+  "mockcraft-state-n1600": {
+   "steps": 1600,
+   "levels": 320,
+   "stepsPerLevel": 5,
+   "selection": "factored",
+   "generateMs": 12324,
+   "raw": 441822,
+   "gzip": 55391,
+   "brotli": 17663,
+   "registered": 316,
+   "levelDecls": 93,
+   "selectDecls": 202,
+   "selectedValues": 4,
+   "selectionTerms": 6404
+  },
+  "mockcraft-state-n2000": {
+   "steps": 2000,
+   "levels": 286,
+   "stepsPerLevel": 7,
+   "selection": "factored",
+   "generateMs": 15662,
+   "raw": 550397,
+   "gzip": 66894,
+   "brotli": 24520,
+   "registered": 382,
+   "levelDecls": 129,
+   "selectDecls": 232,
+   "selectedValues": 4,
+   "selectionTerms": 8004
+  }
+ },
+ "engines": {
+  "chromium": {
+   "version": "159.0.8154.6",
+   "cards": {
+    "mockcraft-state-n160": {
+     "deepestMatch": {
+      "ok": true,
+      "differingPx": 0
+     },
+     "firstRenderMs": 42,
+     "cpuPercent": 7.9,
+     "workingSetMB": 474,
+     "style": {
+      "msPerS": 24.8
+     }
+    },
+    "mockcraft-state-n400": {
+     "deepestMatch": {
+      "ok": true,
+      "differingPx": 0
+     },
+     "firstRenderMs": 31,
+     "cpuPercent": 9.6,
+     "workingSetMB": 537,
+     "style": {
+      "msPerS": 30.1
+     }
+    },
+    "mockcraft-state-n800": {
+     "deepestMatch": {
+      "ok": true,
+      "differingPx": 0
+     },
+     "firstRenderMs": 56,
+     "cpuPercent": 8.4,
+     "workingSetMB": 635,
+     "style": {
+      "msPerS": 36.7
+     }
+    },
+    "mockcraft-state-n1200": {
+     "deepestMatch": {
+      "ok": true,
+      "differingPx": 0
+     },
+     "firstRenderMs": 72,
+     "cpuPercent": 8.8,
+     "workingSetMB": 692,
+     "style": {
+      "msPerS": 47.2
+     }
+    },
+    "mockcraft-state-n1600": {
+     "deepestMatch": {
+      "ok": true,
+      "differingPx": 0
+     },
+     "firstRenderMs": 102,
+     "cpuPercent": 13,
+     "workingSetMB": 839,
+     "style": {
+      "msPerS": 55.4
+     }
+    },
+    "mockcraft-state-n2000": {
+     "deepestMatch": {
+      "ok": true,
+      "differingPx": 63
+     },
+     "firstRenderMs": 118,
+     "cpuPercent": 10.8,
+     "workingSetMB": 891,
+     "style": {
+      "msPerS": 67.8
+     }
+    }
+   }
+  },
+  "firefox": {
+   "version": "159.0",
+   "cards": {
+    "mockcraft-state-n160": {
+     "deepestMatch": {
+      "ok": true,
+      "differingPx": 0
+     },
+     "firstRenderMs": 44,
+     "cpuPercent": 24.1,
+     "workingSetMB": 684,
+     "style": null
+    },
+    "mockcraft-state-n400": {
+     "deepestMatch": {
+      "ok": true,
+      "differingPx": 0
+     },
+     "firstRenderMs": 95,
+     "cpuPercent": 17,
+     "workingSetMB": 809,
+     "style": null
+    },
+    "mockcraft-state-n800": {
+     "deepestMatch": {
+      "ok": true,
+      "differingPx": 0
+     },
+     "firstRenderMs": 134,
+     "cpuPercent": 25.5,
+     "workingSetMB": 1000,
+     "style": null
+    },
+    "mockcraft-state-n1200": {
+     "deepestMatch": {
+      "ok": true,
+      "differingPx": 0
+     },
+     "firstRenderMs": 176,
+     "cpuPercent": 22.9,
+     "workingSetMB": 1236,
+     "style": null
+    },
+    "mockcraft-state-n1600": {
+     "deepestMatch": {
+      "ok": true,
+      "differingPx": 0
+     },
+     "firstRenderMs": 218,
+     "cpuPercent": 20.1,
+     "workingSetMB": 1566,
+     "style": null
+    },
+    "mockcraft-state-n2000": {
+     "deepestMatch": {
+      "ok": true,
+      "differingPx": 0
+     },
+     "firstRenderMs": 255,
+     "cpuPercent": 28.2,
+     "workingSetMB": 1841,
+     "style": null
+    }
+   }
+  },
+  "webkit": {
+   "version": "27.2",
+   "cards": {
+    "mockcraft-state-n160": {
+     "deepestMatch": {
+      "ok": true,
+      "differingPx": 0
+     },
+     "firstRenderMs": 61,
+     "cpuPercent": 9.8,
+     "workingSetMB": 321,
+     "style": null
+    },
+    "mockcraft-state-n400": {
+     "deepestMatch": {
+      "ok": true,
+      "differingPx": 0
+     },
+     "firstRenderMs": 96,
+     "cpuPercent": 11.3,
+     "workingSetMB": 369,
+     "style": null
+    },
+    "mockcraft-state-n800": {
+     "deepestMatch": {
+      "ok": true,
+      "differingPx": 0
+     },
+     "firstRenderMs": 115,
+     "cpuPercent": 14.2,
+     "workingSetMB": 437,
+     "style": null
+    },
+    "mockcraft-state-n1200": {
+     "deepestMatch": {
+      "ok": true,
+      "differingPx": 0
+     },
+     "firstRenderMs": 164,
+     "cpuPercent": 16.9,
+     "workingSetMB": 467,
+     "style": null
+    },
+    "mockcraft-state-n1600": {
+     "deepestMatch": {
+      "ok": true,
+      "differingPx": 0
+     },
+     "firstRenderMs": 196,
+     "cpuPercent": 15.3,
+     "workingSetMB": 502,
+     "style": null
+    },
+    "mockcraft-state-n2000": {
+     "deepestMatch": {
+      "ok": true,
+      "differingPx": 0
+     },
+     "firstRenderMs": 258,
+     "cpuPercent": 18.1,
+     "workingSetMB": 554,
+     "style": null
+    }
+   }
+  }
+ }
+}
